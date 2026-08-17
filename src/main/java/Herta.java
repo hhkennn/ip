@@ -2,6 +2,7 @@ import java.util.Scanner;
 
 public class Herta {
     private static final String INDENT = "     ";
+    private static final String SEPARATOR = "____________________________________________________________";
 
     /**
      * Prints each line of chatbot output with the standard indentation.
@@ -23,28 +24,29 @@ public class Herta {
                 + "| |_| |/ _ \\ '__| __/ _` |\n"
                 + "|  _  |  __/ |  | || (_| |\n"
                 + "|_| |_|\\___|_|   \\__\\__,_|\n";
-        String separator = "____________________________________________________________";
-
-        printIndented(separator);
+        printIndented(SEPARATOR);
         printIndented(banner);
         printIndented("Hello! I'm Herta.");
         printIndented("What can I do for you?");
-        printIndented(separator);
+        printIndented(SEPARATOR);
 
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
+            System.out.print("Enter a command ('bye' to exit): ");
             String input = scanner.nextLine();
-            printIndented(separator);
+            printIndented(SEPARATOR);
 
             if (input.equals("bye")) {
                 printIndented("Bye. Hope to see you again soon!");
-                printIndented(separator);
+                printIndented(SEPARATOR);
                 break;
             }
 
             printIndented(input);
-            printIndented(separator);
+            printIndented(SEPARATOR);
         }
+
+        scanner.close();
     }
 }
