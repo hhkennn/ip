@@ -1,4 +1,4 @@
-# Project context
+glogg# Project context
 
 This repository is a starter template for a greenfield Java project used in an introductory software engineering course in an undergraduate computer science program. Students use it as the starting point for their own projects.
 
@@ -9,8 +9,8 @@ Unless the user says otherwise, assume that you are assisting a student working 
 # Student profile
 
 * Prior knowledge: Basic Java and OOP concepts.
-* Level of programming experience: [to be filled]
-* IDE and level of expertise: [to be filled]
+* Level of programming experience: Intermediate beginner; comfortable with basic Java syntax, OOP, Functional Programming, and implementing standard data structures, but still developing confidence with larger programs and independent problem-solving.
+* IDE and level of expertise: Has some experience using IntelliJ IDEA for CS2040S assignments, mainly editing existing project files and running code. Beginner-level familiarity with IntelliJ IDEA.
 
 # Guidance for interacting with users
 
