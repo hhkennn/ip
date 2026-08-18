@@ -134,10 +134,10 @@ Enter a command:      __________________________________________________________
      1.[T][ ] return book
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try: delete 1.
+     Oops! That task number is not in your list. Try other task numbers
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try: delete 1.
+     Oops! That task number is not in your list. Try other task numbers
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! Please provide a valid task number. Try: delete 1.
@@ -197,7 +197,7 @@ Enter a command:      __________________________________________________________
      1.[T][ ] core
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try: mark 1.
+     Oops! That task number is not in your list. Try other task numbers
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -212,7 +212,7 @@ Enter a command:      __________________________________________________________
      1.[T][X] core
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try: unmark 1.
+     Oops! That task number is not in your list. Try other task numbers
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -436,7 +436,7 @@ Enter a command:      __________________________________________________________
        [T][X] alpha
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try: mark 1.
+     Oops! That task number is not in your list. Try other task numbers
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:

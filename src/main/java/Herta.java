@@ -5,10 +5,6 @@ import java.util.Scanner;
 public class Herta {
     private static final String INDENT = "     ";
     private static final String SEPARATOR = "____________________________________________________________";
-    private static final String TODO_COMMAND = "todo ";
-    private static final String DEADLINE_COMMAND = "deadline ";
-    private static final String EVENT_COMMAND = "event ";
-    private static final String DELETE_COMMAND = "delete ";
 
     /**
      * Prints each line of chatbot output with the standard indentation.
@@ -60,32 +56,47 @@ public class Herta {
             printIndented(SEPARATOR);
 
             try {
-                if (input.equals("bye")) {
+                CommandType commandType = CommandType.fromInput(input);
+
+                if (commandType == CommandType.BYE) {
                     printIndented("Bye. Hope to see you again soon!");
                     printIndented(SEPARATOR);
                     break;
-                } else if (input.equals("list")) {
+                }
+
+                switch (commandType) {
+                case LIST:
                     printIndented("Here are the tasks in your list:");
                     for (int i = 0; i < tasks.size(); i++) {
                         printIndented((i + 1) + "." + tasks.get(i));
                     }
-                } else if (input.equals("mark") || input.startsWith("mark ")) {
+                    break;
+                case MARK:
                     markTask(tasks, input);
-                } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+                    break;
+                case UNMARK:
                     unmarkTask(tasks, input);
-                } else if (input.equals("delete") || input.startsWith(DELETE_COMMAND)) {
+                    break;
+                case DELETE:
                     deleteTask(tasks, input);
-                } else if (input.equals("todo") || input.startsWith(TODO_COMMAND)) {
+                    break;
+                case TODO:
                     addTodo(tasks, input);
-                } else if (input.equals("deadline") || input.startsWith(DEADLINE_COMMAND)) {
+                    break;
+                case DEADLINE:
                     addDeadline(tasks, input);
-                } else if (input.equals("event") || input.startsWith(EVENT_COMMAND)) {
+                    break;
+                case EVENT:
                     addEvent(tasks, input);
-                } else if (input.isEmpty()) {
-                    throw new HertaException("Please enter a command, such as: todo read book.");
-                } else {
+                    break;
+                case UNKNOWN:
+                    if (input.isEmpty()) {
+                        throw new HertaException("Please enter a command, such as: todo read book.");
+                    }
                     throw new HertaException("I don't recognise that command :(\n" +
                             "Try todo, deadline, event, list, mark, unmark, delete, and bye.");
+                default:
+                    break;
                 }
             } catch (HertaException e) {
                 printIndented("Oops! " + e.getMessage());
