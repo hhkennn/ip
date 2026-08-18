@@ -88,13 +88,13 @@ Enter a command:      __________________________________________________________
      1.[T][ ] return book
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list.
+     Oops! That task number is not in your list. Try: delete 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list.
+     Oops! That task number is not in your list. Try: delete 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number.
+     Oops! Please provide a valid task number. Try: delete 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -151,7 +151,7 @@ Enter a command:      __________________________________________________________
      1.[T][ ] core
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list.
+     Oops! That task number is not in your list. Try: mark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -166,7 +166,7 @@ Enter a command:      __________________________________________________________
      1.[T][X] core
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list.
+     Oops! That task number is not in your list. Try: unmark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -220,7 +220,8 @@ Enter a command:      __________________________________________________________
      Now you have 1 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
@@ -228,7 +229,8 @@ Enter a command:      __________________________________________________________
      Now you have 2 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
@@ -236,7 +238,8 @@ Enter a command:      __________________________________________________________
      Now you have 3 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -362,7 +365,7 @@ Enter a command:      __________________________________________________________
        [T][X] alpha
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list.
+     Oops! That task number is not in your list. Try: mark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -375,7 +378,7 @@ Enter a command:      __________________________________________________________
        [T][ ] alpha
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number.
+     Oops! Please provide a valid task number. Try: unmark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -459,7 +462,8 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -504,10 +508,12 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Oops! I don't recognise that command :( 
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! A deadline must look like: deadline <description> /by <date/time>.
@@ -516,7 +522,7 @@ Enter a command:      __________________________________________________________
      Oops! An event must look like: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number.
+     Oops! Please provide a valid task number. Try: mark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!

@@ -24,6 +24,15 @@ public class Herta {
         }
     }
 
+    /**
+     * Prints a task using the indentation used for task details.
+     *
+     * @param task the task to print
+     */
+    private static void printTask(Task task) {
+        printIndented("  " + task);
+    }
+
     public static void main(String[] args) {
         String banner = " _   _           _        \n"
                 + "| | | | ___ _ __| |_ __ _\n"
@@ -97,7 +106,7 @@ public class Herta {
     private static void addTask(List<Task> tasks, Task task) {
         tasks.add(task);
         printIndented("Got it. I've added this task:");
-        printIndented("  " + task);
+        printTask(task);
         printIndented("Now you have " + tasks.size() + " tasks in the list.");
     }
 
@@ -171,10 +180,10 @@ public class Herta {
      */
     private static void deleteTask(List<Task> tasks, String input) throws HertaException {
         String taskNumber = input.substring("delete".length()).trim();
-        Task task = getTask(tasks, taskNumber);
+        Task task = getTask(tasks, taskNumber, "delete");
         tasks.remove(task);
         printIndented("Noted. I've removed this task:");
-        printIndented("  " + task);
+        printTask(task);
         printIndented("Now you have " + tasks.size() + " tasks in the list.");
     }
 
@@ -187,10 +196,10 @@ public class Herta {
      */
     private static void markTask(List<Task> tasks, String input) throws HertaException {
         String taskNumber = input.substring("mark".length()).trim();
-        Task task = getTask(tasks, taskNumber);
+        Task task = getTask(tasks, taskNumber, "mark");
         task.markAsDone();
         printIndented("Nice! I've marked this task as done:");
-        printIndented("  " + task);
+        printTask(task);
     }
 
     /**
@@ -202,10 +211,10 @@ public class Herta {
      */
     private static void unmarkTask(List<Task> tasks, String input) throws HertaException {
         String taskNumber = input.substring("unmark".length()).trim();
-        Task task = getTask(tasks, taskNumber);
+        Task task = getTask(tasks, taskNumber, "unmark");
         task.markAsNotDone();
         printIndented("OK, I've marked this task as not done yet:");
-        printIndented("  " + task);
+        printTask(task);
     }
 
     /**
@@ -213,15 +222,16 @@ public class Herta {
      *
      * @param tasks the task list to search
      * @param taskNumber the task number entered by the user
+     * @param command the command used to request the task
      * @return the requested task
      * @throws HertaException if the task number is invalid or out of range
      */
-    private static Task getTask(List<Task> tasks, String taskNumber) throws HertaException {
+    private static Task getTask(List<Task> tasks, String taskNumber, String command) throws HertaException {
         final int taskIndex;
         try {
             taskIndex = Integer.parseInt(taskNumber) - 1;
         } catch (NumberFormatException e) {
-            throw new HertaException("Please provide a valid task number.");
+            throw new HertaException("Please provide a valid task number. Try: " + command + " 1.");
         }
 
         if (taskIndex < 0 || taskIndex >= tasks.size()) {
