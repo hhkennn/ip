@@ -65,6 +65,20 @@ public class Herta {
                 } catch (NumberFormatException e) {
                     printIndented("Please provide a valid task number.");
                 }
+            } else if (input.startsWith("unmark ")) {
+                String taskNumber = input.substring("unmark ".length()).trim();
+                try {
+                    int taskIndex = Integer.parseInt(taskNumber) - 1;
+                    if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                        printIndented("That task number is not in your list.");
+                    } else {
+                        completedTasks.set(taskIndex, false);
+                        printIndented("OK, I've marked this task as not done yet:");
+                        printIndented("  [ ] " + tasks.get(taskIndex));
+                    }
+                } catch (NumberFormatException e) {
+                    printIndented("Please provide a valid task number.");
+                }
             } else if (input.isEmpty()) {
                 printIndented("Please enter a task.");
             } else {
