@@ -34,6 +34,7 @@ public class Herta {
 
         Scanner scanner = new Scanner(System.in);
         List<String> tasks = new ArrayList<>();
+        List<Boolean> completedTasks = new ArrayList<>();
 
         while (true) {
             System.out.print("Enter a command ('bye' to exit): ");
@@ -45,13 +46,30 @@ public class Herta {
                 printIndented(SEPARATOR);
                 break;
             } else if (input.equals("list")) {
+                printIndented("Here are the tasks in your list:");
                 for (int i = 0; i < tasks.size(); i++) {
-                    printIndented((i + 1) + ". " + tasks.get(i));
+                    String status = completedTasks.get(i) ? "X" : " ";
+                    printIndented((i + 1) + ".[" + status + "] " + tasks.get(i));
+                }
+            } else if (input.startsWith("mark ")) {
+                String taskNumber = input.substring("mark ".length()).trim();
+                try {
+                    int taskIndex = Integer.parseInt(taskNumber) - 1;
+                    if (taskIndex < 0 || taskIndex >= tasks.size()) {
+                        printIndented("That task number is not in your list.");
+                    } else {
+                        completedTasks.set(taskIndex, true);
+                        printIndented("Nice! I've marked this task as done:");
+                        printIndented("  [X] " + tasks.get(taskIndex));
+                    }
+                } catch (NumberFormatException e) {
+                    printIndented("Please provide a valid task number.");
                 }
             } else if (input.isEmpty()) {
                 printIndented("Please enter a task.");
             } else {
                 tasks.add(input);
+                completedTasks.add(false);
                 printIndented("added: " + input);
             }
 
