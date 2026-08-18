@@ -6,10 +6,25 @@
 - Setup command: `javac -d out src/main/java/*.java`
 - Session log: `test/ui-test-session.log`
 
+Run this plan through the project-specific `test-ui` workflow. That workflow
+checks the Java version and runs the setup command before invoking the runner;
+invoking the runner directly assumes those prerequisites are already complete.
+
 The runner starts a fresh process for each test case. It sends the input commands
 in order and compares the complete console output with the expected output. Add
 one command per line in each `Inputs` block. The output below is intentionally
 kept exact, including prompts, indentation, and separators.
+
+## Coverage summary
+
+| Behavior | Valid input | Missing or malformed input | Boundary or state check |
+| --- | --- | --- | --- |
+| Start and exit | `bye` | End of input | Fresh process per case |
+| List tasks | Populated list | Empty list | State checked after errors |
+| Add tasks | Todo, deadline, event | Empty fields and invalid delimiters | Whitespace normalization |
+| Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
+| Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
+| Command matching | All supported commands | Command-name lookalikes | Lookalikes do not change state |
 
 ## Test case: Exit immediately
 
@@ -25,13 +40,44 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
      Hello! I'm Herta.
      What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+```
+
+## Test case: List an empty task list
+
+- Aim: Verify that `list` handles a fresh task list without displaying task entries.
+
+### Inputs
+
+```text
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
@@ -60,7 +106,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -71,7 +117,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] read book
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
@@ -81,7 +127,7 @@ Enter a command:      __________________________________________________________
 Enter a command:      ____________________________________________________________
      Noted. I've removed this task:
        [T][ ] read book
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -130,7 +176,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -141,7 +187,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] core
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! Please enter a command, such as: todo read book.
@@ -198,6 +244,11 @@ deadline report /by Friday
 deadlines report /by Friday
 event meeting /from Mon /to Tue
 events meeting /from Mon /to Tue
+listall
+marking 1
+unmarking 1
+deleting 1
+byebye
 list
 bye
 ```
@@ -206,7 +257,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -217,10 +268,10 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] stable
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
@@ -229,7 +280,7 @@ Enter a command:      __________________________________________________________
      Now you have 2 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
@@ -238,7 +289,27 @@ Enter a command:      __________________________________________________________
      Now you have 3 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(
+     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
@@ -254,7 +325,7 @@ Enter a command:      __________________________________________________________
 
 ## Test case: Handle EOF input
 
-- Aim: Verify that the chatbot exits cleanly when the input stream ends before `bye`, such as when the user sends Ctrl+D.
+- Aim: Verify that the chatbot exits cleanly when standard input is closed before `bye`.
 
 ### Inputs
 
@@ -266,7 +337,7 @@ todo before eof
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -277,7 +348,7 @@ todo before eof
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] before eof
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
@@ -313,7 +384,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -324,7 +395,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] alpha
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
@@ -416,7 +487,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -427,7 +498,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] spaced description
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
@@ -462,7 +533,7 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
@@ -478,7 +549,7 @@ Enter a command:      __________________________________________________________
 
 ## Test case: Handle invalid commands
 
-- Aim: Verify that empty task descriptions, bare task text, unknown commands, malformed deadlines/events, and invalid task numbers produce helpful errors without adding tasks.
+- Aim: Verify that empty descriptions, unknown commands, malformed or lookalike delimiters, and missing or nonnumeric task numbers produce helpful errors without adding tasks.
 
 ### Inputs
 
@@ -488,7 +559,13 @@ blah
 read book
 deadline return book
 event project meeting /from Mon 2pm
+deadline report /bye Friday
+event meeting /fromage Mon /today Tue
 mark abc
+mark
+unmark
+delete
+list
 bye
 ```
 
@@ -496,7 +573,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -508,12 +585,18 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :( 
+     Oops! I don't recognise that command :(
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A deadline must look like: deadline <description> /by <date/time>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! An event must look like: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! A deadline must look like: deadline <description> /by <date/time>.
@@ -525,27 +608,41 @@ Enter a command:      __________________________________________________________
      Oops! Please provide a valid task number. Try: mark 1.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
+     Oops! Please provide a valid task number. Try: mark 1.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! Please provide a valid task number. Try: unmark 1.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! Please provide a valid task number. Try: delete 1.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
      ____________________________________________________________
 ```
 
 ## Test case: Add and list a task
 
-- Aim: Verify that a todo is added and then displayed by the `list` command.
+- Aim: Verify that leading command whitespace is ignored and a todo is displayed by `list`.
+
+The three input lines intentionally have two leading spaces.
 
 ### Inputs
 
 ```text
-todo read book
-list
-bye
+  todo read book
+  list
+  bye
 ```
 
 ### Expected output
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -556,7 +653,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] read book
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -585,7 +682,7 @@ bye
 
 ```text
      ____________________________________________________________
-      _   _           _        
+      _   _           _
      | | | | ___ _ __| |_ __ _
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
@@ -596,7 +693,7 @@ bye
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] borrow book
-     Now you have 1 tasks in the list.
+     Now you have 1 task in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
