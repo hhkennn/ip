@@ -12,7 +12,334 @@ bye
      Hello! I'm Herta.
      What can I do for you?
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Preserve state after empty and boundary commands ===
+Aim: Verify that an empty command and invalid boundary task numbers do not change a task, while valid mark and unmark commands do.
+--- console input ---
+todo core
+
+list
+mark 0
+list
+mark 1
+list
+unmark 0
+list
+unmark 1
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] core
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! Please enter a command, such as: todo read book.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! That task number is not in your list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! That task number is not in your list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     OK, I've marked this task as not done yet:
+       [T][ ] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] core
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Reject command lookalikes ===
+Aim: Verify that command names with extra characters are rejected and do not add unintended tasks.
+--- console input ---
+todo stable
+todotask
+deadline report /by Friday
+deadlines report /by Friday
+event meeting /from Mon /to Tue
+events meeting /from Mon /to Tue
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] stable
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] report (by: Friday)
+     Now you have 2 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] meeting (from: Mon to: Tue)
+     Now you have 3 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] stable
+     2.[D][ ] report (by: Friday)
+     3.[E][ ] meeting (from: Mon to: Tue)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Handle EOF input ===
+Aim: Verify that the chatbot exits cleanly when the input stream ends before `bye`, such as when the user sends Ctrl+D.
+--- console input ---
+todo before eof
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] before eof
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Preserve state across errors ===
+Aim: Verify that invalid commands interleaved with valid additions and updates do not change the task list.
+--- console input ---
+todo alpha
+todo
+list
+deadline report /by Friday
+deadline report
+list
+event meeting /from Monday /to Tuesday
+event meeting /from Monday
+list
+mark 1
+mark 9
+list
+unmark 1
+unmark nope
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] alpha
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A todo description cannot be empty. Try: todo <description>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] alpha
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] report (by: Friday)
+     Now you have 2 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A deadline must look like: deadline <description> /by <date/time>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] alpha
+     2.[D][ ] report (by: Friday)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] meeting (from: Monday to: Tuesday)
+     Now you have 3 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! An event must look like: event <description> /from <start> /to <end>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] alpha
+     2.[D][ ] report (by: Friday)
+     3.[E][ ] meeting (from: Monday to: Tuesday)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] alpha
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! That task number is not in your list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] alpha
+     2.[D][ ] report (by: Friday)
+     3.[E][ ] meeting (from: Monday to: Tuesday)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     OK, I've marked this task as not done yet:
+       [T][ ] alpha
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! Please provide a valid task number.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] alpha
+     2.[D][ ] report (by: Friday)
+     3.[E][ ] meeting (from: Monday to: Tuesday)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Handle command formatting edge cases ===
+Aim: Verify that extra spaces are trimmed correctly and malformed commands do not add tasks.
+--- console input ---
+todo   spaced description
+todo    
+list
+deadline   submit report   /by   Friday
+deadline submit report /by
+event   meeting /from Mon /to Tue
+event meeting /from Mon /to
+list
+todo
+blah
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] spaced description
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A todo description cannot be empty. Try: todo <description>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] spaced description
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] submit report (by: Friday)
+     Now you have 2 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A deadline must look like: deadline <description> /by <date/time>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] meeting (from: Mon to: Tue)
+     Now you have 3 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! An event must look like: event <description> /from <start> /to <end>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] spaced description
+     2.[D][ ] submit report (by: Friday)
+     3.[E][ ] meeting (from: Mon to: Tue)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! A todo description cannot be empty. Try: todo <description>.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] spaced description
+     2.[D][ ] submit report (by: Friday)
+     3.[E][ ] meeting (from: Mon to: Tue)
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
      ____________________________________________________________
 
@@ -37,25 +364,25 @@ bye
      Hello! I'm Herta.
      What can I do for you?
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
-     Oops! I don't recognise that command. Try todo, deadline, event, list, mark, or unmark.
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
-     Oops! I don't recognise that command. Try todo, deadline, event, list, mark, or unmark.
+Enter a command:      ____________________________________________________________
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Oops! A deadline must look like: deadline <description> /by <date/time>.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Oops! An event must look like: event <description> /from <start> /to <end>.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Oops! Please provide a valid task number.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
      ____________________________________________________________
 
@@ -76,16 +403,16 @@ bye
      Hello! I'm Herta.
      What can I do for you?
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] read book
      Now you have 1 tasks in the list.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
      1.[T][ ] read book
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
      ____________________________________________________________
 
@@ -108,28 +435,28 @@ bye
      Hello! I'm Herta.
      What can I do for you?
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [T][ ] borrow book
      Now you have 1 tasks in the list.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [D][ ] return book (by: Sunday)
      Now you have 2 tasks in the list.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Got it. I've added this task:
        [E][ ] project meeting (from: Mon 2pm to: 4pm)
      Now you have 3 tasks in the list.
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
      1.[T][ ] borrow book
      2.[D][ ] return book (by: Sunday)
      3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
      ____________________________________________________________
-Enter a command ('bye' to exit):      ____________________________________________________________
+Enter a command:      ____________________________________________________________
      Bye. Hope to see you again soon!
      ____________________________________________________________
 

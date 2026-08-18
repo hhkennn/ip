@@ -39,7 +39,13 @@ public class Herta {
         List<Task> tasks = new ArrayList<>();
 
         while (true) {
-            System.out.print("Enter a command ('bye' to exit): ");
+            System.out.print("Enter a command: ");
+            if (!scanner.hasNextLine()) {
+                printIndented(SEPARATOR);
+                printIndented("Bye. Hope to see you again soon!");
+                printIndented(SEPARATOR);
+                break;
+            }
             String input = scanner.nextLine();
             printIndented(SEPARATOR);
 
@@ -64,9 +70,9 @@ public class Herta {
                 } else if (input.equals("event") || input.startsWith(EVENT_COMMAND)) {
                     addEvent(tasks, input);
                 } else if (input.isEmpty()) {
-                    throw new HertaException("Please enter a command :). Try todo, deadline, event, list, mark, or unmark.");
+                    throw new HertaException("Please enter a command, such as: todo read book.");
                 } else {
-                    throw new HertaException("I don't recognise that command :(. Try todo, deadline, event, list, mark, or unmark.");
+                    throw new HertaException("I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.");
                 }
             } catch (HertaException e) {
                 printIndented("Oops! " + e.getMessage());
