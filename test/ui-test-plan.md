@@ -38,6 +38,57 @@ Enter a command ('bye' to exit):      __________________________________________
      ____________________________________________________________
 ```
 
+## Test case: Handle invalid commands
+
+- Aim: Verify that empty task descriptions, bare task text, unknown commands, malformed deadlines/events, and invalid task numbers produce helpful errors without adding tasks.
+
+### Inputs
+
+```text
+todo
+blah
+read book
+deadline return book
+event project meeting /from Mon 2pm
+mark abc
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! A todo description cannot be empty. Try: todo <description>.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! I don't recognise that command. Try todo, deadline, event, list, mark, or unmark.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! I don't recognise that command. Try todo, deadline, event, list, mark, or unmark.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! A deadline must look like: deadline <description> /by <date/time>.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! An event must look like: event <description> /from <start> /to <end>.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Oops! Please provide a valid task number.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+```
+
 ## Test case: Add and list a task
 
 - Aim: Verify that a todo is added and then displayed by the `list` command.

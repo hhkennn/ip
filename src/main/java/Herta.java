@@ -43,61 +43,33 @@ public class Herta {
             String input = scanner.nextLine();
             printIndented(SEPARATOR);
 
-            if (input.equals("bye")) {
-                printIndented("Bye. Hope to see you again soon!");
-                printIndented(SEPARATOR);
-                break;
-            } else if (input.equals("list")) {
-                printIndented("Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    printIndented((i + 1) + "." + tasks.get(i));
-                }
-            } else if (input.startsWith("mark ")) {
-                String taskNumber = input.substring("mark ".length()).trim();
-                try {
-                    int taskIndex = Integer.parseInt(taskNumber) - 1;
-                    if (taskIndex < 0 || taskIndex >= tasks.size()) {
-                        printIndented("That task number is not in your list.");
-                    } else {
-                        Task task = tasks.get(taskIndex);
-                        task.markAsDone();
-                        printIndented("Nice! I've marked this task as done:");
-                        printIndented("  " + task);
+            try {
+                if (input.equals("bye")) {
+                    printIndented("Bye. Hope to see you again soon!");
+                    printIndented(SEPARATOR);
+                    break;
+                } else if (input.equals("list")) {
+                    printIndented("Here are the tasks in your list:");
+                    for (int i = 0; i < tasks.size(); i++) {
+                        printIndented((i + 1) + "." + tasks.get(i));
                     }
-                } catch (NumberFormatException e) {
-                    printIndented("Please provide a valid task number.");
-                }
-            } else if (input.startsWith("unmark ")) {
-                String taskNumber = input.substring("unmark ".length()).trim();
-                try {
-                    int taskIndex = Integer.parseInt(taskNumber) - 1;
-                    if (taskIndex < 0 || taskIndex >= tasks.size()) {
-                        printIndented("That task number is not in your list.");
-                    } else {
-                        Task task = tasks.get(taskIndex);
-                        task.markAsNotDone();
-                        printIndented("OK, I've marked this task as not done yet:");
-                        printIndented("  " + task);
-                    }
-                } catch (NumberFormatException e) {
-                    printIndented("Please provide a valid task number.");
-                }
-            } else if (input.startsWith(TODO_COMMAND)) {
-                String description = input.substring(TODO_COMMAND.length()).trim();
-                if (description.isEmpty()) {
-                    printIndented("Please enter a task description.");
+                } else if (input.equals("mark") || input.startsWith("mark ")) {
+                    markTask(tasks, input);
+                } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+                    unmarkTask(tasks, input);
+                } else if (input.equals("todo") || input.startsWith(TODO_COMMAND)) {
+                    addTodo(tasks, input);
+                } else if (input.equals("deadline") || input.startsWith(DEADLINE_COMMAND)) {
+                    addDeadline(tasks, input);
+                } else if (input.equals("event") || input.startsWith(EVENT_COMMAND)) {
+                    addEvent(tasks, input);
+                } else if (input.isEmpty()) {
+                    throw new HertaException("Please enter a command :). Try todo, deadline, event, list, mark, or unmark.");
                 } else {
-                    addTask(tasks, new Todo(description));
+                    throw new HertaException("I don't recognise that command :(. Try todo, deadline, event, list, mark, or unmark.");
                 }
-            } else if (input.startsWith(DEADLINE_COMMAND)) {
-                addDeadline(tasks, input.substring(DEADLINE_COMMAND.length()).trim());
-            } else if (input.startsWith(EVENT_COMMAND)) {
-                addEvent(tasks, input.substring(EVENT_COMMAND.length()).trim());
-            } else if (input.isEmpty()) {
-                printIndented("Please enter a task.");
-            } else {
-                // Keep accepting the original bare-task syntax as a todo for backwards compatibility.
-                addTask(tasks, new Todo(input));
+            } catch (HertaException e) {
+                printIndented("Oops! " + e.getMessage());
             }
 
             printIndented(SEPARATOR);
@@ -120,23 +92,37 @@ public class Herta {
     }
 
     /**
+     * Parses and adds a todo command's description.
+     *
+     * @param tasks the task list to update
+     * @param input the complete todo command entered by the user
+     * @throws HertaException if the todo description is empty
+     */
+    private static void addTodo(List<Task> tasks, String input) throws HertaException {
+        String description = input.substring("todo".length()).trim();
+        if (description.isEmpty()) {
+            throw new HertaException("A todo description cannot be empty. Try: todo <description>.");
+        }
+        addTask(tasks, new Todo(description));
+    }
+
+    /**
      * Parses and adds a deadline command's description and date/time.
      *
      * @param tasks the task list to update
-     * @param content the text after the {@code deadline} command
+     * @param input the complete deadline command entered by the user
      */
-    private static void addDeadline(List<Task> tasks, String content) {
+    private static void addDeadline(List<Task> tasks, String input) throws HertaException {
+        String content = input.substring("deadline".length()).trim();
         int byIndex = content.indexOf("/by");
         if (byIndex <= 0) {
-            printIndented("Please use: deadline <description> /by <date/time>.");
-            return;
+            throw new HertaException("A deadline must look like: deadline <description> /by <date/time>.");
         }
 
         String description = content.substring(0, byIndex).trim();
         String by = content.substring(byIndex + 3).trim();
         if (description.isEmpty() || by.isEmpty()) {
-            printIndented("Please use: deadline <description> /by <date/time>.");
-            return;
+            throw new HertaException("A deadline must look like: deadline <description> /by <date/time>.");
         }
 
         addTask(tasks, new Deadline(description, by));
@@ -146,24 +132,75 @@ public class Herta {
      * Parses and adds an event command's description, start, and end date/time.
      *
      * @param tasks the task list to update
-     * @param content the text after the {@code event} command
+     * @param input the complete event command entered by the user
      */
-    private static void addEvent(List<Task> tasks, String content) {
+    private static void addEvent(List<Task> tasks, String input) throws HertaException {
+        String content = input.substring("event".length()).trim();
         int fromIndex = content.indexOf("/from");
         int toIndex = content.indexOf("/to", fromIndex + 5);
         if (fromIndex <= 0 || toIndex <= fromIndex + 5) {
-            printIndented("Please use: event <description> /from <start> /to <end>.");
-            return;
+            throw new HertaException("An event must look like: event <description> /from <start> /to <end>.");
         }
 
         String description = content.substring(0, fromIndex).trim();
         String from = content.substring(fromIndex + 5, toIndex).trim();
         String to = content.substring(toIndex + 3).trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            printIndented("Please use: event <description> /from <start> /to <end>.");
-            return;
+            throw new HertaException("An event must look like: event <description> /from <start> /to <end>.");
         }
 
         addTask(tasks, new Event(description, from, to));
+    }
+
+    /**
+     * Marks the requested task as done.
+     *
+     * @param tasks the task list to update
+     * @param input the complete mark command entered by the user
+     * @throws HertaException if the task number is missing, invalid, or out of range
+     */
+    private static void markTask(List<Task> tasks, String input) throws HertaException {
+        String taskNumber = input.substring("mark".length()).trim();
+        Task task = getTask(tasks, taskNumber);
+        task.markAsDone();
+        printIndented("Nice! I've marked this task as done:");
+        printIndented("  " + task);
+    }
+
+    /**
+     * Marks the requested task as not done.
+     *
+     * @param tasks the task list to update
+     * @param input the complete unmark command entered by the user
+     * @throws HertaException if the task number is missing, invalid, or out of range
+     */
+    private static void unmarkTask(List<Task> tasks, String input) throws HertaException {
+        String taskNumber = input.substring("unmark".length()).trim();
+        Task task = getTask(tasks, taskNumber);
+        task.markAsNotDone();
+        printIndented("OK, I've marked this task as not done yet:");
+        printIndented("  " + task);
+    }
+
+    /**
+     * Finds a task using the one-based number shown by the list command.
+     *
+     * @param tasks the task list to search
+     * @param taskNumber the task number entered by the user
+     * @return the requested task
+     * @throws HertaException if the task number is invalid or out of range
+     */
+    private static Task getTask(List<Task> tasks, String taskNumber) throws HertaException {
+        final int taskIndex;
+        try {
+            taskIndex = Integer.parseInt(taskNumber) - 1;
+        } catch (NumberFormatException e) {
+            throw new HertaException("Please provide a valid task number.");
+        }
+
+        if (taskIndex < 0 || taskIndex >= tasks.size()) {
+            throw new HertaException("That task number is not in your list.");
+        }
+        return tasks.get(taskIndex);
     }
 }
