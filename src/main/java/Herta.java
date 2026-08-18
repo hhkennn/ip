@@ -8,6 +8,7 @@ public class Herta {
     private static final String TODO_COMMAND = "todo ";
     private static final String DEADLINE_COMMAND = "deadline ";
     private static final String EVENT_COMMAND = "event ";
+    private static final String DELETE_COMMAND = "delete ";
 
     /**
      * Prints each line of chatbot output with the standard indentation.
@@ -63,6 +64,8 @@ public class Herta {
                     markTask(tasks, input);
                 } else if (input.equals("unmark") || input.startsWith("unmark ")) {
                     unmarkTask(tasks, input);
+                } else if (input.equals("delete") || input.startsWith(DELETE_COMMAND)) {
+                    deleteTask(tasks, input);
                 } else if (input.equals("todo") || input.startsWith(TODO_COMMAND)) {
                     addTodo(tasks, input);
                 } else if (input.equals("deadline") || input.startsWith(DEADLINE_COMMAND)) {
@@ -72,7 +75,8 @@ public class Herta {
                 } else if (input.isEmpty()) {
                     throw new HertaException("Please enter a command, such as: todo read book.");
                 } else {
-                    throw new HertaException("I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.");
+                    throw new HertaException("I don't recognise that command :( \n" +
+                            "Try todo, deadline, event, list, mark, unmark, delete, and bye.");
                 }
             } catch (HertaException e) {
                 printIndented("Oops! " + e.getMessage());
@@ -156,6 +160,22 @@ public class Herta {
         }
 
         addTask(tasks, new Event(description, from, to));
+    }
+
+    /**
+     * Deletes the requested task and prints the standard confirmation message.
+     *
+     * @param tasks the task list to update
+     * @param input the complete delete command entered by the user
+     * @throws HertaException if the task number is missing, invalid, or out of range
+     */
+    private static void deleteTask(List<Task> tasks, String input) throws HertaException {
+        String taskNumber = input.substring("delete".length()).trim();
+        Task task = getTask(tasks, taskNumber);
+        tasks.remove(task);
+        printIndented("Noted. I've removed this task:");
+        printIndented("  " + task);
+        printIndented("Now you have " + tasks.size() + " tasks in the list.");
     }
 
     /**

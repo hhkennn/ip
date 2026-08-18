@@ -17,6 +17,65 @@ Enter a command:      __________________________________________________________
      ____________________________________________________________
 
 
+=== Delete tasks ===
+Aim: Verify that a valid one-based task number removes the task, shifts the remaining list, and reports the new count, while invalid numbers leave the list unchanged.
+--- console input ---
+todo read book
+todo return book
+delete 1
+list
+delete 0
+delete 2
+delete nope
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] return book
+     Now you have 2 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Noted. I've removed this task:
+       [T][ ] read book
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] return book
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! That task number is not in your list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! That task number is not in your list.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Oops! Please provide a valid task number.
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] return book
+     ____________________________________________________________
+Enter a command:      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
 === Preserve state after empty and boundary commands ===
 Aim: Verify that an empty command and invalid boundary task numbers do not change a task, while valid mark and unmark commands do.
 --- console input ---
@@ -116,7 +175,7 @@ Enter a command:      __________________________________________________________
      Now you have 1 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
@@ -124,7 +183,7 @@ Enter a command:      __________________________________________________________
      Now you have 2 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Got it. I've added this task:
@@ -132,7 +191,7 @@ Enter a command:      __________________________________________________________
      Now you have 3 tasks in the list.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -331,7 +390,7 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Here are the tasks in your list:
@@ -368,10 +427,10 @@ Enter a command:      __________________________________________________________
      Oops! A todo description cannot be empty. Try: todo <description>.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, and bye.
+     Oops! I don't recognise that command :(. Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
 Enter a command:      ____________________________________________________________
      Oops! A deadline must look like: deadline <description> /by <date/time>.
