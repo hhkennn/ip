@@ -40,12 +40,12 @@ Enter a command ('bye' to exit):      __________________________________________
 
 ## Test case: Add and list a task
 
-- Aim: Verify that a task is added and then displayed by the `list` command.
+- Aim: Verify that a todo is added and then displayed by the `list` command.
 
 ### Inputs
 
 ```text
-read book
+todo read book
 list
 bye
 ```
@@ -63,11 +63,65 @@ bye
      What can I do for you?
      ____________________________________________________________
 Enter a command ('bye' to exit):      ____________________________________________________________
-     added: read book
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 tasks in the list.
      ____________________________________________________________
 Enter a command ('bye' to exit):      ____________________________________________________________
      Here are the tasks in your list:
-     1.[ ] read book
+     1.[T][ ] read book
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+```
+
+## Test case: Add deadlines and events
+
+- Aim: Verify that deadlines and events retain their date/time strings and display the correct task type.
+
+### Inputs
+
+```text
+todo borrow book
+deadline return book /by Sunday
+event project meeting /from Mon 2pm /to 4pm
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] borrow book
+     Now you have 1 tasks in the list.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] return book (by: Sunday)
+     Now you have 2 tasks in the list.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] project meeting (from: Mon 2pm to: 4pm)
+     Now you have 3 tasks in the list.
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] borrow book
+     2.[D][ ] return book (by: Sunday)
+     3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
      ____________________________________________________________
 Enter a command ('bye' to exit):      ____________________________________________________________
      Bye. Hope to see you again soon!

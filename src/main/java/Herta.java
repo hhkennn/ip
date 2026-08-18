@@ -5,6 +5,9 @@ import java.util.Scanner;
 public class Herta {
     private static final String INDENT = "     ";
     private static final String SEPARATOR = "____________________________________________________________";
+    private static final String TODO_COMMAND = "todo ";
+    private static final String DEADLINE_COMMAND = "deadline ";
+    private static final String EVENT_COMMAND = "event ";
 
     /**
      * Prints each line of chatbot output with the standard indentation.
@@ -79,16 +82,88 @@ public class Herta {
                 } catch (NumberFormatException e) {
                     printIndented("Please provide a valid task number.");
                 }
+            } else if (input.startsWith(TODO_COMMAND)) {
+                String description = input.substring(TODO_COMMAND.length()).trim();
+                if (description.isEmpty()) {
+                    printIndented("Please enter a task description.");
+                } else {
+                    addTask(tasks, new Todo(description));
+                }
+            } else if (input.startsWith(DEADLINE_COMMAND)) {
+                addDeadline(tasks, input.substring(DEADLINE_COMMAND.length()).trim());
+            } else if (input.startsWith(EVENT_COMMAND)) {
+                addEvent(tasks, input.substring(EVENT_COMMAND.length()).trim());
             } else if (input.isEmpty()) {
                 printIndented("Please enter a task.");
             } else {
-                tasks.add(new Task(input));
-                printIndented("added: " + input);
+                // Keep accepting the original bare-task syntax as a todo for backwards compatibility.
+                addTask(tasks, new Todo(input));
             }
 
             printIndented(SEPARATOR);
         }
 
         scanner.close();
+    }
+
+    /**
+     * Adds a task and prints the standard confirmation message.
+     *
+     * @param tasks the task list to update
+     * @param task the task to add
+     */
+    private static void addTask(List<Task> tasks, Task task) {
+        tasks.add(task);
+        printIndented("Got it. I've added this task:");
+        printIndented("  " + task);
+        printIndented("Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    /**
+     * Parses and adds a deadline command's description and date/time.
+     *
+     * @param tasks the task list to update
+     * @param content the text after the {@code deadline} command
+     */
+    private static void addDeadline(List<Task> tasks, String content) {
+        int byIndex = content.indexOf("/by");
+        if (byIndex <= 0) {
+            printIndented("Please use: deadline <description> /by <date/time>.");
+            return;
+        }
+
+        String description = content.substring(0, byIndex).trim();
+        String by = content.substring(byIndex + 3).trim();
+        if (description.isEmpty() || by.isEmpty()) {
+            printIndented("Please use: deadline <description> /by <date/time>.");
+            return;
+        }
+
+        addTask(tasks, new Deadline(description, by));
+    }
+
+    /**
+     * Parses and adds an event command's description, start, and end date/time.
+     *
+     * @param tasks the task list to update
+     * @param content the text after the {@code event} command
+     */
+    private static void addEvent(List<Task> tasks, String content) {
+        int fromIndex = content.indexOf("/from");
+        int toIndex = content.indexOf("/to", fromIndex + 5);
+        if (fromIndex <= 0 || toIndex <= fromIndex + 5) {
+            printIndented("Please use: event <description> /from <start> /to <end>.");
+            return;
+        }
+
+        String description = content.substring(0, fromIndex).trim();
+        String from = content.substring(fromIndex + 5, toIndex).trim();
+        String to = content.substring(toIndex + 3).trim();
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            printIndented("Please use: event <description> /from <start> /to <end>.");
+            return;
+        }
+
+        addTask(tasks, new Event(description, from, to));
     }
 }

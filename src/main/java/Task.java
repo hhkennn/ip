@@ -1,5 +1,8 @@
 /**
  * Represents a task in Herta's task list.
+ *
+ * <p>Todo, Deadline, and Event inherit the common completion and description
+ * behavior from this class.</p>
  */
 public class Task {
     protected String description;
