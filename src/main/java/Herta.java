@@ -48,6 +48,8 @@ public class Herta {
                 for (int i = 0; i < tasks.size(); i++) {
                     printIndented((i + 1) + ". " + tasks.get(i));
                 }
+            } else if (input.isEmpty()) {
+                printIndented("Please enter a task.");
             } else {
                 tasks.add(input);
                 printIndented("added: " + input);
