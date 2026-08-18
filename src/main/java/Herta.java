@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Herta {
@@ -31,6 +33,7 @@ public class Herta {
         printIndented(SEPARATOR);
 
         Scanner scanner = new Scanner(System.in);
+        List<String> tasks = new ArrayList<>();
 
         while (true) {
             System.out.print("Enter a command ('bye' to exit): ");
@@ -41,9 +44,15 @@ public class Herta {
                 printIndented("Bye. Hope to see you again soon!");
                 printIndented(SEPARATOR);
                 break;
+            } else if (input.equals("list")) {
+                for (int i = 0; i < tasks.size(); i++) {
+                    printIndented((i + 1) + ". " + tasks.get(i));
+                }
+            } else {
+                tasks.add(input);
+                printIndented("added: " + input);
             }
 
-            printIndented(input);
             printIndented(SEPARATOR);
         }
 
