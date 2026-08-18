@@ -34,8 +34,11 @@ public enum CommandType {
      */
     public static CommandType fromInput(String input) {
         String trimmedInput = input.trim();
+        CommandType[] commands = CommandType.values();
 
-        for (CommandType command : values()) {
+        for (int i = 0; i < commands.length; i++) {
+            CommandType command = commands[i];
+
             if (command == UNKNOWN) {
                 continue;
             }

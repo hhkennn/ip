@@ -9,11 +9,11 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -29,14 +29,14 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -59,43 +59,43 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] read book
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] return book
-     Now you have 2 tasks in the list.
+     That makes 2 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Noted. I've removed this task:
+Your command?      ____________________________________________________________
+     There. It's gone:
        [T][ ] read book
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] return book
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try other task numbers
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try other task numbers
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: delete 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: delete 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] return book
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -121,53 +121,53 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] core
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please enter a command, such as: todo read book.
+Your command?      ____________________________________________________________
+     Nothing? Were you expecting me to read your mind?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try other task numbers
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Nice! I've marked this task as done:
+Your command?      ____________________________________________________________
+     There. It's marked complete:
        [T][X] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][X] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try other task numbers
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][X] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     OK, I've marked this task as not done yet:
+Your command?      ____________________________________________________________
+     As you wish. It's incomplete again:
        [T][ ] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] core
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -194,64 +194,64 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] stable
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [D][ ] report (by: Friday)
-     Now you have 2 tasks in the list.
+     That makes 2 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [E][ ] meeting (from: Mon to: Tue)
-     Now you have 3 tasks in the list.
+     That makes 3 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] stable
      2.[D][ ] report (by: Friday)
      3.[E][ ] meeting (from: Mon to: Tue)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -266,16 +266,16 @@ todo before eof
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] before eof
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -305,76 +305,76 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] alpha
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A todo description cannot be empty. Try: todo <description>.
+Your command?      ____________________________________________________________
+     A blank todo? Even I can't organise nothing. Use: todo <description>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] alpha
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [D][ ] report (by: Friday)
-     Now you have 2 tasks in the list.
+     That makes 2 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A deadline must look like: deadline <description> /by <date/time>.
+Your command?      ____________________________________________________________
+     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] alpha
      2.[D][ ] report (by: Friday)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [E][ ] meeting (from: Monday to: Tuesday)
-     Now you have 3 tasks in the list.
+     That makes 3 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! An event must look like: event <description> /from <start> /to <end>.
+Your command?      ____________________________________________________________
+     Did you even read the event format? Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] alpha
      2.[D][ ] report (by: Friday)
      3.[E][ ] meeting (from: Monday to: Tuesday)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Nice! I've marked this task as done:
+Your command?      ____________________________________________________________
+     There. It's marked complete:
        [T][X] alpha
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! That task number is not in your list. Try other task numbers
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][X] alpha
      2.[D][ ] report (by: Friday)
      3.[E][ ] meeting (from: Monday to: Tuesday)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     OK, I've marked this task as not done yet:
+Your command?      ____________________________________________________________
+     As you wish. It's incomplete again:
        [T][ ] alpha
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: unmark 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: unmark 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] alpha
      2.[D][ ] report (by: Friday)
      3.[E][ ] meeting (from: Monday to: Tuesday)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -400,58 +400,58 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] spaced description
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A todo description cannot be empty. Try: todo <description>.
+Your command?      ____________________________________________________________
+     A blank todo? Even I can't organise nothing. Use: todo <description>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] spaced description
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [D][ ] submit report (by: Friday)
-     Now you have 2 tasks in the list.
+     That makes 2 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A deadline must look like: deadline <description> /by <date/time>.
+Your command?      ____________________________________________________________
+     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [E][ ] meeting (from: Mon to: Tue)
-     Now you have 3 tasks in the list.
+     That makes 3 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! An event must look like: event <description> /from <start> /to <end>.
+Your command?      ____________________________________________________________
+     Did you even read the event format? Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] spaced description
      2.[D][ ] submit report (by: Friday)
      3.[E][ ] meeting (from: Mon to: Tue)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A todo description cannot be empty. Try: todo <description>.
+Your command?      ____________________________________________________________
+     A blank todo? Even I can't organise nothing. Use: todo <description>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] spaced description
      2.[D][ ] submit report (by: Friday)
      3.[E][ ] meeting (from: Mon to: Tue)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -478,49 +478,49 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A todo description cannot be empty. Try: todo <description>.
+Your command?      ____________________________________________________________
+     A blank todo? Even I can't organise nothing. Use: todo <description>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! I don't recognise that command :(
+Your command?      ____________________________________________________________
+     That command is invalid. Were you just guessing?
      Try todo, deadline, event, list, mark, unmark, delete, and bye.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A deadline must look like: deadline <description> /by <date/time>.
+Your command?      ____________________________________________________________
+     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! An event must look like: event <description> /from <start> /to <end>.
+Your command?      ____________________________________________________________
+     Did you even read the event format? Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! A deadline must look like: deadline <description> /by <date/time>.
+Your command?      ____________________________________________________________
+     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! An event must look like: event <description> /from <start> /to <end>.
+Your command?      ____________________________________________________________
+     Did you even read the event format? Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: mark 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: mark 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: mark 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: mark 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: unmark 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: unmark 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Oops! Please provide a valid task number. Try: delete 1.
+Your command?      ____________________________________________________________
+     That's not a task number. Try: delete 1.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -537,20 +537,20 @@ Aim: Verify that leading command whitespace is ignored and a todo is displayed b
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] read book
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] read book
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
 
@@ -569,31 +569,31 @@ bye
      | |_| |/ _ \ '__| __/ _` |
      |  _  |  __/ |  | || (_| |
      |_| |_|\___|_|   \__\__,_|
-     Hello! I'm Herta.
-     What can I do for you?
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [T][ ] borrow book
-     Now you have 1 task in the list.
+     That makes 1 task. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [D][ ] return book (by: Sunday)
-     Now you have 2 tasks in the list.
+     That makes 2 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Got it. I've added this task:
+Your command?      ____________________________________________________________
+     There. I've added it:
        [E][ ] project meeting (from: Mon 2pm to: 4pm)
-     Now you have 3 tasks in the list.
+     That makes 3 tasks. Try to keep up.
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Here are the tasks in your list:
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      1.[T][ ] borrow book
      2.[D][ ] return book (by: Sunday)
      3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
      ____________________________________________________________
-Enter a command:      ____________________________________________________________
-     Bye. Hope to see you again soon!
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
      ____________________________________________________________
 
