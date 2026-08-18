@@ -1,0 +1,46 @@
+=== Exit immediately ===
+Aim: Verify that the application displays its welcome screen and exits cleanly when the user enters `bye`.
+--- console input ---
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
+
+=== Add and list a task ===
+Aim: Verify that a task is added and then displayed by the `list` command.
+--- console input ---
+read book
+list
+bye
+--- console output ---
+     ____________________________________________________________
+      _   _           _        
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Hello! I'm Herta.
+     What can I do for you?
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     added: read book
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Here are the tasks in your list:
+     1.[ ] read book
+     ____________________________________________________________
+Enter a command ('bye' to exit):      ____________________________________________________________
+     Bye. Hope to see you again soon!
+     ____________________________________________________________
+
