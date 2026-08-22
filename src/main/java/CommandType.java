@@ -18,8 +18,8 @@ public enum CommandType {
     /**
      * Creates a command type.
      *
-     * @param keyword the text used to identify the command
-     * @param acceptsArguments whether the command may be followed by arguments
+     * @param keyword the text used to identify the command.
+     * @param acceptsArguments whether the command may be followed by arguments.
      */
     CommandType(String keyword, boolean acceptsArguments) {
         this.keyword = keyword;
@@ -29,7 +29,7 @@ public enum CommandType {
     /**
      * Identifies the command represented by the user's input.
      *
-     * @param input the complete user input
+     * @param input the complete user input.
      * @return the corresponding command type, or {@link #UNKNOWN}
      */
     public static CommandType fromInput(String input) {

@@ -8,9 +8,9 @@ public class Event extends Task {
     /**
      * Creates an incomplete event task.
      *
-     * @param description the task description
-     * @param from the event's start date or time
-     * @param to the event's end date or time
+     * @param description the task description.
+     * @param from the event's start date or time.
+     * @param to the event's end date or time.
      */
     public Event(String description, String from, String to) {
         super(description);
@@ -18,6 +18,12 @@ public class Event extends Task {
         this.to = to;
     }
 
+    /**
+     * Returns this event formatted with its task type, completion status, description,
+     * and time range.
+     *
+     * @return the formatted event text.
+     */
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";

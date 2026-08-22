@@ -11,7 +11,7 @@ public class Task {
     /**
      * Creates a task that is initially not done.
      *
-     * @param description the task description
+     * @param description the task description.
      */
     public Task(String description) {
         this.description = description;
@@ -50,6 +50,11 @@ public class Task {
         return description;
     }
 
+    /**
+     * Returns this task formatted with its completion status and description.
+     *
+     * @return the formatted task text.
+     */
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;

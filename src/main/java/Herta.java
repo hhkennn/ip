@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Provides the command-line entry point for the Herta task manager.
+ */
 public class Herta {
     private static final String INDENT = "     ";
     private static final String SEPARATOR = "____________________________________________________________";
@@ -9,7 +12,7 @@ public class Herta {
     /**
      * Prints each line of chatbot output with the standard indentation.
      *
-     * @param message the message to print
+     * @param message the message to print.
      */
     private static void printIndented(String message) {
         // Split message wherever a line break occurs
@@ -23,12 +26,17 @@ public class Herta {
     /**
      * Prints a task using the indentation used for task details.
      *
-     * @param task the task to print
+     * @param task the task to print.
      */
     private static void printTask(Task task) {
         printIndented("  " + task);
     }
 
+    /**
+     * Starts Herta and processes commands entered by the user.
+     *
+     * @param args command-line arguments, which are not used.
+     */
     public static void main(String[] args) {
         String banner = " _   _           _\n"
                 + "| | | | ___ _ __| |_ __ _\n"
@@ -65,39 +73,39 @@ public class Herta {
                 }
 
                 switch (commandType) {
-                case LIST:
-                    printIndented("Let's see what you've managed to pile up:");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        printIndented((i + 1) + "." + tasks.get(i));
+                    case LIST:
+                        printIndented("Let's see what you've managed to pile up:");
+                        for (int i = 0; i < tasks.size(); i++) {
+                            printIndented((i + 1) + "." + tasks.get(i));
+                        }
+                        break;
+                    case MARK:
+                        markTask(tasks, input);
+                        break;
+                    case UNMARK:
+                        unmarkTask(tasks, input);
+                        break;
+                    case DELETE:
+                        deleteTask(tasks, input);
+                        break;
+                    case TODO:
+                        addTodo(tasks, input);
+                        break;
+                    case DEADLINE:
+                        addDeadline(tasks, input);
+                        break;
+                    case EVENT:
+                        addEvent(tasks, input);
+                        break;
+                    case UNKNOWN:
+                        if (input.isEmpty()) {
+                            throw new HertaException("Nothing? Were you expecting me to read your mind?");
+                        }
+                        throw new HertaException("That command is invalid. Were you just guessing?\n" +
+                                "Try todo, deadline, event, list, mark, unmark, delete, and bye.");
+                    default:
+                        break;
                     }
-                    break;
-                case MARK:
-                    markTask(tasks, input);
-                    break;
-                case UNMARK:
-                    unmarkTask(tasks, input);
-                    break;
-                case DELETE:
-                    deleteTask(tasks, input);
-                    break;
-                case TODO:
-                    addTodo(tasks, input);
-                    break;
-                case DEADLINE:
-                    addDeadline(tasks, input);
-                    break;
-                case EVENT:
-                    addEvent(tasks, input);
-                    break;
-                case UNKNOWN:
-                    if (input.isEmpty()) {
-                        throw new HertaException("Nothing? Were you expecting me to read your mind?");
-                    }
-                    throw new HertaException("That command is invalid. Were you just guessing?\n" +
-                            "Try todo, deadline, event, list, mark, unmark, delete, and bye.");
-                default:
-                    break;
-                }
             } catch (HertaException e) {
                 printIndented(e.getMessage());
             }
@@ -111,8 +119,8 @@ public class Herta {
     /**
      * Adds a task and prints the standard confirmation message.
      *
-     * @param tasks the task list to update
-     * @param task the task to add
+     * @param tasks the task list to update.
+     * @param task the task to add.
      */
     private static void addTask(List<Task> tasks, Task task) {
         tasks.add(task);
@@ -124,7 +132,7 @@ public class Herta {
     /**
      * Prints the number of tasks using the correct singular or plural noun.
      *
-     * @param tasks the task list to count
+     * @param tasks the task list to count.
      */
     private static void printTaskCount(List<Task> tasks) {
         String taskNoun = tasks.size() == 1 ? "task" : "tasks";
@@ -135,8 +143,8 @@ public class Herta {
     /**
      * Parses and adds a todo command's description.
      *
-     * @param tasks the task list to update
-     * @param input the complete todo command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete todo command entered by the user.
      * @throws HertaException if the todo description is empty
      */
     private static void addTodo(List<Task> tasks, String input) throws HertaException {
@@ -150,21 +158,23 @@ public class Herta {
     /**
      * Parses and adds a deadline command's description and date/time.
      *
-     * @param tasks the task list to update
-     * @param input the complete deadline command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete deadline command entered by the user.
      * @throws HertaException if the deadline format or required fields are invalid
      */
     private static void addDeadline(List<Task> tasks, String input) throws HertaException {
         String content = input.substring("deadline".length()).trim();
         String[] deadlineParts = content.split("\\s+/by\\s+", 2);
         if (deadlineParts.length != 2) {
-            throw new HertaException("Did you even read the deadline format? Use: deadline <description> /by <date/time>.");
+            throw new HertaException("Did you even read the deadline format? "
+                    + "Use: deadline <description> /by <date/time>.");
         }
 
         String description = deadlineParts[0].trim();
         String by = deadlineParts[1].trim();
         if (description.isEmpty() || by.isEmpty()) {
-            throw new HertaException("Did you even read the deadline format? Use: deadline <description> /by <date/time>.");
+            throw new HertaException("Did you even read the deadline format? "
+                    + "Use: deadline <description> /by <date/time>.");
         }
 
         addTask(tasks, new Deadline(description, by));
@@ -173,27 +183,30 @@ public class Herta {
     /**
      * Parses and adds an event command's description, start, and end date/time.
      *
-     * @param tasks the task list to update
-     * @param input the complete event command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete event command entered by the user.
      * @throws HertaException if the event format or required fields are invalid
      */
     private static void addEvent(List<Task> tasks, String input) throws HertaException {
         String content = input.substring("event".length()).trim();
         String[] eventParts = content.split("\\s+/from\\s+", 2);
         if (eventParts.length != 2) {
-            throw new HertaException("Did you even read the event format? Use: event <description> /from <start> /to <end>.");
+            throw new HertaException("Did you even read the event format? "
+                    + "Use: event <description> /from <start> /to <end>.");
         }
 
         String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
         if (timeParts.length != 2) {
-            throw new HertaException("Did you even read the event format? Use: event <description> /from <start> /to <end>.");
+            throw new HertaException("Did you even read the event format? "
+                    + "Use: event <description> /from <start> /to <end>.");
         }
 
         String description = eventParts[0].trim();
         String from = timeParts[0].trim();
         String to = timeParts[1].trim();
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new HertaException("Did you even read the event format? Use: event <description> /from <start> /to <end>.");
+            throw new HertaException("Did you even read the event format? "
+                    + "Use: event <description> /from <start> /to <end>.");
         }
 
         addTask(tasks, new Event(description, from, to));
@@ -202,8 +215,8 @@ public class Herta {
     /**
      * Deletes the requested task and prints the standard confirmation message.
      *
-     * @param tasks the task list to update
-     * @param input the complete delete command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete delete command entered by the user.
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
     private static void deleteTask(List<Task> tasks, String input) throws HertaException {
@@ -218,8 +231,8 @@ public class Herta {
     /**
      * Marks the requested task as done.
      *
-     * @param tasks the task list to update
-     * @param input the complete mark command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete mark command entered by the user.
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
     private static void markTask(List<Task> tasks, String input) throws HertaException {
@@ -233,8 +246,8 @@ public class Herta {
     /**
      * Marks the requested task as not done.
      *
-     * @param tasks the task list to update
-     * @param input the complete unmark command entered by the user
+     * @param tasks the task list to update.
+     * @param input the complete unmark command entered by the user.
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
     private static void unmarkTask(List<Task> tasks, String input) throws HertaException {
@@ -248,9 +261,9 @@ public class Herta {
     /**
      * Finds a task using the one-based number shown by the list command.
      *
-     * @param tasks the task list to search
-     * @param taskNumber the task number entered by the user
-     * @param command the command used to request the task
+     * @param tasks the task list to search.
+     * @param taskNumber the task number entered by the user.
+     * @param command the command used to request the task.
      * @return the requested task
      * @throws HertaException if the task number is invalid or out of range
      */
