@@ -19,6 +19,16 @@ public class Event extends Task {
     }
 
     /**
+     * Returns this event in the format used by Herta's data file.
+     *
+     * @return the serialized event text.
+     */
+    @Override
+    public String toStorageString() {
+        return "E | " + getCompletionStatusCode() + " | " + description + " | " + from + " | " + to;
+    }
+
+    /**
      * Returns this event formatted with its task type, completion status, description,
      * and time range.
      *

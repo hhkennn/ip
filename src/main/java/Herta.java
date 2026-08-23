@@ -1,3 +1,8 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,6 +13,7 @@ import java.util.Scanner;
 public class Herta {
     private static final String INDENT = "     ";
     private static final String SEPARATOR = "____________________________________________________________";
+    private static final Path DATA_FILE = Path.of("data", "herta.txt");
 
     /**
      * Prints each line of chatbot output with the standard indentation.
@@ -122,11 +128,36 @@ public class Herta {
      * @param tasks the task list to update.
      * @param task the task to add.
      */
-    private static void addTask(List<Task> tasks, Task task) {
+    private static void addTask(List<Task> tasks, Task task) throws HertaException {
         tasks.add(task);
+        saveTasks(tasks);
         printIndented("There. I've added it:");
         printTask(task);
         printTaskCount(tasks);
+    }
+
+    /**
+     * Saves the complete in-memory task list to the data file.
+     *
+     * <p>The file is rewritten instead of appended to so that deletions and
+     * completion-status changes are reflected in the saved data.</p>
+     *
+     * @param tasks the task list to save.
+     * @throws HertaException if the task list cannot be written.
+     */
+    private static void saveTasks(List<Task> tasks) throws HertaException {
+        List<String> lines = new ArrayList<>();
+        for (Task task : tasks) {
+            lines.add(task.toStorageString());
+        }
+
+        try {
+            Files.createDirectories(DATA_FILE.getParent());
+            Files.write(DATA_FILE, lines, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new HertaException("Failed to save tasks: " + e.getMessage());
+        }
     }
 
     /**
@@ -223,6 +254,7 @@ public class Herta {
         String taskNumber = input.substring("delete".length()).trim();
         Task task = getTask(tasks, taskNumber, "delete");
         tasks.remove(task);
+        saveTasks(tasks);
         printIndented("There. It's gone:");
         printTask(task);
         printTaskCount(tasks);
@@ -239,6 +271,7 @@ public class Herta {
         String taskNumber = input.substring("mark".length()).trim();
         Task task = getTask(tasks, taskNumber, "mark");
         task.markAsDone();
+        saveTasks(tasks);
         printIndented("There. It's marked complete:");
         printTask(task);
     }
@@ -254,6 +287,7 @@ public class Herta {
         String taskNumber = input.substring("unmark".length()).trim();
         Task task = getTask(tasks, taskNumber, "unmark");
         task.markAsNotDone();
+        saveTasks(tasks);
         printIndented("As you wish. It's incomplete again:");
         printTask(task);
     }

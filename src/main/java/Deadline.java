@@ -16,6 +16,16 @@ public class Deadline extends Task {
     }
 
     /**
+     * Returns this deadline in the format used by Herta's data file.
+     *
+     * @return the serialized deadline text.
+     */
+    @Override
+    public String toStorageString() {
+        return "D | " + getCompletionStatusCode() + " | " + description + " | " + by;
+    }
+
+    /**
      * Returns this deadline formatted with its task type, completion status, description,
      * and due date.
      *

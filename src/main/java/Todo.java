@@ -13,6 +13,16 @@ public class Todo extends Task {
     }
 
     /**
+     * Returns this todo in the format used by Herta's data file.
+     *
+     * @return the serialized todo text.
+     */
+    @Override
+    public String toStorageString() {
+        return "T | " + getCompletionStatusCode() + " | " + description;
+    }
+
+    /**
      * Returns this todo formatted with its task type, completion status and description.
      *
      * @return the formatted todo text.
