@@ -56,7 +56,13 @@ public class Herta {
         printIndented(SEPARATOR);
 
         Scanner scanner = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+        List<Task> tasks;
+        try {
+            tasks = loadTasks();
+        } catch (HertaException e) {
+            printIndented(e.getMessage());
+            tasks = new ArrayList<>();
+        }
 
         while (true) {
             System.out.print("Your command? ");
@@ -120,6 +126,60 @@ public class Herta {
         }
 
         scanner.close();
+    }
+
+    /**
+     * Loads all saved tasks from the data file.
+     *
+     * <p>A missing data file represents a fresh start, so an empty task list
+     * is returned in that case.</p>
+     *
+     * @return the tasks reconstructed from the saved lines.
+     * @throws HertaException if the data file cannot be read or parsed.
+     */
+    private static List<Task> loadTasks() throws HertaException {
+        List<Task> tasks = new ArrayList<>();
+        if (Files.notExists(DATA_FILE)) {
+            return tasks;
+        }
+
+        try {
+            List<String> lines = Files.readAllLines(DATA_FILE, StandardCharsets.UTF_8);
+            for (String line : lines) {
+                if (!line.isBlank()) {
+                    tasks.add(parseTask(line));
+                }
+            }
+        } catch (IOException e) {
+            throw new HertaException("Failed to load tasks: " + e.getMessage());
+        }
+
+        return tasks;
+    }
+
+    /**
+     * Reconstructs a task from one serialized data-file line.
+     *
+     * @param line one line in Herta's storage format.
+     * @return the reconstructed task.
+     * @throws HertaException if the line does not contain a supported task type.
+     */
+    private static Task parseTask(String line) throws HertaException {
+        String[] parts = line.split("\\s*\\|\\s*");
+        String type = parts[0];
+        int status = Integer.parseInt(parts[1]);
+
+        Task task = switch (type) {
+            case "T" -> new Todo(parts[2]);
+            case "D" -> new Deadline(parts[2], parts[3]);
+            case "E" -> new Event(parts[2], parts[3], parts[4]);
+            default -> throw new HertaException("Unknown task type in data file: " + type);
+        };
+
+        if (status == 1) {
+            task.markAsDone();
+        }
+        return task;
     }
 
     /**

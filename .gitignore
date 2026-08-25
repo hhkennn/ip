@@ -21,3 +21,4 @@ data/herta.txt
 
 /text-ui-test/ACTUAL.TXT
 text-ui-test/EXPECTED-UNIX.TXT
+test/load-ui-test-session.log
