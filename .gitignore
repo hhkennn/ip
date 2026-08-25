@@ -18,7 +18,8 @@ _temp/
 
 # Runtime task data
 data/herta.txt
+data/.herta-*.tmp
 
 /text-ui-test/ACTUAL.TXT
 text-ui-test/EXPECTED-UNIX.TXT
-test/load-ui-test-session.log
+/test/**/*.log

@@ -793,3 +793,38 @@ Your command?      ____________________________________________________________
      Leaving already? Goodbye.
      ____________________________________________________________
 ```
+
+## Test case: Reject task text that breaks storage format
+
+- Aim: Verify that a task containing the storage delimiter is rejected without changing the local task list or saved data.
+
+### Inputs
+
+```text
+todo contains | separator
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Failed to save tasks: Invalid saved task: type T requires 3 fields.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```

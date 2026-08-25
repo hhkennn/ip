@@ -42,6 +42,15 @@ public class Task {
     }
 
     /**
+     * Returns whether this task is currently complete.
+     *
+     * @return {@code true} if the task is complete
+     */
+    public boolean isDone() {
+        return isDone;
+    }
+
+    /**
      * Returns this task in the format used by Herta's data file.
      *
      * @return the serialized task text.
