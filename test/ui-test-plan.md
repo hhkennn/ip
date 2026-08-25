@@ -1,6 +1,6 @@
 # UI Test Plan
 
-- Program command: `java -cp out Herta`
+- Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/reset-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
 - Setup command: `javac -d out src/main/java/*.java`
@@ -10,10 +10,15 @@ Run this plan through the project-specific `test-ui` workflow. That workflow
 checks the Java version and runs the setup command before invoking the runner;
 invoking the runner directly assumes those prerequisites are already complete.
 
-The runner starts a fresh process for each test case. It sends the input commands
-in order and compares the complete console output with the expected output. Add
-one command per line in each `Inputs` block. The output below is intentionally
-kept exact, including prompts, indentation, and separators.
+The runner starts a fresh process for each test case. The launcher clears the
+ignored runtime data file before starting each process so that persisted tasks
+from one case do not affect another case. It sends the input commands in order
+and compares the complete console output with the expected output. Add one
+command per line in each `Inputs` block. The output below is intentionally kept
+exact, including prompts, indentation, and separators.
+
+Saved-task loading is covered separately in `test/load-ui-test-plan.md` because
+that plan supplies a persisted data fixture before startup.
 
 ## Coverage summary
 
@@ -24,6 +29,7 @@ kept exact, including prompts, indentation, and separators.
 | Add tasks | Todo, deadline, event | Empty fields and invalid delimiters | Whitespace normalization |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
+| Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to `data/herta.txt` |
 | Command matching | All supported commands | Command-name lookalikes | Lookalikes do not change state |
 
 ## Test case: Exit immediately
@@ -710,6 +716,113 @@ Your command?      ____________________________________________________________
      1.[T][ ] borrow book
      2.[D][ ] return book (by: Sunday)
      3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Save task changes to disk
+
+- Aim: Verify that successful additions, status changes, and deletion are persisted by rewriting the complete task list in `data/herta.txt`.
+
+### Inputs
+
+```text
+todo save todo
+deadline save deadline /by Friday
+event save event /from Monday /to Tuesday
+mark 1
+unmark 1
+mark 1
+delete 2
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] save todo
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [D][ ] save deadline (by: Friday)
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] save event (from: Monday to: Tuesday)
+     That makes 3 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] save todo
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     As you wish. It's incomplete again:
+       [T][ ] save todo
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] save todo
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's gone:
+       [D][ ] save deadline (by: Friday)
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][X] save todo
+     2.[E][ ] save event (from: Monday to: Tuesday)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Reject task text that breaks storage format
+
+- Aim: Verify that a task containing the storage delimiter is rejected without changing the local task list or saved data.
+
+### Inputs
+
+```text
+todo contains | separator
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Failed to save tasks: Invalid saved task: type T requires 3 fields.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

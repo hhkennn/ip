@@ -1,0 +1,36 @@
+# Invalid Encoding UI Test Plan
+
+- Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/invalid-encoding-and-run.ps1`
+- Working directory: `.`
+- Java requirement: Java 25
+- Setup command: `javac -d out src/main/java/*.java`
+- Session log: `test/invalid-encoding-ui-test-session.log`
+
+The launcher writes a saved task containing invalid UTF-8 bytes. Herta should
+report the read error instead of silently replacing the invalid data.
+
+## Test case: Reject invalid UTF-8 data
+
+- Aim: Verify that unreadable task data is reported as a startup error.
+
+### Inputs
+
+```text
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+     Failed to load tasks: Input length = 1
+```
