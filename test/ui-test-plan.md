@@ -26,7 +26,7 @@ that plan supplies a persisted data fixture before startup.
 | --- | --- | --- | --- |
 | Start and exit | `bye` | End of input | Fresh process per case |
 | List tasks | Populated list | Empty list | State checked after errors |
-| Add tasks | Todo, deadline, event | Empty fields and invalid delimiters | Whitespace normalization |
+| Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization and date formatting |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
 | Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to `data/herta.txt` |
@@ -246,9 +246,9 @@ Your command?      ____________________________________________________________
 ```text
 todo stable
 todotask
-deadline report /by Friday
+deadline report /by 2/12/2019 1800
 deadlines report /by Friday
-event meeting /from Mon /to Tue
+event meeting /from 2019-10-15 /to 2019-10-16
 events meeting /from Mon /to Tue
 listall
 marking 1
@@ -278,51 +278,51 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [D][ ] report (by: Friday)
+       [D][ ] report (by: Dec 02 2019, 6:00 PM)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Mon to: Tue)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] stable
-     2.[D][ ] report (by: Friday)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     2.[D][ ] report (by: Dec 02 2019, 6:00 PM)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -371,10 +371,10 @@ Your command?      ____________________________________________________________
 todo alpha
 todo
 list
-deadline report /by Friday
+deadline report /by 2019-10-15
 deadline report
 list
-event meeting /from Monday /to Tuesday
+event meeting /from 2019-10-15 /to 2019-10-16
 event meeting /from Monday
 list
 mark 1
@@ -412,7 +412,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [D][ ] report (by: Friday)
+       [D][ ] report (by: Oct 15 2019)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -421,11 +421,11 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] alpha
-     2.[D][ ] report (by: Friday)
+     2.[D][ ] report (by: Oct 15 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Monday to: Tuesday)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -434,8 +434,8 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] alpha
-     2.[D][ ] report (by: Friday)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     2.[D][ ] report (by: Oct 15 2019)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. It's marked complete:
@@ -447,8 +447,8 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] alpha
-     2.[D][ ] report (by: Friday)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     2.[D][ ] report (by: Oct 15 2019)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      As you wish. It's incomplete again:
@@ -460,8 +460,8 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] alpha
-     2.[D][ ] report (by: Friday)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     2.[D][ ] report (by: Oct 15 2019)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -478,9 +478,9 @@ Your command?      ____________________________________________________________
 todo   spaced description
 todo    
 list
-deadline   submit report   /by   Friday
+deadline   submit report   /by   2019-10-15
 deadline submit report /by
-event   meeting /from Mon /to Tue
+event   meeting /from   2019-10-15 /to   2019-10-16
 event meeting /from Mon /to
 list
 todo
@@ -515,7 +515,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [D][ ] submit report (by: Friday)
+       [D][ ] submit report (by: Oct 15 2019)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -523,7 +523,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Mon to: Tue)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -532,21 +532,21 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] spaced description
-     2.[D][ ] submit report (by: Friday)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      A blank todo? Even I can't organise nothing. Use: todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] spaced description
-     2.[D][ ] submit report (by: Friday)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -555,7 +555,7 @@ Your command?      ____________________________________________________________
 
 ## Test case: Handle invalid commands
 
-- Aim: Verify that empty descriptions, unknown commands, malformed or lookalike delimiters, and missing or nonnumeric task numbers produce helpful errors without adding tasks.
+- Aim: Verify that empty descriptions, unknown commands, malformed or lookalike delimiters, invalid dates, invalid event ranges, and missing or nonnumeric task numbers produce helpful errors without adding tasks.
 
 ### Inputs
 
@@ -566,6 +566,9 @@ read book
 deadline return book
 event project meeting /from Mon 2pm
 deadline report /bye Friday
+deadline report /by 31/02/2019 1800
+event meeting /from nope /to 2019-10-16
+event meeting /from 2019-10-16 /to 2019-10-15
 event meeting /fromage Mon /today Tue
 mark abc
 mark
@@ -592,11 +595,11 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
@@ -606,6 +609,15 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid deadline date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid event date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     An event must end after it starts.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the event format? Use: event <description> /from <start> /to <end>.
@@ -672,14 +684,14 @@ Your command?      ____________________________________________________________
 
 ## Test case: Add deadlines and events
 
-- Aim: Verify that deadlines and events retain their date/time strings and display the correct task type.
+- Aim: Verify that deadlines parse date/time input into a typed value, display it in a readable format, and retain the correct task type.
 
 ### Inputs
 
 ```text
 todo borrow book
-deadline return book /by Sunday
-event project meeting /from Mon 2pm /to 4pm
+deadline return book /by 2/12/2019 1800
+event project meeting /from 2/12/2019 1800 /to 3/12/2019 1800
 list
 bye
 ```
@@ -703,19 +715,19 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [D][ ] return book (by: Sunday)
+       [D][ ] return book (by: Dec 02 2019, 6:00 PM)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] project meeting (from: Mon 2pm to: 4pm)
+       [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] borrow book
-     2.[D][ ] return book (by: Sunday)
-     3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+     2.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
+     3.[E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -730,8 +742,8 @@ Your command?      ____________________________________________________________
 
 ```text
 todo save todo
-deadline save deadline /by Friday
-event save event /from Monday /to Tuesday
+deadline save deadline /by 2019-10-15
+event save event /from 2019-10-15 /to 2019-10-16
 mark 1
 unmark 1
 mark 1
@@ -759,12 +771,12 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [D][ ] save deadline (by: Friday)
+       [D][ ] save deadline (by: Oct 15 2019)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] save event (from: Monday to: Tuesday)
+       [E][ ] save event (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -781,13 +793,13 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. It's gone:
-       [D][ ] save deadline (by: Friday)
+       [D][ ] save deadline (by: Oct 15 2019)
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] save todo
-     2.[E][ ] save event (from: Monday to: Tuesday)
+     2.[E][ ] save event (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -805,7 +817,6 @@ todo contains | separator
 list
 bye
 ```
-
 ### Expected output
 
 ```text
@@ -823,6 +834,109 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+## Test case: Query and sort date-aware tasks
+
+- Aim: Verify that dates can be used to find tasks occurring on a date, show upcoming incomplete tasks, and display all tasks in chronological order without changing their stored order.
+
+### Inputs
+
+```text
+todo buy groceries
+deadline submit report /by 2019-10-15
+event project meeting /from 2019-10-14 /to 2019-10-16
+deadline future report /by 9999-12-31
+event future meeting /from 9999-12-30 /to 9999-12-31
+filter /on 2019-10-15
+filter /on 2020-01-01
+upcoming 4000000
+sort date
+list
+filter /on 15/10/2019
+upcoming 0
+sort time
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] buy groceries
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [D][ ] submit report (by: Oct 15 2019)
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     That makes 3 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [D][ ] future report (by: Dec 31 9999)
+     That makes 4 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     That makes 5 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Tasks occurring on Oct 15 2019:
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Tasks occurring on Jan 01 2020:
+     No deadlines or events occur on Jan 01 2020.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Upcoming deadlines and events in the next 4000000 days:
+     4.[D][ ] future report (by: Dec 31 9999)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are your tasks sorted by date:
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     2.[D][ ] submit report (by: Oct 15 2019)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     4.[D][ ] future report (by: Dec 31 9999)
+     1.[T][ ] buy groceries
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][ ] buy groceries
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     4.[D][ ] future report (by: Dec 31 9999)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid filter date. Use a date such as 2019-10-15.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: upcoming <positive number of days>.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: sort date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

@@ -1,3 +1,7 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 /**
  * Represents a task in Herta's task list.
  *
@@ -48,6 +52,42 @@ public class Task {
      */
     public boolean isDone() {
         return isDone;
+    }
+
+    /**
+     * Determines whether this task occurs on a particular calendar date.
+     * Tasks without date/time information do not occur on any date.
+     *
+     * @param date the date to check
+     * @return {@code true} if this task occurs on the date
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
+    }
+
+    /**
+     * Returns the date/time used when arranging tasks chronologically or
+     * finding upcoming tasks. Tasks without date/time information return an
+     * empty value.
+     *
+     * @return the task's relevant date/time, if it has one
+     */
+    public Optional<LocalDateTime> getScheduledDateTime() {
+        return Optional.empty();
+    }
+
+    /**
+     * Determines whether the task's scheduled date/time falls in a future
+     * time window. The start is inclusive and the end is exclusive.
+     *
+     * @param now the beginning of the time window
+     * @param until the exclusive end of the time window
+     * @return {@code true} if the task is scheduled within the window
+     */
+    public boolean isUpcoming(LocalDateTime now, LocalDateTime until) {
+        return getScheduledDateTime()
+                .map(dateTime -> !dateTime.isBefore(now) && dateTime.isBefore(until))
+                .orElse(false);
     }
 
     /**
