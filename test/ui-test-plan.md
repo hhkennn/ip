@@ -248,7 +248,7 @@ todo stable
 todotask
 deadline report /by 2/12/2019 1800
 deadlines report /by Friday
-event meeting /from Mon /to Tue
+event meeting /from 2019-10-15 /to 2019-10-16
 events meeting /from Mon /to Tue
 listall
 marking 1
@@ -291,7 +291,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Mon to: Tue)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -322,7 +322,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] stable
      2.[D][ ] report (by: Dec 02 2019, 6:00 PM)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -374,7 +374,7 @@ list
 deadline report /by 2019-10-15
 deadline report
 list
-event meeting /from Monday /to Tuesday
+event meeting /from 2019-10-15 /to 2019-10-16
 event meeting /from Monday
 list
 mark 1
@@ -425,7 +425,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Monday to: Tuesday)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -435,7 +435,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] alpha
      2.[D][ ] report (by: Oct 15 2019)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. It's marked complete:
@@ -448,7 +448,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] alpha
      2.[D][ ] report (by: Oct 15 2019)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      As you wish. It's incomplete again:
@@ -461,7 +461,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] alpha
      2.[D][ ] report (by: Oct 15 2019)
-     3.[E][ ] meeting (from: Monday to: Tuesday)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -480,7 +480,7 @@ todo
 list
 deadline   submit report   /by   2019-10-15
 deadline submit report /by
-event   meeting /from Mon /to Tue
+event   meeting /from   2019-10-15 /to   2019-10-16
 event meeting /from Mon /to
 list
 todo
@@ -523,7 +523,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] meeting (from: Mon to: Tue)
+       [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -533,7 +533,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] spaced description
      2.[D][ ] submit report (by: Oct 15 2019)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      A blank todo? Even I can't organise nothing. Use: todo <description>.
@@ -546,7 +546,7 @@ Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] spaced description
      2.[D][ ] submit report (by: Oct 15 2019)
-     3.[E][ ] meeting (from: Mon to: Tue)
+     3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -555,7 +555,7 @@ Your command?      ____________________________________________________________
 
 ## Test case: Handle invalid commands
 
-- Aim: Verify that empty descriptions, unknown commands, malformed or lookalike delimiters, invalid dates, and missing or nonnumeric task numbers produce helpful errors without adding tasks.
+- Aim: Verify that empty descriptions, unknown commands, malformed or lookalike delimiters, invalid dates, invalid event ranges, and missing or nonnumeric task numbers produce helpful errors without adding tasks.
 
 ### Inputs
 
@@ -567,6 +567,8 @@ deadline return book
 event project meeting /from Mon 2pm
 deadline report /bye Friday
 deadline report /by 31/02/2019 1800
+event meeting /from nope /to 2019-10-16
+event meeting /from 2019-10-16 /to 2019-10-15
 event meeting /fromage Mon /today Tue
 mark abc
 mark
@@ -610,6 +612,12 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Invalid deadline date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid event date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     An event must end after it starts.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the event format? Use: event <description> /from <start> /to <end>.
@@ -683,7 +691,7 @@ Your command?      ____________________________________________________________
 ```text
 todo borrow book
 deadline return book /by 2/12/2019 1800
-event project meeting /from Mon 2pm /to 4pm
+event project meeting /from 2/12/2019 1800 /to 3/12/2019 1800
 list
 bye
 ```
@@ -712,14 +720,14 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] project meeting (from: Mon 2pm to: 4pm)
+       [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] borrow book
      2.[D][ ] return book (by: Dec 02 2019, 6:00 PM)
-     3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+     3.[E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -735,7 +743,7 @@ Your command?      ____________________________________________________________
 ```text
 todo save todo
 deadline save deadline /by 2019-10-15
-event save event /from Monday /to Tuesday
+event save event /from 2019-10-15 /to 2019-10-16
 mark 1
 unmark 1
 mark 1
@@ -768,7 +776,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] save event (from: Monday to: Tuesday)
+       [E][ ] save event (from: Oct 15 2019 to: Oct 16 2019)
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -791,7 +799,7 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] save todo
-     2.[E][ ] save event (from: Monday to: Tuesday)
+     2.[E][ ] save event (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

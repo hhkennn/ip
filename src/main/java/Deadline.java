@@ -1,4 +1,5 @@
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 /**
@@ -16,6 +17,23 @@ public class Deadline extends Task {
     public Deadline(String description, LocalDateTime by) {
         super(description);
         this.by = Objects.requireNonNull(by, "Deadline date/time cannot be null.");
+    }
+
+    /**
+     * Reconstructs a deadline from its serialized date/time value.
+     *
+     * @param description the deadline description
+     * @param byText the serialized deadline date/time
+     * @return the reconstructed deadline
+     * @throws IllegalArgumentException if the stored date/time is invalid
+     */
+    public static Deadline fromStorage(String description, String byText) {
+        try {
+            return new Deadline(description, DateTimeParser.parseStoredValue(byText));
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid saved deadline date/time: "
+                    + byText + ".", e);
+        }
     }
 
     /**

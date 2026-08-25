@@ -243,13 +243,18 @@ public class Herta {
             }
         }
 
-        Task task = switch (type) {
-            case "T" -> new Todo(parts[2]);
-            case "D" -> new Deadline(parts[2], parseStoredDeadline(parts[3]));
-            case "E" -> new Event(parts[2], parts[3], parts[4]);
-            default -> throw new HertaException("Invalid saved task: unknown task type '"
-                    + type + "'.");
-        };
+        final Task task;
+        try {
+            task = switch (type) {
+                case "T" -> new Todo(parts[2]);
+                case "D" -> Deadline.fromStorage(parts[2], parts[3]);
+                case "E" -> Event.fromStorage(parts[2], parts[3], parts[4]);
+                default -> throw new HertaException("Invalid saved task: unknown task type '"
+                        + type + "'.");
+            };
+        } catch (IllegalArgumentException e) {
+            throw new HertaException(e.getMessage());
+        }
 
         if (status == 1) {
             task.markAsDone();
@@ -413,21 +418,6 @@ public class Herta {
     }
 
     /**
-     * Parses a deadline loaded from Herta's data file.
-     *
-     * @param input the serialized deadline date/time
-     * @return the parsed deadline date/time
-     * @throws HertaException if the stored value is invalid
-     */
-    private static LocalDateTime parseStoredDeadline(String input) throws HertaException {
-        try {
-            return DateTimeParser.parseStoredValue(input);
-        } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid saved deadline date/time: " + input + ".");
-        }
-    }
-
-    /**
      * Parses and adds an event command's description, start, and end date/time.
      *
      * @param tasks the task list to update.
@@ -449,14 +439,36 @@ public class Herta {
         }
 
         String description = eventParts[0].trim();
-        String from = timeParts[0].trim();
-        String to = timeParts[1].trim();
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+        String fromInput = timeParts[0].trim();
+        String toInput = timeParts[1].trim();
+        if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
             throw new HertaException("Did you even read the event format? "
                     + "Use: event <description> /from <start> /to <end>.");
         }
 
-        addTask(tasks, new Event(description, from, to));
+        LocalDateTime from = parseUserEventDateTime(fromInput);
+        LocalDateTime to = parseUserEventDateTime(toInput);
+        try {
+            addTask(tasks, new Event(description, from, to));
+        } catch (IllegalArgumentException e) {
+            throw new HertaException("An event must end after it starts.");
+        }
+    }
+
+    /**
+     * Parses an event date/time entered in a user command.
+     *
+     * @param input the event date/time text
+     * @return the parsed event date/time
+     * @throws HertaException if the input is not a supported date/time
+     */
+    private static LocalDateTime parseUserEventDateTime(String input) throws HertaException {
+        try {
+            return DateTimeParser.parseUserInput(input);
+        } catch (DateTimeParseException e) {
+            throw new HertaException("Invalid event date/time. Use a date such as "
+                    + "2019-10-15 or a date/time such as 2/12/2019 1800.");
+        }
     }
 
     /**
