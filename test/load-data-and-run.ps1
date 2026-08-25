@@ -2,7 +2,7 @@ $dataFile = Join-Path $PSScriptRoot '..\data\herta.txt'
 $dataDirectory = Split-Path -Parent $dataFile
 $savedTasks = @(
     'T | 1 | loaded todo',
-    'D | 0 | loaded deadline | Friday',
+    'D | 0 | loaded deadline | 2019-10-15T00:00',
     'E | 0 | loaded event | Monday | Tuesday'
 )
 

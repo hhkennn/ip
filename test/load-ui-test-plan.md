@@ -36,7 +36,7 @@ bye
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] loaded todo
-     2.[D][ ] loaded deadline (by: Friday)
+     2.[D][ ] loaded deadline (by: Oct 15 2019)
      3.[E][ ] loaded event (from: Monday to: Tuesday)
      ____________________________________________________________
 Your command?      ____________________________________________________________

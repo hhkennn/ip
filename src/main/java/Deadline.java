@@ -1,18 +1,30 @@
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 /**
  * Represents a task that must be completed before a given date or time.
  */
 public class Deadline extends Task {
-    protected String by;
+    protected final LocalDateTime by;
 
     /**
      * Creates an incomplete deadline task.
      *
      * @param description the task description.
-     * @param by the date or time by which the task should be completed.
+     * @param by the date and time by which the task should be completed.
      */
-    public Deadline(String description, String by) {
+    public Deadline(String description, LocalDateTime by) {
         super(description);
-        this.by = by;
+        this.by = Objects.requireNonNull(by, "Deadline date/time cannot be null.");
+    }
+
+    /**
+     * Returns the deadline date and time.
+     *
+     * @return the deadline date and time
+     */
+    public LocalDateTime getBy() {
+        return by;
     }
 
     /**
@@ -22,7 +34,8 @@ public class Deadline extends Task {
      */
     @Override
     public String toStorageString() {
-        return "D | " + getCompletionStatusCode() + " | " + description + " | " + by;
+        return "D | " + getCompletionStatusCode() + " | " + description + " | "
+                + DateTimeParser.formatForStorage(by);
     }
 
     /**
@@ -33,6 +46,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + by + ")";
+        return "[D]" + super.toString() + " (by: "
+                + DateTimeParser.formatForDisplay(by) + ")";
     }
 }

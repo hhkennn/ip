@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -243,7 +245,7 @@ public class Herta {
 
         Task task = switch (type) {
             case "T" -> new Todo(parts[2]);
-            case "D" -> new Deadline(parts[2], parts[3]);
+            case "D" -> new Deadline(parts[2], parseStoredDeadline(parts[3]));
             case "E" -> new Event(parts[2], parts[3], parts[4]);
             default -> throw new HertaException("Invalid saved task: unknown task type '"
                     + type + "'.");
@@ -385,13 +387,44 @@ public class Herta {
         }
 
         String description = deadlineParts[0].trim();
-        String by = deadlineParts[1].trim();
-        if (description.isEmpty() || by.isEmpty()) {
+        String byInput = deadlineParts[1].trim();
+        if (description.isEmpty() || byInput.isEmpty()) {
             throw new HertaException("Did you even read the deadline format? "
                     + "Use: deadline <description> /by <date/time>.");
         }
 
-        addTask(tasks, new Deadline(description, by));
+        addTask(tasks, new Deadline(description, parseUserDeadline(byInput)));
+    }
+
+    /**
+     * Parses a deadline entered in a user command.
+     *
+     * @param input the text after {@code /by}
+     * @return the parsed deadline date/time
+     * @throws HertaException if the input is not a supported date/time
+     */
+    private static LocalDateTime parseUserDeadline(String input) throws HertaException {
+        try {
+            return DateTimeParser.parseUserInput(input);
+        } catch (DateTimeParseException e) {
+            throw new HertaException("Invalid deadline date/time. Use a date such as "
+                    + "2019-10-15 or a date/time such as 2/12/2019 1800.");
+        }
+    }
+
+    /**
+     * Parses a deadline loaded from Herta's data file.
+     *
+     * @param input the serialized deadline date/time
+     * @return the parsed deadline date/time
+     * @throws HertaException if the stored value is invalid
+     */
+    private static LocalDateTime parseStoredDeadline(String input) throws HertaException {
+        try {
+            return DateTimeParser.parseStoredValue(input);
+        } catch (DateTimeParseException e) {
+            throw new HertaException("Invalid saved deadline date/time: " + input + ".");
+        }
     }
 
     /**
