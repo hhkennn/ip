@@ -9,11 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Predicate;
 
 /**
  * Provides the command-line entry point for the Herta task manager.
@@ -95,10 +99,16 @@ public class Herta {
 
                 switch (commandType) {
                     case LIST:
-                        printIndented("Let's see what you've managed to pile up:");
-                        for (int i = 0; i < tasks.size(); i++) {
-                            printIndented((i + 1) + "." + tasks.get(i));
-                        }
+                        printTaskList(tasks);
+                        break;
+                    case FILTER:
+                        filterTasks(tasks, input);
+                        break;
+                    case UPCOMING:
+                        printUpcomingTasks(tasks, input);
+                        break;
+                    case SORT:
+                        sortTasks(tasks, input);
                         break;
                     case MARK:
                         markTask(tasks, input);
@@ -123,7 +133,8 @@ public class Herta {
                             throw new HertaException("Nothing? Were you expecting me to read your mind?");
                         }
                         throw new HertaException("That command is invalid. Were you just guessing?\n" +
-                                "Try todo, deadline, event, list, mark, unmark, delete, and bye.");
+                                "Try todo, deadline, event, list, filter, upcoming, sort, "
+                                + "mark, unmark, delete, and bye.");
                     default:
                         break;
                     }
@@ -359,6 +370,128 @@ public class Herta {
         String taskNoun = tasks.size() == 1 ? "task" : "tasks";
         printIndented("That makes " + tasks.size() + " " + taskNoun
                 + ". Try to keep up.");
+    }
+
+    /**
+     * Prints every task in its current order.
+     *
+     * @param tasks the task list to print
+     */
+    private static void printTaskList(List<Task> tasks) {
+        printIndented("Let's see what you've managed to pile up:");
+        for (int i = 0; i < tasks.size(); i++) {
+            printIndented((i + 1) + "." + tasks.get(i));
+        }
+    }
+
+    /**
+     * Prints deadlines and events occurring on a requested date.
+     *
+     * @param tasks the task list to search
+     * @param input the complete filter command entered by the user
+     * @throws HertaException if the command or date is invalid
+     */
+    private static void filterTasks(List<Task> tasks, String input) throws HertaException {
+        String[] parts = input.substring("filter".length()).trim().split("\\s+", 2);
+        if (parts.length != 2 || !parts[0].equals("/on")) {
+            throw new HertaException("Use: filter /on <date>.");
+        }
+
+        final LocalDate date;
+        try {
+            date = DateTimeParser.parseUserDate(parts[1]);
+        } catch (DateTimeParseException e) {
+            throw new HertaException("Invalid filter date. Use a date such as 2019-10-15.");
+        }
+
+        String displayDate = DateTimeParser.formatDateForDisplay(date);
+        printMatchingTasks(tasks, task -> task.occursOn(date),
+                "Tasks occurring on " + displayDate + ":",
+                "No deadlines or events occur on " + displayDate + ".");
+    }
+
+    /**
+     * Prints incomplete deadlines and events beginning within a future window.
+     *
+     * @param tasks the task list to search
+     * @param input the complete upcoming command entered by the user
+     * @throws HertaException if the command or number of days is invalid
+     */
+    private static void printUpcomingTasks(List<Task> tasks, String input) throws HertaException {
+        String daysInput = input.substring("upcoming".length()).trim();
+        final int days;
+        try {
+            days = Integer.parseInt(daysInput);
+            if (days <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            throw new HertaException("Use: upcoming <positive number of days>.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime until;
+        try {
+            until = now.plusDays(days);
+        } catch (DateTimeException e) {
+            throw new HertaException("The upcoming time range is too large.");
+        }
+
+        printMatchingTasks(tasks,
+                task -> !task.isDone() && task.isUpcoming(now, until),
+                "Upcoming deadlines and events in the next " + days + " days:",
+                "No incomplete deadlines or events are upcoming in the next " + days + " days.");
+    }
+
+    /**
+     * Prints all tasks in chronological order without changing their stored order.
+     * Tasks without dates are placed at the end, and displayed numbers remain
+     * their original task-list numbers.
+     *
+     * @param tasks the task list to sort for display
+     * @param input the complete sort command entered by the user
+     * @throws HertaException if the requested sort is invalid
+     */
+    private static void sortTasks(List<Task> tasks, String input) throws HertaException {
+        if (!input.equals("sort date")) {
+            throw new HertaException("Use: sort date.");
+        }
+
+        List<Integer> sortedIndices = new ArrayList<>();
+        for (int i = 0; i < tasks.size(); i++) {
+            sortedIndices.add(i);
+        }
+        sortedIndices.sort(Comparator.comparing(
+                (Integer index) -> tasks.get(index).getScheduledDateTime()
+                        .orElse(LocalDateTime.MAX)));
+
+        printIndented("Here are your tasks sorted by date:");
+        for (int index : sortedIndices) {
+            printIndented((index + 1) + "." + tasks.get(index));
+        }
+    }
+
+    /**
+     * Prints tasks selected by a date/time-related query.
+     *
+     * @param tasks the task list to search
+     * @param matcher the condition a task must satisfy
+     * @param heading the heading to print before the results
+     * @param emptyMessage the message to print when there are no matches
+     */
+    private static void printMatchingTasks(List<Task> tasks, Predicate<Task> matcher,
+                                           String heading, String emptyMessage) {
+        printIndented(heading);
+        boolean hasMatches = false;
+        for (int i = 0; i < tasks.size(); i++) {
+            if (matcher.test(tasks.get(i))) {
+                printIndented((i + 1) + "." + tasks.get(i));
+                hasMatches = true;
+            }
+        }
+        if (!hasMatches) {
+            printIndented(emptyMessage);
+        }
     }
 
     /**

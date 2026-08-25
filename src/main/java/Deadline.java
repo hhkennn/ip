@@ -1,6 +1,8 @@
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a task that must be completed before a given date or time.
@@ -43,6 +45,27 @@ public class Deadline extends Task {
      */
     public LocalDateTime getBy() {
         return by;
+    }
+
+    /**
+     * Checks whether this deadline falls on a particular calendar date.
+     *
+     * @param date the date to check
+     * @return {@code true} if the deadline is due on the date
+     */
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return by.toLocalDate().equals(date);
+    }
+
+    /**
+     * Returns the deadline time used for chronological operations.
+     *
+     * @return the deadline's due date and time
+     */
+    @Override
+    public Optional<LocalDateTime> getScheduledDateTime() {
+        return Optional.of(by);
     }
 
     /**

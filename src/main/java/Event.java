@@ -1,6 +1,8 @@
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a task that starts and ends at specified dates or times.
@@ -61,6 +63,31 @@ public class Event extends Task {
      */
     public LocalDateTime getTo() {
         return to;
+    }
+
+    /**
+     * Checks whether any part of this event overlaps a particular calendar
+     * date.
+     *
+     * @param date the date to check
+     * @return {@code true} if the event occurs during the date
+     */
+    @Override
+    public boolean occursOn(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime startOfNextDay = date.plusDays(1).atStartOfDay();
+        return from.isBefore(startOfNextDay) && to.isAfter(startOfDay);
+    }
+
+    /**
+     * Returns the event start time used for chronological operations and
+     * upcoming-event searches.
+     *
+     * @return the event's start date and time
+     */
+    @Override
+    public Optional<LocalDateTime> getScheduledDateTime() {
+        return Optional.of(from);
     }
 
     /**

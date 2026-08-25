@@ -278,7 +278,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -287,7 +287,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -296,27 +296,27 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -540,7 +540,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -595,11 +595,11 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
@@ -817,7 +817,6 @@ todo contains | separator
 list
 bye
 ```
-
 ### Expected output
 
 ```text
@@ -835,6 +834,109 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+## Test case: Query and sort date-aware tasks
+
+- Aim: Verify that dates can be used to find tasks occurring on a date, show upcoming incomplete tasks, and display all tasks in chronological order without changing their stored order.
+
+### Inputs
+
+```text
+todo buy groceries
+deadline submit report /by 2019-10-15
+event project meeting /from 2019-10-14 /to 2019-10-16
+deadline future report /by 9999-12-31
+event future meeting /from 9999-12-30 /to 9999-12-31
+filter /on 2019-10-15
+filter /on 2020-01-01
+upcoming 4000000
+sort date
+list
+filter /on 15/10/2019
+upcoming 0
+sort time
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] buy groceries
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [D][ ] submit report (by: Oct 15 2019)
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     That makes 3 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [D][ ] future report (by: Dec 31 9999)
+     That makes 4 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     That makes 5 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Tasks occurring on Oct 15 2019:
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Tasks occurring on Jan 01 2020:
+     No deadlines or events occur on Jan 01 2020.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Upcoming deadlines and events in the next 4000000 days:
+     4.[D][ ] future report (by: Dec 31 9999)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are your tasks sorted by date:
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     2.[D][ ] submit report (by: Oct 15 2019)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     4.[D][ ] future report (by: Dec 31 9999)
+     1.[T][ ] buy groceries
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][ ] buy groceries
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     4.[D][ ] future report (by: Dec 31 9999)
+     5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid filter date. Use a date such as 2019-10-15.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: upcoming <positive number of days>.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: sort date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

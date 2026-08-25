@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Parses and formats the date/time values used by deadline tasks.
+ * Parses and formats the date/time values used by deadline and event tasks.
  *
  * <p>User input may use either the slash format from the command example or
  * the ISO-like format from the minimal requirement. Stored values always use
@@ -64,6 +64,17 @@ public final class DateTimeParser {
     }
 
     /**
+     * Parses a date used by a date-filter command.
+     *
+     * @param input the date entered by the user
+     * @return the parsed date
+     * @throws DateTimeParseException if the input is not in {@code yyyy-MM-dd} format
+     */
+    public static LocalDate parseUserDate(String input) {
+        return LocalDate.parse(input.trim(), USER_DATE_FORMAT);
+    }
+
+    /**
      * Parses a date/time serialized in Herta's data file.
      *
      * @param input the serialized date/time
@@ -100,6 +111,16 @@ public final class DateTimeParser {
             return DATE_OUTPUT_FORMAT.format(dateTime);
         }
         return DATE_TIME_OUTPUT_FORMAT.format(dateTime);
+    }
+
+    /**
+     * Formats a calendar date for display to the user.
+     *
+     * @param date the date to display
+     * @return a readable date representation
+     */
+    public static String formatDateForDisplay(LocalDate date) {
+        return DATE_OUTPUT_FORMAT.format(date);
     }
 
     /**
