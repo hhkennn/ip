@@ -71,9 +71,6 @@ public class Herta {
                         case DELETE:
                             deleteTask(tasks, input, ui, storage, parser);
                             break;
-                        case EVENT:
-                            addTask(tasks, parser.parseEvent(input), ui, storage);
-                            break;
                         case UNKNOWN:
                             if (input.isEmpty()) {
                                 throw new HertaException("Nothing? Were you expecting me to read your mind?");
@@ -91,25 +88,6 @@ public class Herta {
 
             ui.showSeparator();
         }
-    }
-
-    /**
-     * Adds a task and prints the standard confirmation message.
-     *
-     * @param tasks the task list to update.
-     * @param task the task to add.
-     * @param ui the user interface used for output
-     * @param storage the storage used to persist the updated list
-     */
-    private static void addTask(TaskList tasks, Task task, Ui ui, Storage storage)
-            throws HertaException {
-        TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
-        updatedTasks.add(task);
-        storage.save(updatedTasks);
-        tasks.add(task);
-        ui.showMessage("There. I've added it:");
-        ui.showTask(task);
-        ui.showTaskCount(tasks.size());
     }
 
     /**
