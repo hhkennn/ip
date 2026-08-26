@@ -21,8 +21,11 @@ public final class DateTimeParser {
             strictFormatter("uuuu-MM-dd HHmm"),
             strictFormatter("uuuu-MM-dd HH:mm"));
 
-    private static final DateTimeFormatter USER_DATE_FORMAT =
+    private static final DateTimeFormatter ISO_DATE_FORMAT =
             strictFormatter("uuuu-MM-dd");
+    private static final List<DateTimeFormatter> FILTER_DATE_FORMATS = List.of(
+            ISO_DATE_FORMAT,
+            strictFormatter("d/M/uuuu"));
     private static final DateTimeFormatter STORAGE_FORMAT =
             DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private static final DateTimeFormatter DATE_OUTPUT_FORMAT =
@@ -54,7 +57,7 @@ public final class DateTimeParser {
         }
 
         try {
-            LocalDate date = LocalDate.parse(normalizedInput, USER_DATE_FORMAT);
+            LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
             return date.atStartOfDay();
         } catch (DateTimeParseException e) {
             lastException = e;
@@ -68,10 +71,21 @@ public final class DateTimeParser {
      *
      * @param input the date entered by the user
      * @return the parsed date
-     * @throws DateTimeParseException if the input is not in {@code yyyy-MM-dd} format
+     * @throws DateTimeParseException if the input does not match a supported date format
      */
     public static LocalDate parseUserDate(String input) {
-        return LocalDate.parse(input.trim(), USER_DATE_FORMAT);
+        String normalizedInput = input.trim();
+        DateTimeParseException lastException = null;
+
+        for (DateTimeFormatter formatter : FILTER_DATE_FORMATS) {
+            try {
+                return LocalDate.parse(normalizedInput, formatter);
+            } catch (DateTimeParseException e) {
+                lastException = e;
+            }
+        }
+
+        throw lastException;
     }
 
     /**
@@ -86,7 +100,7 @@ public final class DateTimeParser {
         try {
             return LocalDateTime.parse(normalizedInput, STORAGE_FORMAT);
         } catch (DateTimeParseException e) {
-            return LocalDate.parse(normalizedInput, USER_DATE_FORMAT).atStartOfDay();
+            return LocalDate.parse(normalizedInput, ISO_DATE_FORMAT).atStartOfDay();
         }
     }
 

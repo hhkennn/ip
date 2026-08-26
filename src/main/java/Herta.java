@@ -1,706 +1,79 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
-import java.util.function.Predicate;
-
 /**
  * Provides the command-line entry point for the Herta task manager.
  */
 public class Herta {
-    private static final String INDENT = "     ";
-    private static final String SEPARATOR = "____________________________________________________________";
-    private static final Path DATA_FILE = Path.of("data", "herta.txt");
+    private final Ui ui;
+    private final Storage storage;
+    private final Parser parser;
+    private final TaskList tasks;
+    private final String loadingError;
 
     /**
-     * Prints each line of chatbot output with the standard indentation.
+     * Creates a Herta instance backed by the specified data file.
      *
-     * @param message the message to print.
+     * @param filePath the path of Herta's data file
      */
-    private static void printIndented(String message) {
-        // Split message wherever a line break occurs
-        String[] lines = message.split("\\R");
+    public Herta(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        parser = new Parser();
 
-        for (int i = 0; i < lines.length; i++) {
-            System.out.println(INDENT + lines[i]);
+        TaskList loadedTasks;
+        String loadError = null;
+        try {
+            loadedTasks = storage.load();
+        } catch (HertaException e) {
+            loadedTasks = new TaskList();
+            loadError = e.getMessage();
         }
-    }
-
-    /**
-     * Prints a task using the indentation used for task details.
-     *
-     * @param task the task to print.
-     */
-    private static void printTask(Task task) {
-        printIndented("  " + task);
+        tasks = loadedTasks;
+        loadingError = loadError;
     }
 
     /**
      * Starts Herta and processes commands entered by the user.
-     *
-     * @param args command-line arguments, which are not used.
      */
-    public static void main(String[] args) {
-        String banner = " _   _           _\n"
-                + "| | | | ___ _ __| |_ __ _\n"
-                + "| |_| |/ _ \\ '__| __/ _` |\n"
-                + "|  _  |  __/ |  | || (_| |\n"
-                + "|_| |_|\\___|_|   \\__\\__,_|\n";
-        printIndented(SEPARATOR);
-        printIndented(banner);
-        printIndented("Oh, you're here. I'm Herta.");
-        printIndented("Well? What do you want?");
-        printIndented(SEPARATOR);
+    public void run() {
+        ui.showWelcome();
 
-        List<Task> tasks;
-        try {
-            tasks = loadTasks();
-        } catch (HertaException e) {
-            printIndented(e.getMessage());
+        if (loadingError != null) {
+            ui.showMessage(loadingError);
+            ui.close();
             return;
         }
 
-        Scanner scanner = new Scanner(System.in);
-
-        while (true) {
-            System.out.print("Your command? ");
-            if (!scanner.hasNextLine()) {
-                printIndented(SEPARATOR);
-                printIndented("Leaving already? Goodbye.");
-                printIndented(SEPARATOR);
+        boolean isExit = false;
+        while (!isExit) {
+            String input = ui.readCommand();
+            if (input == null) {
+                ui.showSeparator();
+                ui.showGoodbye();
                 break;
             }
-            String input = scanner.nextLine().trim();
-            printIndented(SEPARATOR);
+            ui.showSeparator();
 
             try {
-                CommandType commandType = CommandType.fromInput(input);
-
-                if (commandType == CommandType.BYE) {
-                    printIndented("Leaving already? Goodbye.");
-                    printIndented(SEPARATOR);
-                    break;
-                }
-
-                switch (commandType) {
-                    case LIST:
-                        printTaskList(tasks);
-                        break;
-                    case FILTER:
-                        filterTasks(tasks, input);
-                        break;
-                    case UPCOMING:
-                        printUpcomingTasks(tasks, input);
-                        break;
-                    case SORT:
-                        sortTasks(tasks, input);
-                        break;
-                    case MARK:
-                        markTask(tasks, input);
-                        break;
-                    case UNMARK:
-                        unmarkTask(tasks, input);
-                        break;
-                    case DELETE:
-                        deleteTask(tasks, input);
-                        break;
-                    case TODO:
-                        addTodo(tasks, input);
-                        break;
-                    case DEADLINE:
-                        addDeadline(tasks, input);
-                        break;
-                    case EVENT:
-                        addEvent(tasks, input);
-                        break;
-                    case UNKNOWN:
-                        if (input.isEmpty()) {
-                            throw new HertaException("Nothing? Were you expecting me to read your mind?");
-                        }
-                        throw new HertaException("That command is invalid. Were you just guessing?\n" +
-                                "Try todo, deadline, event, list, filter, upcoming, sort, "
-                                + "mark, unmark, delete, and bye.");
-                    default:
-                        break;
-                    }
+                Command command = parser.parse(input);
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
             } catch (HertaException e) {
-                printIndented(e.getMessage());
+                ui.showMessage(e.getMessage());
             }
 
-            printIndented(SEPARATOR);
-        }
-
-        scanner.close();
-    }
-
-    /**
-     * Loads all saved tasks from the data file.
-     *
-     * <p>A missing data file represents a fresh start, so an empty task list
-     * is returned in that case.</p>
-     *
-     * @return the tasks reconstructed from the saved lines.
-     * @throws HertaException if the data file cannot be read or parsed.
-     */
-    private static List<Task> loadTasks() throws HertaException {
-        List<Task> tasks = new ArrayList<>();
-
-        try {
-            if (Files.isDirectory(DATA_FILE)) {
-                throw new HertaException("Failed to load tasks: data path is not a regular file.");
-            }
-            if (Files.notExists(DATA_FILE)) {
-                return tasks;
-            }
-            if (!Files.isRegularFile(DATA_FILE)) {
-                throw new HertaException("Failed to load tasks: data path is not a regular file.");
-            }
-
-            List<String> lines = readStorageLines();
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                if (!line.isBlank()) {
-                    try {
-                        tasks.add(parseTask(line));
-                    } catch (HertaException e) {
-                        throw new HertaException("Failed to load tasks at line "
-                                + (i + 1) + ": " + e.getMessage());
-                    }
-                }
-            }
-        } catch (IOException | SecurityException e) {
-            throw new HertaException("Failed to load tasks: " + e.getMessage());
-        }
-
-        return tasks;
-    }
-
-    /**
-     * Reads the data file as strict UTF-8 instead of silently replacing malformed bytes.
-     *
-     * @return the lines from the data file.
-     * @throws IOException if the file cannot be read or is not valid UTF-8
-     */
-    private static List<String> readStorageLines() throws IOException {
-        CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
-                .onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT);
-        List<String> lines = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(Files.newInputStream(DATA_FILE), decoder))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-        }
-        return lines;
-    }
-
-    /**
-     * Reconstructs a task from one serialized data-file line.
-     *
-     * @param line one line in Herta's storage format.
-     * @return the reconstructed task.
-     * @throws HertaException if the line does not contain a supported task type.
-     */
-    private static Task parseTask(String line) throws HertaException {
-        String normalizedLine = line.trim();
-        if (normalizedLine.startsWith("\uFEFF")) {
-            normalizedLine = normalizedLine.substring(1).trim();
-        }
-        String[] parts = normalizedLine.split("\\s*\\|\\s*", -1);
-        if (parts.length < 2) {
-            throw new HertaException("Invalid saved task: missing task type or status.");
-        }
-
-        String type = parts[0];
-        int expectedParts = switch (type) {
-            case "T" -> 3;
-            case "D" -> 4;
-            case "E" -> 5;
-            default -> throw new HertaException("Invalid saved task: unknown task type '"
-                    + type + "'.");
-        };
-
-        if (parts.length != expectedParts) {
-            throw new HertaException("Invalid saved task: type " + type
-                    + " requires " + expectedParts + " fields.");
-        }
-
-        if (!parts[1].equals("0") && !parts[1].equals("1")) {
-            throw new HertaException("Invalid saved task: completion status must be 0 or 1.");
-        }
-        int status = Integer.parseInt(parts[1]);
-
-        for (int i = 2; i < parts.length; i++) {
-            if (parts[i].isBlank()) {
-                throw new HertaException("Invalid saved task: task fields cannot be blank.");
+            if (!isExit) {
+                ui.showSeparator();
             }
         }
 
-        final Task task;
-        try {
-            task = switch (type) {
-                case "T" -> new Todo(parts[2]);
-                case "D" -> Deadline.fromStorage(parts[2], parts[3]);
-                case "E" -> Event.fromStorage(parts[2], parts[3], parts[4]);
-                default -> throw new HertaException("Invalid saved task: unknown task type '"
-                        + type + "'.");
-            };
-        } catch (IllegalArgumentException e) {
-            throw new HertaException(e.getMessage());
-        }
-
-        if (status == 1) {
-            task.markAsDone();
-        }
-        return task;
+        ui.close();
     }
 
     /**
-     * Adds a task and prints the standard confirmation message.
+     * Launches Herta using its default data file.
      *
-     * @param tasks the task list to update.
-     * @param task the task to add.
+     * @param args command-line arguments, which are not used
      */
-    private static void addTask(List<Task> tasks, Task task) throws HertaException {
-        List<Task> updatedTasks = new ArrayList<>(tasks);
-        updatedTasks.add(task);
-        saveTasks(updatedTasks);
-        tasks.add(task);
-        printIndented("There. I've added it:");
-        printTask(task);
-        printTaskCount(tasks);
-    }
-
-    /**
-     * Saves the complete in-memory task list to the data file.
-     *
-     * <p>The file is rewritten instead of appended to so that deletions and
-     * completion-status changes are reflected in the saved data.</p>
-     *
-     * @param tasks the task list to save.
-     * @throws HertaException if the task list cannot be written.
-     */
-    private static void saveTasks(List<Task> tasks) throws HertaException {
-        if (tasks == null) {
-            throw new HertaException("Failed to save tasks: task list is null.");
-        }
-
-        List<String> lines = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task == null) {
-                throw new HertaException("Failed to save tasks: task list contains a null task.");
-            }
-
-            final String storageString;
-            try {
-                storageString = task.toStorageString();
-            } catch (RuntimeException e) {
-                throw new HertaException("Failed to save tasks: task contains invalid data.");
-            }
-            if (storageString == null) {
-                throw new HertaException("Failed to save tasks: task contains invalid data.");
-            }
-            if (storageString.contains("\n") || storageString.contains("\r")) {
-                throw new HertaException("Failed to save tasks: task fields cannot contain line breaks.");
-            }
-            try {
-                parseTask(storageString);
-            } catch (HertaException e) {
-                throw new HertaException("Failed to save tasks: " + e.getMessage());
-            }
-            lines.add(storageString);
-        }
-
-        Path temporaryFile = null;
-        try {
-            Path dataDirectory = DATA_FILE.getParent();
-            Files.createDirectories(dataDirectory);
-            if (Files.isDirectory(DATA_FILE)
-                    || (Files.exists(DATA_FILE) && !Files.isRegularFile(DATA_FILE))) {
-                throw new IOException("data path is not a regular file");
-            }
-
-            temporaryFile = Files.createTempFile(dataDirectory, ".herta-", ".tmp");
-            Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            try {
-                Files.move(temporaryFile, DATA_FILE,
-                        StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temporaryFile, DATA_FILE, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException | SecurityException e) {
-            throw new HertaException("Failed to save tasks: " + e.getMessage());
-        } finally {
-            if (temporaryFile != null) {
-                try {
-                    Files.deleteIfExists(temporaryFile);
-                } catch (IOException | SecurityException ignored) {
-                    // The original data file is still preserved if cleanup fails.
-                }
-            }
-        }
-    }
-
-    /**
-     * Prints the number of tasks using the correct singular or plural noun.
-     *
-     * @param tasks the task list to count.
-     */
-    private static void printTaskCount(List<Task> tasks) {
-        String taskNoun = tasks.size() == 1 ? "task" : "tasks";
-        printIndented("That makes " + tasks.size() + " " + taskNoun
-                + ". Try to keep up.");
-    }
-
-    /**
-     * Prints every task in its current order.
-     *
-     * @param tasks the task list to print
-     */
-    private static void printTaskList(List<Task> tasks) {
-        printIndented("Let's see what you've managed to pile up:");
-        for (int i = 0; i < tasks.size(); i++) {
-            printIndented((i + 1) + "." + tasks.get(i));
-        }
-    }
-
-    /**
-     * Prints deadlines and events occurring on a requested date.
-     *
-     * @param tasks the task list to search
-     * @param input the complete filter command entered by the user
-     * @throws HertaException if the command or date is invalid
-     */
-    private static void filterTasks(List<Task> tasks, String input) throws HertaException {
-        String[] parts = input.substring("filter".length()).trim().split("\\s+", 2);
-        if (parts.length != 2 || !parts[0].equals("/on")) {
-            throw new HertaException("Use: filter /on <date>.");
-        }
-
-        final LocalDate date;
-        try {
-            date = DateTimeParser.parseUserDate(parts[1]);
-        } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid filter date. Use a date such as 2019-10-15.");
-        }
-
-        String displayDate = DateTimeParser.formatDateForDisplay(date);
-        printMatchingTasks(tasks, task -> task.occursOn(date),
-                "Tasks occurring on " + displayDate + ":",
-                "No deadlines or events occur on " + displayDate + ".");
-    }
-
-    /**
-     * Prints incomplete deadlines and events beginning within a future window.
-     *
-     * @param tasks the task list to search
-     * @param input the complete upcoming command entered by the user
-     * @throws HertaException if the command or number of days is invalid
-     */
-    private static void printUpcomingTasks(List<Task> tasks, String input) throws HertaException {
-        String daysInput = input.substring("upcoming".length()).trim();
-        final int days;
-        try {
-            days = Integer.parseInt(daysInput);
-            if (days <= 0) {
-                throw new NumberFormatException();
-            }
-        } catch (NumberFormatException e) {
-            throw new HertaException("Use: upcoming <positive number of days>.");
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        final LocalDateTime until;
-        try {
-            until = now.plusDays(days);
-        } catch (DateTimeException e) {
-            throw new HertaException("The upcoming time range is too large.");
-        }
-
-        printMatchingTasks(tasks,
-                task -> !task.isDone() && task.isUpcoming(now, until),
-                "Upcoming deadlines and events in the next " + days + " days:",
-                "No incomplete deadlines or events are upcoming in the next " + days + " days.");
-    }
-
-    /**
-     * Prints all tasks in chronological order without changing their stored order.
-     * Tasks without dates are placed at the end, and displayed numbers remain
-     * their original task-list numbers.
-     *
-     * @param tasks the task list to sort for display
-     * @param input the complete sort command entered by the user
-     * @throws HertaException if the requested sort is invalid
-     */
-    private static void sortTasks(List<Task> tasks, String input) throws HertaException {
-        if (!input.equals("sort date")) {
-            throw new HertaException("Use: sort date.");
-        }
-
-        List<Integer> sortedIndices = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            sortedIndices.add(i);
-        }
-        sortedIndices.sort(Comparator.comparing(
-                (Integer index) -> tasks.get(index).getScheduledDateTime()
-                        .orElse(LocalDateTime.MAX)));
-
-        printIndented("Here are your tasks sorted by date:");
-        for (int index : sortedIndices) {
-            printIndented((index + 1) + "." + tasks.get(index));
-        }
-    }
-
-    /**
-     * Prints tasks selected by a date/time-related query.
-     *
-     * @param tasks the task list to search
-     * @param matcher the condition a task must satisfy
-     * @param heading the heading to print before the results
-     * @param emptyMessage the message to print when there are no matches
-     */
-    private static void printMatchingTasks(List<Task> tasks, Predicate<Task> matcher,
-                                           String heading, String emptyMessage) {
-        printIndented(heading);
-        boolean hasMatches = false;
-        for (int i = 0; i < tasks.size(); i++) {
-            if (matcher.test(tasks.get(i))) {
-                printIndented((i + 1) + "." + tasks.get(i));
-                hasMatches = true;
-            }
-        }
-        if (!hasMatches) {
-            printIndented(emptyMessage);
-        }
-    }
-
-    /**
-     * Parses and adds a todo command's description.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete todo command entered by the user.
-     * @throws HertaException if the todo description is empty
-     */
-    private static void addTodo(List<Task> tasks, String input) throws HertaException {
-        String description = input.substring("todo".length()).trim();
-        if (description.isEmpty()) {
-            throw new HertaException("A blank todo? Even I can't organise nothing. Use: todo <description>.");
-        }
-        addTask(tasks, new Todo(description));
-    }
-
-    /**
-     * Parses and adds a deadline command's description and date/time.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete deadline command entered by the user.
-     * @throws HertaException if the deadline format or required fields are invalid
-     */
-    private static void addDeadline(List<Task> tasks, String input) throws HertaException {
-        String content = input.substring("deadline".length()).trim();
-        String[] deadlineParts = content.split("\\s+/by\\s+", 2);
-        if (deadlineParts.length != 2) {
-            throw new HertaException("Did you even read the deadline format? "
-                    + "Use: deadline <description> /by <date/time>.");
-        }
-
-        String description = deadlineParts[0].trim();
-        String byInput = deadlineParts[1].trim();
-        if (description.isEmpty() || byInput.isEmpty()) {
-            throw new HertaException("Did you even read the deadline format? "
-                    + "Use: deadline <description> /by <date/time>.");
-        }
-
-        addTask(tasks, new Deadline(description, parseUserDeadline(byInput)));
-    }
-
-    /**
-     * Parses a deadline entered in a user command.
-     *
-     * @param input the text after {@code /by}
-     * @return the parsed deadline date/time
-     * @throws HertaException if the input is not a supported date/time
-     */
-    private static LocalDateTime parseUserDeadline(String input) throws HertaException {
-        try {
-            return DateTimeParser.parseUserInput(input);
-        } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid deadline date/time. Use a date such as "
-                    + "2019-10-15 or a date/time such as 2/12/2019 1800.");
-        }
-    }
-
-    /**
-     * Parses and adds an event command's description, start, and end date/time.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete event command entered by the user.
-     * @throws HertaException if the event format or required fields are invalid
-     */
-    private static void addEvent(List<Task> tasks, String input) throws HertaException {
-        String content = input.substring("event".length()).trim();
-        String[] eventParts = content.split("\\s+/from\\s+", 2);
-        if (eventParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
-        }
-
-        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
-        if (timeParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
-        }
-
-        String description = eventParts[0].trim();
-        String fromInput = timeParts[0].trim();
-        String toInput = timeParts[1].trim();
-        if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
-        }
-
-        LocalDateTime from = parseUserEventDateTime(fromInput);
-        LocalDateTime to = parseUserEventDateTime(toInput);
-        try {
-            addTask(tasks, new Event(description, from, to));
-        } catch (IllegalArgumentException e) {
-            throw new HertaException("An event must end after it starts.");
-        }
-    }
-
-    /**
-     * Parses an event date/time entered in a user command.
-     *
-     * @param input the event date/time text
-     * @return the parsed event date/time
-     * @throws HertaException if the input is not a supported date/time
-     */
-    private static LocalDateTime parseUserEventDateTime(String input) throws HertaException {
-        try {
-            return DateTimeParser.parseUserInput(input);
-        } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid event date/time. Use a date such as "
-                    + "2019-10-15 or a date/time such as 2/12/2019 1800.");
-        }
-    }
-
-    /**
-     * Deletes the requested task and prints the standard confirmation message.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete delete command entered by the user.
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void deleteTask(List<Task> tasks, String input) throws HertaException {
-        String taskNumber = input.substring("delete".length()).trim();
-        Task task = getTask(tasks, taskNumber, "delete");
-        List<Task> updatedTasks = new ArrayList<>(tasks);
-        updatedTasks.remove(task);
-        saveTasks(updatedTasks);
-        tasks.remove(task);
-        printIndented("There. It's gone:");
-        printTask(task);
-        printTaskCount(tasks);
-    }
-
-    /**
-     * Marks the requested task as done.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete mark command entered by the user.
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void markTask(List<Task> tasks, String input) throws HertaException {
-        String taskNumber = input.substring("mark".length()).trim();
-        Task task = getTask(tasks, taskNumber, "mark");
-        boolean wasDone = task.isDone();
-        task.markAsDone();
-        try {
-            saveTasks(tasks);
-        } catch (HertaException e) {
-            restoreTaskStatus(task, wasDone);
-            throw e;
-        }
-        printIndented("There. It's marked complete:");
-        printTask(task);
-    }
-
-    /**
-     * Marks the requested task as not done.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete unmark command entered by the user.
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void unmarkTask(List<Task> tasks, String input) throws HertaException {
-        String taskNumber = input.substring("unmark".length()).trim();
-        Task task = getTask(tasks, taskNumber, "unmark");
-        boolean wasDone = task.isDone();
-        task.markAsNotDone();
-        try {
-            saveTasks(tasks);
-        } catch (HertaException e) {
-            restoreTaskStatus(task, wasDone);
-            throw e;
-        }
-        printIndented("As you wish. It's incomplete again:");
-        printTask(task);
-    }
-
-    /**
-     * Restores a task's completion status after a failed save.
-     *
-     * @param task the task whose status should be restored.
-     * @param wasDone the status before the attempted update.
-     */
-    private static void restoreTaskStatus(Task task, boolean wasDone) {
-        if (wasDone) {
-            task.markAsDone();
-        } else {
-            task.markAsNotDone();
-        }
-    }
-
-    /**
-     * Finds a task using the one-based number shown by the list command.
-     *
-     * @param tasks the task list to search.
-     * @param taskNumber the task number entered by the user.
-     * @param command the command used to request the task.
-     * @return the requested task
-     * @throws HertaException if the task number is invalid or out of range
-     */
-    private static Task getTask(List<Task> tasks, String taskNumber, String command) throws HertaException {
-        final int taskIndex;
-        try {
-            taskIndex = Integer.parseInt(taskNumber) - 1;
-        } catch (NumberFormatException e) {
-            throw new HertaException("That's not a task number. Try: " + command + " 1.");
-        }
-
-        if (taskIndex < 0 || taskIndex >= tasks.size()) {
-            throw new HertaException("That task doesn't exist. Did you even check the list?");
-        }
-        return tasks.get(taskIndex);
+    public static void main(String[] args) {
+        new Herta("data/herta.txt").run();
     }
 }
