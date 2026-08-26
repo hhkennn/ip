@@ -47,6 +47,13 @@ public class Parser {
                 return Optional.of(new MarkCommand(parseTaskIndex(input, "mark")));
             case UNMARK:
                 return Optional.of(new UnmarkCommand(parseTaskIndex(input, "unmark")));
+            case FILTER:
+                return Optional.of(new FilterCommand(parseFilterDate(input)));
+            case UPCOMING:
+                return Optional.of(new UpcomingCommand(parseUpcomingDays(input)));
+            case SORT:
+                validateSortCommand(input);
+                return Optional.of(new SortCommand());
             default:
                 return Optional.empty();
         }
