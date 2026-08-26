@@ -1,7 +1,6 @@
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
 /**
  * Interprets user commands and converts their arguments into domain values.
@@ -19,43 +18,40 @@ public class Parser {
     }
 
     /**
-     * Parses commands that have been migrated to command objects.
-     *
-     * <p>The optional is empty for commands that are still handled by Herta's
-     * temporary legacy dispatch. This allows the command hierarchy to be
-     * introduced incrementally without changing the remaining commands yet.</p>
+     * Parses user input into an executable command.
      *
      * @param input the complete user input
-     * @return the parsed command when this command has been migrated
+     * @return a command representing the input, including an
+     *         {@link UnknownCommand} for unsupported input
      * @throws HertaException if command-specific parsing fails
      */
-    public Optional<Command> parse(String input) throws HertaException {
+    public Command parse(String input) throws HertaException {
         switch (parseCommandType(input)) {
             case BYE:
-                return Optional.of(new ExitCommand());
+                return new ExitCommand();
             case LIST:
-                return Optional.of(new ListCommand());
+                return new ListCommand();
             case TODO:
-                return Optional.of(new TodoCommand(parseTodo(input)));
+                return new TodoCommand(parseTodo(input));
             case DEADLINE:
-                return Optional.of(new DeadlineCommand(parseDeadline(input)));
+                return new DeadlineCommand(parseDeadline(input));
             case EVENT:
-                return Optional.of(new EventCommand(parseEvent(input)));
+                return new EventCommand(parseEvent(input));
             case DELETE:
-                return Optional.of(new DeleteCommand(parseTaskIndex(input, "delete")));
+                return new DeleteCommand(parseTaskIndex(input, "delete"));
             case MARK:
-                return Optional.of(new MarkCommand(parseTaskIndex(input, "mark")));
+                return new MarkCommand(parseTaskIndex(input, "mark"));
             case UNMARK:
-                return Optional.of(new UnmarkCommand(parseTaskIndex(input, "unmark")));
+                return new UnmarkCommand(parseTaskIndex(input, "unmark"));
             case FILTER:
-                return Optional.of(new FilterCommand(parseFilterDate(input)));
+                return new FilterCommand(parseFilterDate(input));
             case UPCOMING:
-                return Optional.of(new UpcomingCommand(parseUpcomingDays(input)));
+                return new UpcomingCommand(parseUpcomingDays(input));
             case SORT:
                 validateSortCommand(input);
-                return Optional.of(new SortCommand());
+                return new SortCommand();
             default:
-                return Optional.empty();
+                return new UnknownCommand(input);
         }
     }
 

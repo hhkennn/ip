@@ -1,5 +1,3 @@
-import java.util.Optional;
-
 /**
  * Provides the command-line entry point for the Herta task manager.
  */
@@ -35,28 +33,11 @@ public class Herta {
             ui.showSeparator();
 
             try {
-                Optional<Command> parsedCommand = parser.parse(input);
-                if (parsedCommand.isPresent()) {
-                    Command command = parsedCommand.get();
-                    command.execute(tasks, ui, storage);
-                    if (command.isExit()) {
-                        ui.close();
-                        break;
-                    }
-                } else {
-                    CommandType commandType = parser.parseCommandType(input);
-
-                    switch (commandType) {
-                        case UNKNOWN:
-                            if (input.isEmpty()) {
-                                throw new HertaException("Nothing? Were you expecting me to read your mind?");
-                            }
-                            throw new HertaException("That command is invalid. Were you just guessing?\n" +
-                                    "Try todo, deadline, event, list, filter, upcoming, sort, "
-                                    + "mark, unmark, delete, and bye.");
-                        default:
-                            break;
-                    }
+                Command command = parser.parse(input);
+                command.execute(tasks, ui, storage);
+                if (command.isExit()) {
+                    ui.close();
+                    break;
                 }
             } catch (HertaException e) {
                 ui.showMessage(e.getMessage());
