@@ -401,7 +401,8 @@ public class Herta {
         try {
             date = DateTimeParser.parseUserDate(parts[1]);
         } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid filter date. Use a date such as 2019-10-15.");
+            throw new HertaException("Invalid filter date. Use a date such as "
+                    + "2019-10-15 or 15/10/2019.");
         }
 
         String displayDate = DateTimeParser.formatDateForDisplay(date);

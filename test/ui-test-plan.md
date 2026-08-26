@@ -841,7 +841,7 @@ Your command?      ____________________________________________________________
 ```
 ## Test case: Query and sort date-aware tasks
 
-- Aim: Verify that dates can be used to find tasks occurring on a date, show upcoming incomplete tasks, and display all tasks in chronological order without changing their stored order.
+- Aim: Verify that ISO and slash-format dates can find tasks occurring on a date, show upcoming incomplete tasks, and display all tasks in chronological order without changing their stored order.
 
 ### Inputs
 
@@ -857,6 +857,7 @@ upcoming 4000000
 sort date
 list
 filter /on 15/10/2019
+filter /on 31/02/2019
 upcoming 0
 sort time
 bye
@@ -930,7 +931,12 @@ Your command?      ____________________________________________________________
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Invalid filter date. Use a date such as 2019-10-15.
+     Tasks occurring on Oct 15 2019:
+     2.[D][ ] submit report (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Invalid filter date. Use a date such as 2019-10-15 or 15/10/2019.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Use: upcoming <positive number of days>.
