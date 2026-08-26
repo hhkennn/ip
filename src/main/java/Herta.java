@@ -53,9 +53,6 @@ public class Herta {
                     CommandType commandType = parser.parseCommandType(input);
 
                     switch (commandType) {
-                        case LIST:
-                            printTaskList(tasks, ui);
-                            break;
                         case FILTER:
                             filterTasks(tasks, input, ui, parser);
                             break;
@@ -119,19 +116,6 @@ public class Herta {
         ui.showMessage("There. I've added it:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
-    }
-
-    /**
-     * Prints every task in its current order.
-     *
-     * @param tasks the task list to print
-     * @param ui the user interface used for output
-     */
-    private static void printTaskList(TaskList tasks, Ui ui) {
-        ui.showMessage("Let's see what you've managed to pile up:");
-        for (int i = 0; i < tasks.size(); i++) {
-            ui.showMessage((i + 1) + "." + tasks.get(i));
-        }
     }
 
     /**

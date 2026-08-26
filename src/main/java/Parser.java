@@ -30,10 +30,14 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Optional<Command> parse(String input) throws HertaException {
-        if (parseCommandType(input) == CommandType.BYE) {
-            return Optional.of(new ExitCommand());
+        switch (parseCommandType(input)) {
+            case BYE:
+                return Optional.of(new ExitCommand());
+            case LIST:
+                return Optional.of(new ListCommand());
+            default:
+                return Optional.empty();
         }
-        return Optional.empty();
     }
 
     /**
