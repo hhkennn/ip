@@ -1,6 +1,7 @@
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 /**
  * Interprets user commands and converts their arguments into domain values.
@@ -15,6 +16,24 @@ public class Parser {
      */
     public CommandType parseCommandType(String input) {
         return CommandType.fromInput(input);
+    }
+
+    /**
+     * Parses commands that have been migrated to command objects.
+     *
+     * <p>The optional is empty for commands that are still handled by Herta's
+     * temporary legacy dispatch. This allows the command hierarchy to be
+     * introduced incrementally without changing the remaining commands yet.</p>
+     *
+     * @param input the complete user input
+     * @return the parsed command when this command has been migrated
+     * @throws HertaException if command-specific parsing fails
+     */
+    public Optional<Command> parse(String input) throws HertaException {
+        if (parseCommandType(input) == CommandType.BYE) {
+            return Optional.of(new ExitCommand());
+        }
+        return Optional.empty();
     }
 
     /**

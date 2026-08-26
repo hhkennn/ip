@@ -3,6 +3,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -40,55 +41,59 @@ public class Herta {
             ui.showSeparator();
 
             try {
-                CommandType commandType = parser.parseCommandType(input);
-
-                if (commandType == CommandType.BYE) {
-                    ui.showGoodbye();
-                    ui.close();
-                    break;
-                }
-
-                switch (commandType) {
-                    case LIST:
-                        printTaskList(tasks, ui);
-                        break;
-                    case FILTER:
-                        filterTasks(tasks, input, ui, parser);
-                        break;
-                    case UPCOMING:
-                        printUpcomingTasks(tasks, input, ui, parser);
-                        break;
-                    case SORT:
-                        sortTasks(tasks, input, ui, parser);
-                        break;
-                    case MARK:
-                        markTask(tasks, input, ui, storage, parser);
-                        break;
-                    case UNMARK:
-                        unmarkTask(tasks, input, ui, storage, parser);
-                        break;
-                    case DELETE:
-                        deleteTask(tasks, input, ui, storage, parser);
-                        break;
-                    case TODO:
-                        addTask(tasks, parser.parseTodo(input), ui, storage);
-                        break;
-                    case DEADLINE:
-                        addTask(tasks, parser.parseDeadline(input), ui, storage);
-                        break;
-                    case EVENT:
-                        addTask(tasks, parser.parseEvent(input), ui, storage);
-                        break;
-                    case UNKNOWN:
-                        if (input.isEmpty()) {
-                            throw new HertaException("Nothing? Were you expecting me to read your mind?");
-                        }
-                        throw new HertaException("That command is invalid. Were you just guessing?\n" +
-                                "Try todo, deadline, event, list, filter, upcoming, sort, "
-                                + "mark, unmark, delete, and bye.");
-                    default:
+                Optional<Command> parsedCommand = parser.parse(input);
+                if (parsedCommand.isPresent()) {
+                    Command command = parsedCommand.get();
+                    command.execute(tasks, ui, storage);
+                    if (command.isExit()) {
+                        ui.close();
                         break;
                     }
+                } else {
+                    CommandType commandType = parser.parseCommandType(input);
+
+                    switch (commandType) {
+                        case LIST:
+                            printTaskList(tasks, ui);
+                            break;
+                        case FILTER:
+                            filterTasks(tasks, input, ui, parser);
+                            break;
+                        case UPCOMING:
+                            printUpcomingTasks(tasks, input, ui, parser);
+                            break;
+                        case SORT:
+                            sortTasks(tasks, input, ui, parser);
+                            break;
+                        case MARK:
+                            markTask(tasks, input, ui, storage, parser);
+                            break;
+                        case UNMARK:
+                            unmarkTask(tasks, input, ui, storage, parser);
+                            break;
+                        case DELETE:
+                            deleteTask(tasks, input, ui, storage, parser);
+                            break;
+                        case TODO:
+                            addTask(tasks, parser.parseTodo(input), ui, storage);
+                            break;
+                        case DEADLINE:
+                            addTask(tasks, parser.parseDeadline(input), ui, storage);
+                            break;
+                        case EVENT:
+                            addTask(tasks, parser.parseEvent(input), ui, storage);
+                            break;
+                        case UNKNOWN:
+                            if (input.isEmpty()) {
+                                throw new HertaException("Nothing? Were you expecting me to read your mind?");
+                            }
+                            throw new HertaException("That command is invalid. Were you just guessing?\n" +
+                                    "Try todo, deadline, event, list, filter, upcoming, sort, "
+                                    + "mark, unmark, delete, and bye.");
+                        default:
+                            break;
+                    }
+                }
             } catch (HertaException e) {
                 ui.showMessage(e.getMessage());
             }
