@@ -55,7 +55,7 @@ public class Storage {
                 String line = lines.get(i);
                 if (!line.isBlank()) {
                     try {
-                        tasks.add(parseTask(line));
+                        tasks.add(parseStoredTask(line));
                     } catch (HertaException e) {
                         throw new HertaException("Failed to load tasks at line "
                                 + (i + 1) + ": " + e.getMessage());
@@ -102,7 +102,7 @@ public class Storage {
                 throw new HertaException("Failed to save tasks: task fields cannot contain line breaks.");
             }
             try {
-                parseTask(storageString);
+                parseStoredTask(storageString);
             } catch (HertaException e) {
                 throw new HertaException("Failed to save tasks: " + e.getMessage());
             }
@@ -173,7 +173,7 @@ public class Storage {
      * @return the reconstructed task
      * @throws HertaException if the line does not contain a supported task type
      */
-    private Task parseTask(String line) throws HertaException {
+    private Task parseStoredTask(String line) throws HertaException {
         String normalizedLine = line.trim();
         if (normalizedLine.startsWith("\uFEFF")) {
             normalizedLine = normalizedLine.substring(1).trim();
