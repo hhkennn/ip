@@ -68,9 +68,6 @@ public class Herta {
                         case UNMARK:
                             unmarkTask(tasks, input, ui, storage, parser);
                             break;
-                        case DELETE:
-                            deleteTask(tasks, input, ui, storage, parser);
-                            break;
                         case UNKNOWN:
                             if (input.isEmpty()) {
                                 throw new HertaException("Nothing? Were you expecting me to read your mind?");
@@ -180,30 +177,6 @@ public class Herta {
         if (matchingIndices.isEmpty()) {
             ui.showMessage(emptyMessage);
         }
-    }
-
-    /**
-     * Deletes the requested task and prints the standard confirmation message.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete delete command entered by the user.
-     * @param ui the user interface used for output
-     * @param storage the storage used to persist the deletion
-     * @param parser the parser used to interpret the task number
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void deleteTask(TaskList tasks, String input, Ui ui, Storage storage,
-                                   Parser parser)
-            throws HertaException {
-        int taskIndex = getTaskIndex(tasks, input, "delete", parser);
-        Task task = tasks.get(taskIndex);
-        TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
-        updatedTasks.remove(taskIndex);
-        storage.save(updatedTasks);
-        tasks.remove(taskIndex);
-        ui.showMessage("There. It's gone:");
-        ui.showTask(task);
-        ui.showTaskCount(tasks.size());
     }
 
     /**

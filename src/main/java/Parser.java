@@ -41,6 +41,8 @@ public class Parser {
                 return Optional.of(new DeadlineCommand(parseDeadline(input)));
             case EVENT:
                 return Optional.of(new EventCommand(parseEvent(input)));
+            case DELETE:
+                return Optional.of(new DeleteCommand(parseTaskIndex(input, "delete")));
             default:
                 return Optional.empty();
         }
