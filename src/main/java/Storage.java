@@ -33,11 +33,11 @@ public class Storage {
      * <p>A missing data file represents a fresh start, so an empty task list
      * is returned in that case.</p>
      *
-     * @return the tasks reconstructed from the saved lines
+     * @return the task list reconstructed from the saved lines
      * @throws HertaException if the data file cannot be read or parsed
      */
-    public List<Task> load() throws HertaException {
-        List<Task> tasks = new ArrayList<>();
+    public TaskList load() throws HertaException {
+        TaskList tasks = new TaskList();
 
         try {
             if (Files.isDirectory(dataFile)) {
@@ -78,7 +78,7 @@ public class Storage {
      * @param tasks the task list to save
      * @throws HertaException if the task list cannot be written
      */
-    public void save(List<Task> tasks) throws HertaException {
+    public void save(TaskList tasks) throws HertaException {
         if (tasks == null) {
             throw new HertaException("Failed to save tasks: task list is null.");
         }

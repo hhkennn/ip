@@ -1,7 +1,6 @@
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -21,7 +20,7 @@ public class Herta {
         Parser parser = new Parser();
         ui.showWelcome();
 
-        List<Task> tasks;
+        TaskList tasks;
         try {
             tasks = storage.load();
         } catch (HertaException e) {
@@ -106,9 +105,9 @@ public class Herta {
      * @param ui the user interface used for output
      * @param storage the storage used to persist the updated list
      */
-    private static void addTask(List<Task> tasks, Task task, Ui ui, Storage storage)
+    private static void addTask(TaskList tasks, Task task, Ui ui, Storage storage)
             throws HertaException {
-        List<Task> updatedTasks = new ArrayList<>(tasks);
+        TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
         updatedTasks.add(task);
         storage.save(updatedTasks);
         tasks.add(task);
@@ -123,7 +122,7 @@ public class Herta {
      * @param tasks the task list to print
      * @param ui the user interface used for output
      */
-    private static void printTaskList(List<Task> tasks, Ui ui) {
+    private static void printTaskList(TaskList tasks, Ui ui) {
         ui.showMessage("Let's see what you've managed to pile up:");
         for (int i = 0; i < tasks.size(); i++) {
             ui.showMessage((i + 1) + "." + tasks.get(i));
@@ -139,7 +138,7 @@ public class Herta {
      * @param parser the parser used to interpret the filter command
      * @throws HertaException if the command or date is invalid
      */
-    private static void filterTasks(List<Task> tasks, String input, Ui ui, Parser parser)
+    private static void filterTasks(TaskList tasks, String input, Ui ui, Parser parser)
             throws HertaException {
         LocalDate date = parser.parseFilterDate(input);
 
@@ -158,7 +157,7 @@ public class Herta {
      * @param parser the parser used to interpret the upcoming command
      * @throws HertaException if the command or number of days is invalid
      */
-    private static void printUpcomingTasks(List<Task> tasks, String input, Ui ui, Parser parser)
+    private static void printUpcomingTasks(TaskList tasks, String input, Ui ui, Parser parser)
             throws HertaException {
         int days = parser.parseUpcomingDays(input);
 
@@ -188,17 +187,12 @@ public class Herta {
      * @param parser the parser used to interpret the sort command
      * @throws HertaException if the requested sort is invalid
      */
-    private static void sortTasks(List<Task> tasks, String input, Ui ui, Parser parser)
+    private static void sortTasks(TaskList tasks, String input, Ui ui, Parser parser)
             throws HertaException {
         parser.validateSortCommand(input);
 
-        List<Integer> sortedIndices = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            sortedIndices.add(i);
-        }
-        sortedIndices.sort(Comparator.comparing(
-                (Integer index) -> tasks.get(index).getScheduledDateTime()
-                        .orElse(LocalDateTime.MAX)));
+        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing(
+                (Task task) -> task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 
         ui.showMessage("Here are your tasks sorted by date:");
         for (int index : sortedIndices) {
@@ -215,17 +209,14 @@ public class Herta {
      * @param emptyMessage the message to print when there are no matches
      * @param ui the user interface used for output
      */
-    private static void printMatchingTasks(List<Task> tasks, Predicate<Task> matcher,
+    private static void printMatchingTasks(TaskList tasks, Predicate<Task> matcher,
                                            String heading, String emptyMessage, Ui ui) {
         ui.showMessage(heading);
-        boolean hasMatches = false;
-        for (int i = 0; i < tasks.size(); i++) {
-            if (matcher.test(tasks.get(i))) {
-                ui.showMessage((i + 1) + "." + tasks.get(i));
-                hasMatches = true;
-            }
+        List<Integer> matchingIndices = tasks.matchingIndices(matcher);
+        for (int index : matchingIndices) {
+            ui.showMessage((index + 1) + "." + tasks.get(index));
         }
-        if (!hasMatches) {
+        if (matchingIndices.isEmpty()) {
             ui.showMessage(emptyMessage);
         }
     }
@@ -240,14 +231,15 @@ public class Herta {
      * @param parser the parser used to interpret the task number
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
-    private static void deleteTask(List<Task> tasks, String input, Ui ui, Storage storage,
+    private static void deleteTask(TaskList tasks, String input, Ui ui, Storage storage,
                                    Parser parser)
             throws HertaException {
-        Task task = getTask(tasks, input, "delete", parser);
-        List<Task> updatedTasks = new ArrayList<>(tasks);
-        updatedTasks.remove(task);
+        int taskIndex = getTaskIndex(tasks, input, "delete", parser);
+        Task task = tasks.get(taskIndex);
+        TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
+        updatedTasks.remove(taskIndex);
         storage.save(updatedTasks);
-        tasks.remove(task);
+        tasks.remove(taskIndex);
         ui.showMessage("There. It's gone:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
@@ -263,16 +255,16 @@ public class Herta {
      * @param parser the parser used to interpret the task number
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
-    private static void markTask(List<Task> tasks, String input, Ui ui, Storage storage,
+    private static void markTask(TaskList tasks, String input, Ui ui, Storage storage,
                                  Parser parser)
             throws HertaException {
-        Task task = getTask(tasks, input, "mark", parser);
-        boolean wasDone = task.isDone();
-        task.markAsDone();
+        int taskIndex = getTaskIndex(tasks, input, "mark", parser);
+        boolean wasDone = tasks.markTask(taskIndex);
+        Task task = tasks.get(taskIndex);
         try {
             storage.save(tasks);
         } catch (HertaException e) {
-            restoreTaskStatus(task, wasDone);
+            tasks.restoreStatus(taskIndex, wasDone);
             throw e;
         }
         ui.showMessage("There. It's marked complete:");
@@ -289,16 +281,16 @@ public class Herta {
      * @param parser the parser used to interpret the task number
      * @throws HertaException if the task number is missing, invalid, or out of range
      */
-    private static void unmarkTask(List<Task> tasks, String input, Ui ui, Storage storage,
+    private static void unmarkTask(TaskList tasks, String input, Ui ui, Storage storage,
                                    Parser parser)
             throws HertaException {
-        Task task = getTask(tasks, input, "unmark", parser);
-        boolean wasDone = task.isDone();
-        task.markAsNotDone();
+        int taskIndex = getTaskIndex(tasks, input, "unmark", parser);
+        boolean wasDone = tasks.unmarkTask(taskIndex);
+        Task task = tasks.get(taskIndex);
         try {
             storage.save(tasks);
         } catch (HertaException e) {
-            restoreTaskStatus(task, wasDone);
+            tasks.restoreStatus(taskIndex, wasDone);
             throw e;
         }
         ui.showMessage("As you wish. It's incomplete again:");
@@ -306,35 +298,21 @@ public class Herta {
     }
 
     /**
-     * Restores a task's completion status after a failed save.
-     *
-     * @param task the task whose status should be restored.
-     * @param wasDone the status before the attempted update.
-     */
-    private static void restoreTaskStatus(Task task, boolean wasDone) {
-        if (wasDone) {
-            task.markAsDone();
-        } else {
-            task.markAsNotDone();
-        }
-    }
-
-    /**
-     * Finds a task using the one-based number shown by the list command.
+     * Finds a task index using the one-based number shown by the list command.
      *
      * @param tasks the task list to search.
      * @param input the complete task-selection command entered by the user.
      * @param command the command used to request the task.
      * @param parser the parser used to interpret the task number.
-     * @return the requested task
+     * @return the requested zero-based task index
      * @throws HertaException if the task number is invalid or out of range
      */
-    private static Task getTask(List<Task> tasks, String input, String command, Parser parser)
+    private static int getTaskIndex(TaskList tasks, String input, String command, Parser parser)
             throws HertaException {
         int taskIndex = parser.parseTaskIndex(input, command);
         if (taskIndex < 0 || taskIndex >= tasks.size()) {
             throw new HertaException("That task doesn't exist. Did you even check the list?");
         }
-        return tasks.get(taskIndex);
+        return taskIndex;
     }
 }
