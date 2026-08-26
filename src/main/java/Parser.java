@@ -35,6 +35,8 @@ public class Parser {
                 return Optional.of(new ExitCommand());
             case LIST:
                 return Optional.of(new ListCommand());
+            case TODO:
+                return Optional.of(new TodoCommand(parseTodo(input)));
             default:
                 return Optional.empty();
         }

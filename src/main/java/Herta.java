@@ -71,9 +71,6 @@ public class Herta {
                         case DELETE:
                             deleteTask(tasks, input, ui, storage, parser);
                             break;
-                        case TODO:
-                            addTask(tasks, parser.parseTodo(input), ui, storage);
-                            break;
                         case DEADLINE:
                             addTask(tasks, parser.parseDeadline(input), ui, storage);
                             break;
