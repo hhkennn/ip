@@ -43,6 +43,10 @@ public class Parser {
                 return Optional.of(new EventCommand(parseEvent(input)));
             case DELETE:
                 return Optional.of(new DeleteCommand(parseTaskIndex(input, "delete")));
+            case MARK:
+                return Optional.of(new MarkCommand(parseTaskIndex(input, "mark")));
+            case UNMARK:
+                return Optional.of(new UnmarkCommand(parseTaskIndex(input, "unmark")));
             default:
                 return Optional.empty();
         }

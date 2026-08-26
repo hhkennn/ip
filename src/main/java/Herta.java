@@ -62,12 +62,6 @@ public class Herta {
                         case SORT:
                             sortTasks(tasks, input, ui, parser);
                             break;
-                        case MARK:
-                            markTask(tasks, input, ui, storage, parser);
-                            break;
-                        case UNMARK:
-                            unmarkTask(tasks, input, ui, storage, parser);
-                            break;
                         case UNKNOWN:
                             if (input.isEmpty()) {
                                 throw new HertaException("Nothing? Were you expecting me to read your mind?");
@@ -179,74 +173,4 @@ public class Herta {
         }
     }
 
-    /**
-     * Marks the requested task as done.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete mark command entered by the user.
-     * @param ui the user interface used for output
-     * @param storage the storage used to persist the status change
-     * @param parser the parser used to interpret the task number
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void markTask(TaskList tasks, String input, Ui ui, Storage storage,
-                                 Parser parser)
-            throws HertaException {
-        int taskIndex = getTaskIndex(tasks, input, "mark", parser);
-        boolean wasDone = tasks.markTask(taskIndex);
-        Task task = tasks.get(taskIndex);
-        try {
-            storage.save(tasks);
-        } catch (HertaException e) {
-            tasks.restoreStatus(taskIndex, wasDone);
-            throw e;
-        }
-        ui.showMessage("There. It's marked complete:");
-        ui.showTask(task);
-    }
-
-    /**
-     * Marks the requested task as not done.
-     *
-     * @param tasks the task list to update.
-     * @param input the complete unmark command entered by the user.
-     * @param ui the user interface used for output
-     * @param storage the storage used to persist the status change
-     * @param parser the parser used to interpret the task number
-     * @throws HertaException if the task number is missing, invalid, or out of range
-     */
-    private static void unmarkTask(TaskList tasks, String input, Ui ui, Storage storage,
-                                   Parser parser)
-            throws HertaException {
-        int taskIndex = getTaskIndex(tasks, input, "unmark", parser);
-        boolean wasDone = tasks.unmarkTask(taskIndex);
-        Task task = tasks.get(taskIndex);
-        try {
-            storage.save(tasks);
-        } catch (HertaException e) {
-            tasks.restoreStatus(taskIndex, wasDone);
-            throw e;
-        }
-        ui.showMessage("As you wish. It's incomplete again:");
-        ui.showTask(task);
-    }
-
-    /**
-     * Finds a task index using the one-based number shown by the list command.
-     *
-     * @param tasks the task list to search.
-     * @param input the complete task-selection command entered by the user.
-     * @param command the command used to request the task.
-     * @param parser the parser used to interpret the task number.
-     * @return the requested zero-based task index
-     * @throws HertaException if the task number is invalid or out of range
-     */
-    private static int getTaskIndex(TaskList tasks, String input, String command, Parser parser)
-            throws HertaException {
-        int taskIndex = parser.parseTaskIndex(input, command);
-        if (taskIndex < 0 || taskIndex >= tasks.size()) {
-            throw new HertaException("That task doesn't exist. Did you even check the list?");
-        }
-        return taskIndex;
-    }
 }
