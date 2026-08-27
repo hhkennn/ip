@@ -1,11 +1,12 @@
 package herta.task;
 
-import herta.parser.DateTimeParser;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.Optional;
+
+import herta.parser.DateTimeParser;
 
 /**
  * Represents a task that starts and ends at specified dates or times.
