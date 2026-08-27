@@ -1,3 +1,12 @@
+package herta;
+
+import herta.command.Command;
+import herta.exception.HertaException;
+import herta.parser.Parser;
+import herta.storage.Storage;
+import herta.task.TaskList;
+import herta.ui.Ui;
+
 /**
  * Provides the command-line entry point for the Herta task manager.
  */

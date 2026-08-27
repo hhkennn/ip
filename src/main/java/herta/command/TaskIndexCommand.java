@@ -1,3 +1,8 @@
+package herta.command;
+
+import herta.exception.HertaException;
+import herta.task.TaskList;
+
 /**
  * Base class for commands that operate on one task selected by its list number.
  */

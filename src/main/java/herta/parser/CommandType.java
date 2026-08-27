@@ -1,3 +1,5 @@
+package herta.parser;
+
 /**
  * Represents the commands supported by Herta.
  */

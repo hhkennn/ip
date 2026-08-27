@@ -3,7 +3,7 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/directory-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out src/main/java/*.java`
+- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
 - Session log: `test/directory-data-ui-test-session.log`
 
 The launcher temporarily makes `data/herta.txt` a directory. Herta should

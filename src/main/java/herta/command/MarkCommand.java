@@ -1,3 +1,11 @@
+package herta.command;
+
+import herta.exception.HertaException;
+import herta.storage.Storage;
+import herta.task.Task;
+import herta.task.TaskList;
+import herta.ui.Ui;
+
 /**
  * Represents the command that marks a task as complete.
  */

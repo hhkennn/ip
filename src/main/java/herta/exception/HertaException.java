@@ -1,3 +1,5 @@
+package herta.exception;
+
 /**
  * Represents an input error that Herta can explain to the user.
  */

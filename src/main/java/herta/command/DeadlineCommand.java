@@ -1,3 +1,7 @@
+package herta.command;
+
+import herta.task.Deadline;
+
 /**
  * Represents the command that adds a deadline task.
  */

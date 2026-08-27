@@ -1,3 +1,9 @@
+package herta.command;
+
+import herta.storage.Storage;
+import herta.task.TaskList;
+import herta.ui.Ui;
+
 /**
  * Represents the command that ends the Herta application.
  */

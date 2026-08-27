@@ -3,7 +3,7 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/reset-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out src/main/java/*.java`
+- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
 - Session log: `test/ui-test-session.log`
 
 Run this plan through the project-specific `test-ui` workflow. That workflow
