@@ -4,5 +4,5 @@ $dataDirectory = Split-Path -Parent $dataFile
 New-Item -ItemType Directory -Path $dataDirectory -Force | Out-Null
 Remove-Item -LiteralPath $dataFile -Force -ErrorAction SilentlyContinue
 
-& java -cp out Herta
+& java -cp out herta.Herta
 exit $LASTEXITCODE

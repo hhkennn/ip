@@ -1,3 +1,6 @@
+package herta.ui;
+
+import herta.task.Task;
 import java.util.Scanner;
 
 /**

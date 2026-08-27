@@ -1,3 +1,7 @@
+package herta.command;
+
+import herta.task.Event;
+
 /**
  * Represents the command that adds an event task.
  */

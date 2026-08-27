@@ -3,7 +3,7 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/malformed-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out src/main/java/*.java`
+- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
 - Session log: `test/malformed-data-ui-test-session.log`
 
 The launcher supplies a malformed saved task with an invalid completion status.

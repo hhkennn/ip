@@ -1,3 +1,11 @@
+package herta.command;
+
+import herta.exception.HertaException;
+import herta.storage.Storage;
+import herta.task.Task;
+import herta.task.TaskList;
+import herta.ui.Ui;
+
 /**
  * Base class for commands that append a task to the task list.
  */

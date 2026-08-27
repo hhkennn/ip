@@ -7,7 +7,7 @@ if (Test-Path -LiteralPath $dataFile) {
 }
 New-Item -ItemType Directory -Path $dataFile -Force | Out-Null
 
-& java -cp out Herta
+& java -cp out herta.Herta
 $exitCode = $LASTEXITCODE
 Remove-Item -LiteralPath $dataFile -Recurse -Force
 exit $exitCode
