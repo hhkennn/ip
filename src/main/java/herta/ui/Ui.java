@@ -1,7 +1,8 @@
 package herta.ui;
 
-import herta.task.Task;
 import java.util.Scanner;
+
+import herta.task.Task;
 
 /**
  * Handles user interaction for Herta, including console input and output.

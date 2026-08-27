@@ -1,10 +1,11 @@
 package herta.command;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 import herta.task.Task;
 import herta.task.TaskList;
 import herta.ui.Ui;
-import java.util.List;
-import java.util.function.Predicate;
 
 /**
  * Base class for commands that display tasks selected by a condition.

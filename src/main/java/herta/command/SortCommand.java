@@ -1,12 +1,13 @@
 package herta.command;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+
 import herta.storage.Storage;
 import herta.task.Task;
 import herta.task.TaskList;
 import herta.ui.Ui;
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Represents the command that displays tasks in chronological order.
@@ -23,8 +24,8 @@ public class SortCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
-        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing(
-                (Task task) -> task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
+        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
+                task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 
         ui.showMessage("Here are your tasks sorted by date:");
         for (int index : sortedIndices) {

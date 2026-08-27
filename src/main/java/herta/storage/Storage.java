@@ -1,11 +1,5 @@
 package herta.storage;
 
-import herta.exception.HertaException;
-import herta.task.Deadline;
-import herta.task.Event;
-import herta.task.Task;
-import herta.task.TaskList;
-import herta.task.Todo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,6 +13,13 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import herta.exception.HertaException;
+import herta.task.Deadline;
+import herta.task.Event;
+import herta.task.Task;
+import herta.task.TaskList;
+import herta.task.Todo;
 
 /**
  * Handles loading tasks from and saving tasks to Herta's data file.
