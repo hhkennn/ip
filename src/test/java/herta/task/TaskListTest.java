@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,19 @@ import org.junit.jupiter.api.Test;
  * Tests task-list state changes and the index-based query operations used by commands.
  */
 class TaskListTest {
+
+    @Test
+    void addAndRemove_updateSizeAndReturnRemovedTask() {
+        TaskList tasks = new TaskList();
+        Todo todo = new Todo("read book");
+
+        assertEquals(0, tasks.size());
+        tasks.add(todo);
+        assertEquals(1, tasks.size());
+        assertEquals(todo, tasks.get(0));
+        assertEquals(todo, tasks.remove(0));
+        assertEquals(0, tasks.size());
+    }
 
     @Test
     void markUnmarkAndRestoreStatus_updateTaskAndReportPreviousStatus() {
@@ -70,5 +84,17 @@ class TaskListTest {
 
         assertThrows(UnsupportedOperationException.class, () ->
                 tasks.asUnmodifiableList().add(new Todo("write book")));
+    }
+
+    @Test
+    void iterator_returnsTasksInStoredOrderAndRejectsRemoval() {
+        Todo first = new Todo("first");
+        Todo second = new Todo("second");
+        TaskList tasks = new TaskList(List.of(first, second));
+        Iterator<Task> iterator = tasks.iterator();
+
+        assertEquals(first, iterator.next());
+        assertEquals(second, iterator.next());
+        assertThrows(UnsupportedOperationException.class, iterator::remove);
     }
 }

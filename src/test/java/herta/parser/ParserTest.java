@@ -10,11 +10,17 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
 import herta.command.DeadlineCommand;
+import herta.command.DeleteCommand;
 import herta.command.EventCommand;
 import herta.command.ExitCommand;
+import herta.command.FilterCommand;
 import herta.command.ListCommand;
+import herta.command.MarkCommand;
+import herta.command.SortCommand;
 import herta.command.TodoCommand;
 import herta.command.UnknownCommand;
+import herta.command.UnmarkCommand;
+import herta.command.UpcomingCommand;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
@@ -34,8 +40,20 @@ class ParserTest {
         assertInstanceOf(EventCommand.class,
                 parser.parse("event meeting /from 2019-10-15 /to 2019-10-16"));
         assertInstanceOf(ListCommand.class, parser.parse("list"));
+        assertInstanceOf(FilterCommand.class, parser.parse("filter /on 2019-10-15"));
+        assertInstanceOf(UpcomingCommand.class, parser.parse("upcoming 7"));
+        assertInstanceOf(SortCommand.class, parser.parse("sort date"));
+        assertInstanceOf(MarkCommand.class, parser.parse("mark 1"));
+        assertInstanceOf(UnmarkCommand.class, parser.parse("unmark 1"));
+        assertInstanceOf(DeleteCommand.class, parser.parse("delete 1"));
         assertInstanceOf(ExitCommand.class, parser.parse("bye"));
         assertInstanceOf(UnknownCommand.class, parser.parse("unknown command"));
+    }
+
+    @Test
+    void parseCommandType_delegatesCommandRecognition() {
+        assertEquals(CommandType.SORT, parser.parseCommandType("sort date"));
+        assertEquals(CommandType.SORT, parser.parseCommandType("sort time"));
     }
 
     @Test
@@ -100,6 +118,14 @@ class ParserTest {
                 parser.parseFilterDate("filter /on 2019-10-15"));
         assertEquals(LocalDate.of(2019, 10, 15),
                 parser.parseFilterDate("filter /on 15/10/2019"));
+    }
+
+    @Test
+    void parseFilterDate_missingOnKeyword_throwsHelpfulException() {
+        HertaException exception = assertThrows(HertaException.class, () ->
+                parser.parseFilterDate("filter 2019-10-15"));
+
+        assertEquals("Use: filter /on <date>.", exception.getMessage());
     }
 
     @Test

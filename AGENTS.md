@@ -38,10 +38,10 @@ After every code update:
 
 ## JUnit test coverage target:
 
-Aim to cover approximately the top 50% of methods by value, prioritising complex,
-core, or critical business logic over trivial accessors and constructors. After
-every code change, review and update the relevant JUnit tests so that the affected
-high-value methods remain covered and this target is maintained.
+The project has reached the stretch goal of using JUnit to test all non-trivial
+public methods across all classes, while excluding trivial constructors and
+accessors. After every code change, review and update the relevant JUnit tests so
+that affected methods remain covered and this level of coverage is maintained.
 
 ## Git
 

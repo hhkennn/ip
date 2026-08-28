@@ -64,6 +64,18 @@ class StorageTest {
     }
 
     @Test
+    void load_directoryPath_throwsHelpfulException() throws Exception {
+        Path dataDirectory = temporaryDirectory.resolve("data-directory");
+        Files.createDirectory(dataDirectory);
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                new Storage(dataDirectory.toString()).load());
+
+        assertEquals("Failed to load tasks: data path is not a regular file.",
+                exception.getMessage());
+    }
+
+    @Test
     void load_malformedRecord_reportsLineNumber() throws Exception {
         Path dataFile = temporaryDirectory.resolve("malformed.txt");
         Files.writeString(dataFile, "T | 0 | valid task\nX | 0 | unknown task\n");
@@ -86,5 +98,20 @@ class StorageTest {
         assertEquals("Failed to save tasks: Invalid saved task: type T requires 3 fields.",
                 exception.getMessage());
         assertTrue(Files.notExists(dataFile));
+    }
+
+    @Test
+    void save_nullOrNullContainingTaskList_rejectsInvalidInput() {
+        Storage storage = new Storage(temporaryDirectory.resolve("invalid.txt").toString());
+
+        HertaException nullListException = assertThrows(HertaException.class, () ->
+                storage.save(null));
+        HertaException nullTaskException = assertThrows(HertaException.class, () ->
+                storage.save(new TaskList(java.util.Arrays.asList((Todo) null))));
+
+        assertEquals("Failed to save tasks: task list is null.",
+                nullListException.getMessage());
+        assertEquals("Failed to save tasks: task list contains a null task.",
+                nullTaskException.getMessage());
     }
 }
