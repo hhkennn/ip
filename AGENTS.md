@@ -36,6 +36,13 @@ After every code update:
 2. Invoke the project-specific `test-ui` skill and run all applicable UI test cases before declaring the update complete.
 3. If a UI test fails, stop and report the actual and expected outputs; do not treat the code update as complete until the failure is resolved or explicitly explained.
 
+## JUnit test coverage target:
+
+Aim to cover approximately the top 50% of methods by value, prioritising complex,
+core, or critical business logic over trivial accessors and constructors. After
+every code change, review and update the relevant JUnit tests so that the affected
+high-value methods remain covered and this target is maintained.
+
 ## Git
 
 Use lightweight tags unless the user requests an annotated tag.

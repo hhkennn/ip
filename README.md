@@ -27,3 +27,8 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 ## AI Assistance
 
 I have used OpenAI Codex as an AI-assisted coding tool throughout the development of this project. It was used to suggest, generate, explain, debug, and refine code, including command parsing, command dispatch, task operations, and EOF handling. I reviewed, adapted, and tested the resulting code.
+
+The project follows a JUnit test coverage target of approximately 50% of the
+highest-value methods, prioritising complex, core, or critical business logic.
+JUnit tests must be reviewed and updated after every code change so that affected
+high-value methods remain covered and the target is maintained.
