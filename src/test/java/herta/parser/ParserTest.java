@@ -14,6 +14,7 @@ import herta.command.DeleteCommand;
 import herta.command.EventCommand;
 import herta.command.ExitCommand;
 import herta.command.FilterCommand;
+import herta.command.FindCommand;
 import herta.command.ListCommand;
 import herta.command.MarkCommand;
 import herta.command.SortCommand;
@@ -40,6 +41,7 @@ class ParserTest {
         assertInstanceOf(EventCommand.class,
                 parser.parse("event meeting /from 2019-10-15 /to 2019-10-16"));
         assertInstanceOf(ListCommand.class, parser.parse("list"));
+        assertInstanceOf(FindCommand.class, parser.parse("find book"));
         assertInstanceOf(FilterCommand.class, parser.parse("filter /on 2019-10-15"));
         assertInstanceOf(UpcomingCommand.class, parser.parse("upcoming 7"));
         assertInstanceOf(SortCommand.class, parser.parse("sort date"));
@@ -71,6 +73,19 @@ class ParserTest {
 
         assertEquals("A blank todo? Even I can't organise nothing. Use: todo <description>.",
                 exception.getMessage());
+    }
+
+    @Test
+    void parseFindKeyword_nonEmptyKeyword_returnsTrimmedKeyword() throws HertaException {
+        assertEquals("read book", parser.parseFindKeyword("find   read book  "));
+    }
+
+    @Test
+    void parseFindKeyword_emptyKeyword_throwsHelpfulException() {
+        HertaException exception = assertThrows(HertaException.class, () ->
+                parser.parseFindKeyword("find   "));
+
+        assertEquals("A blank search? Use: find <keyword>.", exception.getMessage());
     }
 
     @Test

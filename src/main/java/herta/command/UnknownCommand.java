@@ -34,7 +34,7 @@ public class UnknownCommand extends Command {
             throw new HertaException("Nothing? Were you expecting me to read your mind?");
         }
         throw new HertaException("That command is invalid. Were you just guessing?\n"
-                + "Try todo, deadline, event, list, filter, upcoming, sort, "
+                + "Try todo, deadline, event, list, find, filter, upcoming, sort, "
                 + "mark, unmark, delete, and bye.");
     }
 }

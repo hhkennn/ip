@@ -10,6 +10,7 @@ import herta.command.DeleteCommand;
 import herta.command.EventCommand;
 import herta.command.ExitCommand;
 import herta.command.FilterCommand;
+import herta.command.FindCommand;
 import herta.command.ListCommand;
 import herta.command.MarkCommand;
 import herta.command.SortCommand;
@@ -51,6 +52,8 @@ public class Parser {
                 return new ExitCommand();
             case LIST:
                 return new ListCommand();
+            case FIND:
+                return new FindCommand(parseFindKeyword(input));
             case TODO:
                 return new TodoCommand(parseTodo(input));
             case DEADLINE:
@@ -89,6 +92,21 @@ public class Parser {
                     + "Use: todo <description>.");
         }
         return new Todo(description);
+    }
+
+    /**
+     * Parses the keyword from a find command.
+     *
+     * @param input the complete find command
+     * @return the keyword to search for
+     * @throws HertaException if the keyword is empty
+     */
+    public String parseFindKeyword(String input) throws HertaException {
+        String keyword = input.substring("find".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new HertaException("A blank search? Use: find <keyword>.");
+        }
+        return keyword;
     }
 
     /**
