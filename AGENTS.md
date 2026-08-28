@@ -24,6 +24,17 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Java coding standard:
+
+All new and modified Java code in this project, including test code, MUST follow
+the project skill [`seedu-java-coding-standard`](.codex/skills/seedu-java-coding-standard/SKILL.md),
+which is based on the [SE-EDU Java coding standard](https://se-education.org/guides/conventions/java/intermediate.html).
+Load and apply that skill before editing Java code. Review the resulting diff for
+naming, layout, statements, imports, declarations, comments, and Javadoc; use the
+existing Checkstyle configuration as the automated conformance check. Do not
+weaken the standard or its Checkstyle checks to conceal a violation. For topics
+not covered by the skill, follow the Google Java Style Guide.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
@@ -45,6 +56,13 @@ that affected methods remain covered and this level of coverage is maintained.
 
 ## Git
 
+All future commits in this project MUST follow the project skill
+[`seedu-git-standard`](.codex/skills/seedu-git-standard/SKILL.md), which is based
+on the [SE-EDU Git conventions](https://se-education.org/guides/conventions/git.html).
+Load and apply that skill before drafting, reviewing, amending, or creating a
+commit. Enforce its subject-line, commit-body, and branch-name rules, and inspect
+the staged diff to keep unrelated changes out of each commit. Do not commit or
+push unless explicitly asked.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
-Do not commit or push unless explicitly asked.
