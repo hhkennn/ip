@@ -56,6 +56,13 @@ that affected methods remain covered and this level of coverage is maintained.
 
 ## Git
 
+All future commits in this project MUST follow the project skill
+[`seedu-git-standard`](.codex/skills/seedu-git-standard/SKILL.md), which is based
+on the [SE-EDU Git conventions](https://se-education.org/guides/conventions/git.html).
+Load and apply that skill before drafting, reviewing, amending, or creating a
+commit. Enforce its subject-line, commit-body, and branch-name rules, and inspect
+the staged diff to keep unrelated changes out of each commit. Do not commit or
+push unless explicitly asked.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
-Do not commit or push unless explicitly asked.
