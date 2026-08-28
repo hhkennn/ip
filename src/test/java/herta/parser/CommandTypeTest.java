@@ -15,12 +15,14 @@ class CommandTypeTest {
         assertEquals(CommandType.DEADLINE, CommandType.fromInput("deadline report /by 2019-10-15"));
         assertEquals(CommandType.EVENT, CommandType.fromInput("event meeting /from Mon /to Tue"));
         assertEquals(CommandType.LIST, CommandType.fromInput("list"));
+        assertEquals(CommandType.FIND, CommandType.fromInput("find book"));
         assertEquals(CommandType.BYE, CommandType.fromInput("bye"));
     }
 
     @Test
     void fromInput_commandLookalikes_returnsUnknown() {
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("todotask"));
+        assertEquals(CommandType.UNKNOWN, CommandType.fromInput("findbook"));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("list extra"));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("byebye"));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput(""));

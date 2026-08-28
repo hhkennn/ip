@@ -8,6 +8,7 @@ public enum CommandType {
     DEADLINE("deadline", true),
     EVENT("event", true),
     LIST("list", false),
+    FIND("find", true),
     FILTER("filter", true),
     UPCOMING("upcoming", true),
     SORT("sort", true),

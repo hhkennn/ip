@@ -153,6 +153,13 @@ class CommandTest {
         assertTrue(filterOutput.contains("3.[E][ ] project meeting"));
         assertFalse(filterOutput.contains("1.[T][ ] buy milk"));
 
+        String findOutput = captureOutput(() ->
+                new FindCommand("REPORT").execute(tasks, new Ui(), null));
+        assertTrue(findOutput.contains("Here are the matching tasks in your list:"));
+        assertTrue(findOutput.contains("2.[D][ ] submit report"));
+        assertFalse(findOutput.contains("1.[T][ ] buy milk"));
+        assertFalse(findOutput.contains("3.[E][ ] project meeting"));
+
         String sortOutput = captureOutput(() ->
                 new SortCommand().execute(tasks, new Ui(), null));
         assertTrue(sortOutput.contains("Here are your tasks sorted by date:"));
@@ -172,6 +179,15 @@ class CommandTest {
                         .execute(tasks, new Ui(), null));
 
         assertTrue(output.contains("No deadlines or events occur on Oct 15 2019."));
+    }
+
+    @Test
+    void findCommand_noMatchesDisplaysEmptyMessage() throws Exception {
+        String output = captureOutput(() ->
+                new FindCommand("missing")
+                        .execute(new TaskList(List.of(new Todo("buy milk"))), new Ui(), null));
+
+        assertTrue(output.contains("No tasks match the keyword: missing"));
     }
 
     @Test

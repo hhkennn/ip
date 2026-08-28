@@ -26,6 +26,7 @@ that plan supplies a persisted data fixture before startup.
 | --- | --- | --- | --- |
 | Start and exit | `bye` | End of input | Fresh process per case |
 | List tasks | Populated list | Empty list | State checked after errors |
+| Find tasks | Matching keyword in descriptions | Empty keyword or no matches | Original task numbering and order are preserved |
 | Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization and date formatting |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
@@ -53,6 +54,66 @@ bye
      |_| |_|\___|_|   \__\__,_|
      Oh, you're here. I'm Herta.
      Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Find tasks by description keyword
+
+- Aim: Verify that `find` performs a case-insensitive substring search, preserves the original task numbers, and reports empty searches and searches without matches.
+
+### Inputs
+
+```text
+todo read book
+todo call June
+todo return book
+find BOOK
+find missing
+find
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] read book
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] call June
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] return book
+     That makes 3 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the matching tasks in your list:
+     1.[T][ ] read book
+     3.[T][ ] return book
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the matching tasks in your list:
+     No tasks match the keyword: missing
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     A blank search? Use: find <keyword>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -278,7 +339,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -287,7 +348,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -296,27 +357,27 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -540,7 +601,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -595,11 +656,11 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
