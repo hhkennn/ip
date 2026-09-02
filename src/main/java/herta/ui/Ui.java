@@ -7,7 +7,7 @@ import herta.task.Task;
 /**
  * Handles user interaction for Herta, including console input and output.
  */
-public class Ui {
+public class Ui implements UiOutput {
     private static final String INDENT = "     ";
     private static final String SEPARATOR = "____________________________________________________________";
 
@@ -61,6 +61,7 @@ public class Ui {
      *
      * @param message the message to display
      */
+    @Override
     public void showMessage(String message) {
         String[] lines = message.split("\\R");
         for (String line : lines) {
@@ -73,6 +74,7 @@ public class Ui {
      *
      * @param task the task to display
      */
+    @Override
     public void showTask(Task task) {
         showMessage("  " + task);
     }
@@ -82,6 +84,7 @@ public class Ui {
      *
      * @param taskCount the number of tasks
      */
+    @Override
     public void showTaskCount(int taskCount) {
         String taskNoun = taskCount == 1 ? "task" : "tasks";
         showMessage("That makes " + taskCount + " " + taskNoun
@@ -91,6 +94,7 @@ public class Ui {
     /**
      * Displays Herta's goodbye message and closing separator.
      */
+    @Override
     public void showGoodbye() {
         showMessage("Leaving already? Goodbye.");
         showSeparator();

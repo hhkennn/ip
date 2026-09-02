@@ -7,7 +7,7 @@ import java.util.List;
 import herta.storage.Storage;
 import herta.task.Task;
 import herta.task.TaskList;
-import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Represents the command that displays tasks in chronological order.
@@ -19,11 +19,11 @@ public class SortCommand extends Command {
      * order stored in the task list.
      *
      * @param tasks the task list to sort for display
-     * @param ui the user interface used for output
+     * @param ui the output interface used to display responses
      * @param storage unused because sorting does not change stored data
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
                 task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 

@@ -6,6 +6,7 @@ import herta.parser.Parser;
 import herta.storage.Storage;
 import herta.task.TaskList;
 import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Provides the command-line entry point for the Herta task manager.
@@ -61,13 +62,7 @@ public class Herta {
             }
             ui.showSeparator();
 
-            try {
-                Command command = parser.parse(input);
-                command.execute(tasks, ui, storage);
-                isExit = command.isExit();
-            } catch (HertaException e) {
-                ui.showMessage(e.getMessage());
-            }
+            isExit = processCommand(input, ui);
 
             if (!isExit) {
                 ui.showSeparator();
@@ -75,6 +70,24 @@ public class Herta {
         }
 
         ui.close();
+    }
+
+    /**
+     * Parses and executes one command using the supplied output interface.
+     *
+     * @param input the command to process
+     * @param output the output interface used to display responses
+     * @return {@code true} if the command requests application exit
+     */
+    private boolean processCommand(String input, UiOutput output) {
+        try {
+            Command command = parser.parse(input);
+            command.execute(tasks, output, storage);
+            return command.isExit();
+        } catch (HertaException e) {
+            output.showMessage(e.getMessage());
+            return false;
+        }
     }
 
     /**

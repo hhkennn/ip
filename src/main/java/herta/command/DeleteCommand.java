@@ -4,7 +4,7 @@ import herta.exception.HertaException;
 import herta.storage.Storage;
 import herta.task.Task;
 import herta.task.TaskList;
-import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Represents the command that removes a task from the task list.
@@ -24,12 +24,12 @@ public class DeleteCommand extends TaskIndexCommand {
      * Saves the list without the selected task, then removes it from the live list.
      *
      * @param tasks the task list to update
-     * @param ui the user interface used for output
+     * @param ui the output interface used to display responses
      * @param storage the storage used to persist the deletion
      * @throws HertaException if the selected task is invalid or the updated list cannot be saved
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws HertaException {
+    public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         int taskIndex = getTaskIndex(tasks);
         Task task = tasks.get(taskIndex);
         TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());

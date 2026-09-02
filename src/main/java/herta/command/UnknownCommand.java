@@ -3,7 +3,7 @@ package herta.command;
 import herta.exception.HertaException;
 import herta.storage.Storage;
 import herta.task.TaskList;
-import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Represents an empty or unrecognised user command.
@@ -29,7 +29,7 @@ public class UnknownCommand extends Command {
      * @throws HertaException describing why the input was rejected
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws HertaException {
+    public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         if (emptyInput) {
             throw new HertaException("Nothing? Were you expecting me to read your mind?");
         }
