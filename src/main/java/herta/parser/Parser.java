@@ -47,7 +47,20 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Command parse(String input) throws HertaException {
-        switch (parseCommandType(input)) {
+        return parse(input, parseCommandType(input));
+    }
+
+    /**
+     * Parses user input using a command type that has already been identified.
+     *
+     * @param input the complete user input
+     * @param commandType the command type identified for the input
+     * @return a command representing the input, including an
+     *         {@link UnknownCommand} for unsupported input
+     * @throws HertaException if command-specific parsing fails
+     */
+    public Command parse(String input, CommandType commandType) throws HertaException {
+        switch (commandType) {
             case BYE:
                 return new ExitCommand();
             case LIST:
@@ -132,8 +145,7 @@ public class Parser {
         }
 
         return new Deadline(description, parseUserDateTime(byInput,
-                "Invalid deadline date/time. Use a date such as "
-                        + "2019-10-15 or a date/time such as 2/12/2019 1800."));
+                "That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800."));
     }
 
     /**
@@ -166,15 +178,13 @@ public class Parser {
         }
 
         LocalDateTime from = parseUserDateTime(fromInput,
-                "Invalid event date/time. Use a date such as "
-                        + "2019-10-15 or a date/time such as 2/12/2019 1800.");
+                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
         LocalDateTime to = parseUserDateTime(toInput,
-                "Invalid event date/time. Use a date such as "
-                        + "2019-10-15 or a date/time such as 2/12/2019 1800.");
+                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
         try {
             return new Event(description, from, to);
         } catch (IllegalArgumentException e) {
-            throw new HertaException("An event must end after it starts.");
+            throw new HertaException("Time moves forward. Make the event end after it starts.");
         }
     }
 
@@ -188,14 +198,13 @@ public class Parser {
     public LocalDate parseFilterDate(String input) throws HertaException {
         String[] parts = input.substring("filter".length()).trim().split("\\s+", 2);
         if (parts.length != 2 || !parts[0].equals("/on")) {
-            throw new HertaException("Use: filter /on <date>.");
+            throw new HertaException("You forgot the /on. Use: filter /on <date>.");
         }
 
         try {
             return DateTimeParser.parseUserDate(parts[1]);
         } catch (DateTimeParseException e) {
-            throw new HertaException("Invalid filter date. Use a date such as "
-                    + "2019-10-15 or 15/10/2019.");
+            throw new HertaException("That date won't do. Try 2019-10-15 or 15/10/2019.");
         }
     }
 
@@ -215,7 +224,7 @@ public class Parser {
             }
             return days;
         } catch (NumberFormatException e) {
-            throw new HertaException("Use: upcoming <positive number of days>.");
+            throw new HertaException("That range makes no sense. Use a positive number of days.");
         }
     }
 
@@ -227,7 +236,7 @@ public class Parser {
      */
     public void validateSortCommand(String input) throws HertaException {
         if (!input.equals("sort date")) {
-            throw new HertaException("Use: sort date.");
+            throw new HertaException("That is not a sorting option. Use: sort date.");
         }
     }
 

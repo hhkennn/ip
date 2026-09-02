@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import herta.parser.DateTimeParser;
 import herta.storage.Storage;
 import herta.task.TaskList;
-import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Represents the command that displays deadlines and events occurring on a date.
@@ -26,14 +26,14 @@ public class FilterCommand extends QueryCommand {
      * Displays tasks occurring on the command's date.
      *
      * @param tasks the task list to search
-     * @param ui the user interface used for output
+     * @param ui the output interface used to display responses
      * @param storage unused because filtering does not change stored data
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         String displayDate = DateTimeParser.formatDateForDisplay(date);
         showMatchingTasks(tasks, task -> task.occursOn(date),
-                "Tasks occurring on " + displayDate + ":",
-                "No deadlines or events occur on " + displayDate + ".", ui);
+                "Here is what your schedule has for " + displayDate + ", if anything:",
+                "Nothing scheduled. A remarkably empty date.", ui);
     }
 }

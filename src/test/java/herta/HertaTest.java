@@ -43,6 +43,49 @@ class HertaTest {
         assertFalse(output.contains("Your command?"));
     }
 
+    @Test
+    void getResponse_processesCommandAndReturnsOutput() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("herta.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse addResponse = herta.getResponse("todo read book");
+        HertaResponse listResponse = herta.getResponse("list");
+        HertaResponse invalidResponse = herta.getResponse("blah");
+        HertaResponse goodbyeResponse = herta.getResponse("bye");
+
+        assertTrue(addResponse.getMessage().contains("There. I've added it:"));
+        assertTrue(listResponse.getMessage().contains("1.[T][ ] read book"));
+        assertTrue(invalidResponse.getMessage().contains("That command is invalid."));
+        assertTrue(goodbyeResponse.getMessage().contains("Leaving already? Goodbye."));
+        assertEquals(ResponseCategory.ADD, addResponse.getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, listResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ERROR, invalidResponse.getResponseCategory());
+        assertEquals(ResponseCategory.EXIT, goodbyeResponse.getResponseCategory());
+        assertFalse(addResponse.isExitRequested());
+        assertFalse(invalidResponse.isExitRequested());
+        assertTrue(goodbyeResponse.isExitRequested());
+        assertEquals("T | 0 | read book", Files.readString(dataFile).trim());
+    }
+
+    @Test
+    void getResponse_classifiesTaskCommandsAndExecutionFailures() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("herta.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse addResponse = herta.getResponse("todo read book");
+        HertaResponse markResponse = herta.getResponse("mark 1");
+        HertaResponse unmarkResponse = herta.getResponse("unmark 1");
+        HertaResponse deleteResponse = herta.getResponse("delete 1");
+        HertaResponse executionFailureResponse = herta.getResponse("mark 1");
+
+        assertEquals(ResponseCategory.ADD, addResponse.getResponseCategory());
+        assertEquals(ResponseCategory.MARK, markResponse.getResponseCategory());
+        assertEquals(ResponseCategory.UNMARK, unmarkResponse.getResponseCategory());
+        assertEquals(ResponseCategory.DELETE, deleteResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ERROR, executionFailureResponse.getResponseCategory());
+        assertFalse(executionFailureResponse.isExitRequested());
+    }
+
     private String runWithInput(Path dataPath, String input) throws Exception {
         java.io.InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;

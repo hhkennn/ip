@@ -55,6 +55,17 @@ class StorageTest {
     }
 
     @Test
+    void save_repeatedlyReplacesExistingFile() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("herta.txt");
+        Storage storage = new Storage(dataFile.toString());
+
+        storage.save(new TaskList(List.of(new Todo("first task"))));
+        storage.save(new TaskList(List.of(new Todo("second task"))));
+
+        assertEquals(List.of("T | 0 | second task"), Files.readAllLines(dataFile));
+    }
+
+    @Test
     void load_missingDataFile_returnsEmptyTaskList() throws HertaException {
         Path dataFile = temporaryDirectory.resolve("missing.txt");
 

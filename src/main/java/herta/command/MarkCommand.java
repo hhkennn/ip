@@ -4,7 +4,7 @@ import herta.exception.HertaException;
 import herta.storage.Storage;
 import herta.task.Task;
 import herta.task.TaskList;
-import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Represents the command that marks a task as complete.
@@ -25,12 +25,12 @@ public class MarkCommand extends TaskIndexCommand {
      * The in-memory status is restored if saving fails.
      *
      * @param tasks the task list to update
-     * @param ui the user interface used for output
+     * @param ui the output interface used to display responses
      * @param storage the storage used to persist the status change
      * @throws HertaException if the selected task is invalid or cannot be saved
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws HertaException {
+    public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         int taskIndex = getTaskIndex(tasks);
         boolean wasDone = tasks.markTask(taskIndex);
         Task task = tasks.get(taskIndex);

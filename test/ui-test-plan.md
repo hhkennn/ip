@@ -3,19 +3,21 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/reset-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
+- Setup command: `$javaSources = Get-ChildItem -Path src/main/java -Recurse -Filter *.java | Where-Object { $_.BaseName -notin @('DialogBox', 'Launcher', 'Main', 'MainWindow') } | ForEach-Object { $_.FullName }; javac -d out $javaSources`
 - Session log: `test/ui-test-session.log`
 
 Run this plan through the project-specific `test-ui` workflow. That workflow
 checks the Java version and runs the setup command before invoking the runner;
 invoking the runner directly assumes those prerequisites are already complete.
 
-The runner starts a fresh process for each test case. The launcher clears the
-ignored runtime data file before starting each process so that persisted tasks
-from one case do not affect another case. It sends the input commands in order
-and compares the complete console output with the expected output. Add one
-command per line in each `Inputs` block. The output below is intentionally kept
-exact, including prompts, indentation, and separators.
+The setup command excludes JavaFX-specific classes because these tests launch
+the console entry point directly. The runner starts a fresh process for each
+test case. The launcher clears the ignored runtime data file before starting
+each process so that persisted tasks from one case do not affect another case.
+It sends the input commands in order and compares the complete console output
+with the expected output. Add one command per line in each `Inputs` block. The
+output below is intentionally kept exact, including prompts, indentation, and
+separators.
 
 Saved-task loading is covered separately in `test/load-ui-test-plan.md` because
 that plan supplies a persisted data fixture before startup.
@@ -104,13 +106,12 @@ Your command?      ____________________________________________________________
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the matching tasks in your list:
+     Looking for something? How predictable. Here are the matches:
      1.[T][ ] read book
      3.[T][ ] return book
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the matching tasks in your list:
-     No tasks match the keyword: missing
+     I found nothing. Perhaps the task was only in your imagination.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      A blank search? Use: find <keyword>.
@@ -672,13 +673,13 @@ Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Invalid deadline date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Invalid event date/time. Use a date such as 2019-10-15 or a date/time such as 2/12/2019 1800.
+     Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     An event must end after it starts.
+     Time moves forward. Make the event end after it starts.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the event format? Use: event <description> /from <start> /to <end>.
@@ -919,6 +920,7 @@ sort date
 list
 filter /on 15/10/2019
 filter /on 31/02/2019
+filter 2019-10-15
 upcoming 0
 sort time
 bye
@@ -962,21 +964,21 @@ Your command?      ____________________________________________________________
      That makes 5 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Tasks occurring on Oct 15 2019:
+     Here is what your schedule has for Oct 15 2019, if anything:
      2.[D][ ] submit report (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Tasks occurring on Jan 01 2020:
-     No deadlines or events occur on Jan 01 2020.
+     Here is what your schedule has for Jan 01 2020, if anything:
+     Nothing scheduled. A remarkably empty date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Upcoming deadlines and events in the next 4000000 days:
+     Your next 4000000 days. Try not to fall behind:
      4.[D][ ] future report (by: Dec 31 9999)
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are your tasks sorted by date:
+     There. Your tasks are in date order.
      3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
      2.[D][ ] submit report (by: Oct 15 2019)
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
@@ -992,18 +994,21 @@ Your command?      ____________________________________________________________
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Tasks occurring on Oct 15 2019:
+     Here is what your schedule has for Oct 15 2019, if anything:
      2.[D][ ] submit report (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Invalid filter date. Use a date such as 2019-10-15 or 15/10/2019.
+     That date won't do. Try 2019-10-15 or 15/10/2019.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: upcoming <positive number of days>.
+     You forgot the /on. Use: filter /on <date>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: sort date.
+     That range makes no sense. Use a positive number of days.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That is not a sorting option. Use: sort date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

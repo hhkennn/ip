@@ -148,21 +148,23 @@ class CommandTest {
         String filterOutput = captureOutput(() ->
                 new FilterCommand(LocalDate.of(2019, 10, 15))
                         .execute(tasks, new Ui(), null));
-        assertTrue(filterOutput.contains("Tasks occurring on Oct 15 2019:"));
+        assertTrue(filterOutput.contains(
+                "Here is what your schedule has for Oct 15 2019, if anything:"));
         assertTrue(filterOutput.contains("2.[D][ ] submit report"));
         assertTrue(filterOutput.contains("3.[E][ ] project meeting"));
         assertFalse(filterOutput.contains("1.[T][ ] buy milk"));
 
         String findOutput = captureOutput(() ->
                 new FindCommand("REPORT").execute(tasks, new Ui(), null));
-        assertTrue(findOutput.contains("Here are the matching tasks in your list:"));
+        assertTrue(findOutput.contains(
+                "Looking for something? How predictable. Here are the matches:"));
         assertTrue(findOutput.contains("2.[D][ ] submit report"));
         assertFalse(findOutput.contains("1.[T][ ] buy milk"));
         assertFalse(findOutput.contains("3.[E][ ] project meeting"));
 
         String sortOutput = captureOutput(() ->
                 new SortCommand().execute(tasks, new Ui(), null));
-        assertTrue(sortOutput.contains("Here are your tasks sorted by date:"));
+        assertTrue(sortOutput.contains("There. Your tasks are in date order."));
         assertTrue(sortOutput.indexOf("3.[E][ ] project meeting")
                 < sortOutput.indexOf("2.[D][ ] submit report"));
         assertTrue(sortOutput.indexOf("2.[D][ ] submit report")
@@ -178,7 +180,7 @@ class CommandTest {
                 new FilterCommand(LocalDate.of(2019, 10, 15))
                         .execute(tasks, new Ui(), null));
 
-        assertTrue(output.contains("No deadlines or events occur on Oct 15 2019."));
+        assertTrue(output.contains("Nothing scheduled. A remarkably empty date."));
     }
 
     @Test
@@ -187,7 +189,10 @@ class CommandTest {
                 new FindCommand("missing")
                         .execute(new TaskList(List.of(new Todo("buy milk"))), new Ui(), null));
 
-        assertTrue(output.contains("No tasks match the keyword: missing"));
+        assertTrue(output.contains(
+                "I found nothing. Perhaps the task was only in your imagination."));
+        assertFalse(output.contains(
+                "Looking for something? How predictable. Here are the matches:"));
     }
 
     @Test
@@ -201,7 +206,7 @@ class CommandTest {
         String output = captureOutput(() ->
                 new UpcomingCommand(2).execute(tasks, new Ui(), null));
 
-        assertTrue(output.contains("Upcoming deadlines and events in the next 2 days:"));
+        assertTrue(output.contains("Your next 2 days. Try not to fall behind:"));
         assertTrue(output.contains("2.[D][ ] upcoming report"));
         assertFalse(output.contains("buy milk"));
         assertFalse(output.contains("completed report"));
@@ -213,8 +218,7 @@ class CommandTest {
                 new UpcomingCommand(2).execute(
                         new TaskList(List.of(new Todo("buy milk"))), new Ui(), null));
 
-        assertTrue(output.contains("No incomplete deadlines or events are upcoming in the next "
-                + "2 days."));
+        assertTrue(output.contains("Nothing upcoming. Enjoy the silence while it lasts."));
     }
 
     @Test
