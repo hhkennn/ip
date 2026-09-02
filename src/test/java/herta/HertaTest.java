@@ -43,6 +43,26 @@ class HertaTest {
         assertFalse(output.contains("Your command?"));
     }
 
+    @Test
+    void getResponse_processesCommandAndReturnsOutput() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("herta.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse addResponse = herta.getResponse("todo read book");
+        HertaResponse listResponse = herta.getResponse("list");
+        HertaResponse invalidResponse = herta.getResponse("blah");
+        HertaResponse goodbyeResponse = herta.getResponse("bye");
+
+        assertTrue(addResponse.getMessage().contains("There. I've added it:"));
+        assertTrue(listResponse.getMessage().contains("1.[T][ ] read book"));
+        assertTrue(invalidResponse.getMessage().contains("That command is invalid."));
+        assertTrue(goodbyeResponse.getMessage().contains("Leaving already? Goodbye."));
+        assertFalse(addResponse.isExitRequested());
+        assertFalse(invalidResponse.isExitRequested());
+        assertTrue(goodbyeResponse.isExitRequested());
+        assertEquals("T | 0 | read book", Files.readString(dataFile).trim());
+    }
+
     private String runWithInput(Path dataPath, String input) throws Exception {
         java.io.InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;
