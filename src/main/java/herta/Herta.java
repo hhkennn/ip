@@ -2,6 +2,7 @@ package herta;
 
 import herta.command.Command;
 import herta.exception.HertaException;
+import herta.parser.CommandType;
 import herta.parser.Parser;
 import herta.storage.Storage;
 import herta.task.TaskList;
@@ -63,7 +64,8 @@ public class Herta {
             }
             ui.showSeparator();
 
-            isExit = processCommand(input, ui);
+            ResponseCategory responseCategory = processCommand(input, ui);
+            isExit = responseCategory == ResponseCategory.EXIT;
 
             if (!isExit) {
                 ui.showSeparator();
@@ -78,16 +80,17 @@ public class Herta {
      *
      * @param input the command to process
      * @param output the output interface used to display responses
-     * @return {@code true} if the command requests application exit
+     * @return the semantic category of the processed command response
      */
-    private boolean processCommand(String input, UiOutput output) {
+    private ResponseCategory processCommand(String input, UiOutput output) {
+        CommandType commandType = parser.parseCommandType(input);
         try {
-            Command command = parser.parse(input);
+            Command command = parser.parse(input, commandType);
             command.execute(tasks, output, storage);
-            return command.isExit();
+            return ResponseCategory.fromCommandType(commandType);
         } catch (HertaException e) {
             output.showMessage(e.getMessage());
-            return false;
+            return ResponseCategory.ERROR;
         }
     }
 
@@ -108,7 +111,8 @@ public class Herta {
      */
     public HertaResponse getResponse(String input) {
         ResponseCollector response = new ResponseCollector();
-        boolean exitRequested = processCommand(input, response);
-        return new HertaResponse(response.getOutput(), exitRequested);
+        ResponseCategory responseCategory = processCommand(input, response);
+        boolean exitRequested = responseCategory == ResponseCategory.EXIT;
+        return new HertaResponse(response.getOutput(), exitRequested, responseCategory);
     }
 }

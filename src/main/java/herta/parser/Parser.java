@@ -47,7 +47,20 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Command parse(String input) throws HertaException {
-        switch (parseCommandType(input)) {
+        return parse(input, parseCommandType(input));
+    }
+
+    /**
+     * Parses user input using a command type that has already been identified.
+     *
+     * @param input the complete user input
+     * @param commandType the command type identified for the input
+     * @return a command representing the input, including an
+     *         {@link UnknownCommand} for unsupported input
+     * @throws HertaException if command-specific parsing fails
+     */
+    public Command parse(String input, CommandType commandType) throws HertaException {
+        switch (commandType) {
             case BYE:
                 return new ExitCommand();
             case LIST:
