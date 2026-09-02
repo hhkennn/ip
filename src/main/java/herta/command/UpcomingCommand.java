@@ -38,14 +38,13 @@ public class UpcomingCommand extends QueryCommand {
         try {
             until = now.plusDays(days);
         } catch (DateTimeException e) {
-            throw new HertaException("The upcoming time range is too large.");
+            throw new HertaException("You want me to look that far ahead? Use a smaller number of days.");
         }
 
         showMatchingTasks(tasks,
                 task -> !task.isDone() && task.isUpcoming(now, until),
-                "Upcoming deadlines and events in the next " + days + " days:",
-                "No incomplete deadlines or events are upcoming in the next "
-                        + days + " days.",
+                "Your next " + days + " days. Try not to fall behind:",
+                "Nothing upcoming. Enjoy the silence while it lasts.",
                 ui);
     }
 }

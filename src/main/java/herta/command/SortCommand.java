@@ -27,7 +27,7 @@ public class SortCommand extends Command {
         List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
                 task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 
-        ui.showMessage("Here are your tasks sorted by date:");
+        ui.showMessage("There. Your tasks are in date order.");
         for (int index : sortedIndices) {
             ui.showMessage((index + 1) + "." + tasks.get(index));
         }

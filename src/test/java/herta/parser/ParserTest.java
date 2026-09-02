@@ -105,8 +105,8 @@ class ParserTest {
 
         assertEquals("Did you even read the deadline format? Use: deadline <description> /by <date/time>.",
                 missingDelimiter.getMessage());
-        assertEquals("Invalid deadline date/time. Use a date such as 2019-10-15 or a date/time such as "
-                + "2/12/2019 1800.", invalidDate.getMessage());
+        assertEquals("That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800.",
+                invalidDate.getMessage());
     }
 
     @Test
@@ -124,7 +124,16 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () -> parser.parseEvent(
                 "event meeting /from 2019-10-16 /to 2019-10-15"));
 
-        assertEquals("An event must end after it starts.", exception.getMessage());
+        assertEquals("Time moves forward. Make the event end after it starts.", exception.getMessage());
+    }
+
+    @Test
+    void parseEvent_invalidDateTime_throwsHelpfulException() {
+        HertaException exception = assertThrows(HertaException.class, () -> parser.parseEvent(
+                "event meeting /from someday /to 2019-10-16"));
+
+        assertEquals("Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.",
+                exception.getMessage());
     }
 
     @Test
@@ -140,7 +149,15 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.parseFilterDate("filter 2019-10-15"));
 
-        assertEquals("Use: filter /on <date>.", exception.getMessage());
+        assertEquals("You forgot the /on. Use: filter /on <date>.", exception.getMessage());
+    }
+
+    @Test
+    void parseFilterDate_invalidDate_throwsHelpfulException() {
+        HertaException exception = assertThrows(HertaException.class, () ->
+                parser.parseFilterDate("filter /on 31/02/2019"));
+
+        assertEquals("That date won't do. Try 2019-10-15 or 15/10/2019.", exception.getMessage());
     }
 
     @Test
@@ -153,7 +170,8 @@ class ParserTest {
         for (String input : new String[] {"upcoming 0", "upcoming -1", "upcoming many"}) {
             HertaException exception = assertThrows(HertaException.class, () ->
                     parser.parseUpcomingDays(input));
-            assertEquals("Use: upcoming <positive number of days>.", exception.getMessage());
+            assertEquals("That range makes no sense. Use a positive number of days.",
+                    exception.getMessage());
         }
     }
 
@@ -177,6 +195,6 @@ class ParserTest {
 
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.validateSortCommand("sort time"));
-        assertEquals("Use: sort date.", exception.getMessage());
+        assertEquals("That is not a sorting option. Use: sort date.", exception.getMessage());
     }
 }

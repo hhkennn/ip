@@ -35,8 +35,8 @@ public class FindCommand extends QueryCommand {
         showMatchingTasks(tasks,
                 task -> task.getDescription().toLowerCase(Locale.ROOT)
                         .contains(normalizedKeyword),
-                "Here are the matching tasks in your list:",
-                "No tasks match the keyword: " + keyword,
+                "Looking for something? How predictable. Here are the matches:",
+                "I found nothing. Perhaps the task was only in your imagination.",
                 ui);
     }
 }
