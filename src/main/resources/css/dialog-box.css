@@ -1,9 +1,13 @@
 .label {
-    -fx-background-color: linear-gradient(to bottom right, #00ffbf, #00ddff);
-    -fx-border-color: #d55e00 #009e73 #cc79a7 #0072b2;
+    -fx-background-color: #f3f4f6;
+    -fx-border-color: #4b5563;
     -fx-border-width: 2px;
     -fx-background-radius: 1em 1em 0 1em;
     -fx-border-radius: 1em 1em 0 1em;
+    -fx-text-fill: #111827;
+    -fx-font-family: "Arial";
+    -fx-font-size: 16px;
+    -fx-padding: 8px 10px;
 }
 
 .reply-label {
@@ -11,46 +15,59 @@
     -fx-border-radius: 1em 1em 1em 0;
 }
 
-/* Semantic response colours. These classes intentionally preserve the bubble shape from .reply-label. */
+/* Shared response properties intentionally preserve the bubble shape from .reply-label. */
+.add-label,
+.marked-label,
+.unmarked-label,
+.delete-label,
+.query-label,
+.error-label,
+.exit-label {
+    -fx-border-width: 2px;
+    -fx-font-weight: normal;
+}
+
 .add-label {
-    -fx-background-color: #d8f3dc;
-    -fx-border-color: #40916c;
-    -fx-text-fill: #1b4332;
+    -fx-background-color: #dcfce7;
+    -fx-border-color: #15803d;
+    -fx-text-fill: #14532d;
 }
 
 .marked-label {
-    -fx-background-color: #cdeccf;
-    -fx-border-color: #2d6a4f;
-    -fx-text-fill: #1b4332;
+    -fx-background-color: #bbf7d0;
+    -fx-border-color: #166534;
+    -fx-text-fill: #14532d;
 }
 
 .unmarked-label {
-    -fx-background-color: #fff3bf;
-    -fx-border-color: #c98a00;
-    -fx-text-fill: #5c4300;
+    -fx-background-color: #fef3c7;
+    -fx-border-color: #b45309;
+    -fx-text-fill: #78350f;
 }
 
 .delete-label {
-    -fx-background-color: #ffe0e0;
-    -fx-border-color: #c1121f;
-    -fx-text-fill: #641220;
+    -fx-background-color: #fee2e2;
+    -fx-border-color: #b91c1c;
+    -fx-text-fill: #7f1d1d;
 }
 
 .query-label {
     -fx-background-color: #dbeafe;
-    -fx-border-color: #2563eb;
+    -fx-border-color: #1d4ed8;
     -fx-text-fill: #1e3a8a;
 }
 
 .error-label {
-    -fx-background-color: #ffe5e5;
-    -fx-border-color: #9b2226;
-    -fx-text-fill: #641220;
+    -fx-background-color: #ffedd5;
+    -fx-border-color: #c2410c;
+    -fx-text-fill: #7c2d12;
+    -fx-border-width: 3px;
+    -fx-font-weight: bold;
 }
 
 .exit-label {
-    -fx-background-color: #eadcf8;
-    -fx-border-color: #6b21a8;
+    -fx-background-color: #ede9fe;
+    -fx-border-color: #6d28d9;
     -fx-text-fill: #4c1d95;
 }
 
