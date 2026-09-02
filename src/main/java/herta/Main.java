@@ -20,6 +20,8 @@ public class Main extends Application {
 
     private final Image hertaImage = new Image(
             Objects.requireNonNull(this.getClass().getResourceAsStream("/images/herta.png")));
+    private final Herta herta = new Herta("data/herta.txt");
+
 
     private ScrollPane scrollPane;
     private VBox dialogContainer;
@@ -94,7 +96,12 @@ public class Main extends Application {
      * the dialog container. Clears the user input after processing.
      */
     private void handleUserInput() {
-        dialogContainer.getChildren().addAll(new DialogBox(userInput.getText(), hertaImage));
+        String userText = userInput.getText();
+        String hertaText = herta.getResponse(userInput.getText());
+        dialogContainer.getChildren().addAll(
+                new DialogBox(userText),
+                new DialogBox(hertaText, hertaImage)
+        );
         userInput.clear();
     }
 }

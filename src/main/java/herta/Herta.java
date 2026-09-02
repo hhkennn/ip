@@ -85,4 +85,11 @@ public class Herta {
     public static void main(String[] args) {
         new Herta("data/herta.txt").run();
     }
+
+    /**
+     * Generates a response for the user's chat message.
+     */
+    public String getResponse(String input) {
+        return "Herta heard: " + input;
+    }
 }
