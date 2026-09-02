@@ -3,19 +3,21 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/reset-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
+- Setup command: `$javaSources = Get-ChildItem -Path src/main/java -Recurse -Filter *.java | Where-Object { $_.BaseName -notin @('DialogBox', 'Launcher', 'Main', 'MainWindow') } | ForEach-Object { $_.FullName }; javac -d out $javaSources`
 - Session log: `test/ui-test-session.log`
 
 Run this plan through the project-specific `test-ui` workflow. That workflow
 checks the Java version and runs the setup command before invoking the runner;
 invoking the runner directly assumes those prerequisites are already complete.
 
-The runner starts a fresh process for each test case. The launcher clears the
-ignored runtime data file before starting each process so that persisted tasks
-from one case do not affect another case. It sends the input commands in order
-and compares the complete console output with the expected output. Add one
-command per line in each `Inputs` block. The output below is intentionally kept
-exact, including prompts, indentation, and separators.
+The setup command excludes JavaFX-specific classes because these tests launch
+the console entry point directly. The runner starts a fresh process for each
+test case. The launcher clears the ignored runtime data file before starting
+each process so that persisted tasks from one case do not affect another case.
+It sends the input commands in order and compares the complete console output
+with the expected output. Add one command per line in each `Inputs` block. The
+output below is intentionally kept exact, including prompts, indentation, and
+separators.
 
 Saved-task loading is covered separately in `test/load-ui-test-plan.md` because
 that plan supplies a persisted data fixture before startup.
