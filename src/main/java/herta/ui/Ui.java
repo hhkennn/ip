@@ -30,10 +30,19 @@ public class Ui implements UiOutput {
                 + "|  _  |  __/ |  | || (_| |\n"
                 + "|_| |_|\\___|_|   \\__\\__,_|\n";
         showSeparator();
-        showMessage(banner);
-        showMessage("Oh, you're here. I'm Herta.");
-        showMessage("Well? What do you want?");
+        showMessages(banner, "Oh, you're here. I'm Herta.", "Well? What do you want?");
         showSeparator();
+    }
+
+    /**
+     * Displays each supplied message using the standard message formatting.
+     *
+     * @param messages the messages to display
+     */
+    private void showMessages(String... messages) {
+        for (String message : messages) {
+            showMessage(message);
+        }
     }
 
     /**
@@ -96,8 +105,7 @@ public class Ui implements UiOutput {
      */
     @Override
     public void showGoodbye() {
-        showMessage("Leaving already? Goodbye.");
-        showSeparator();
+        showMessages("Leaving already? Goodbye.", SEPARATOR);
     }
 
     /**
