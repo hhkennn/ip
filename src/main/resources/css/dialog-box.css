@@ -11,6 +11,49 @@
     -fx-border-radius: 1em 1em 1em 0;
 }
 
+/* Semantic response colours. These classes intentionally preserve the bubble shape from .reply-label. */
+.add-label {
+    -fx-background-color: #d8f3dc;
+    -fx-border-color: #40916c;
+    -fx-text-fill: #1b4332;
+}
+
+.marked-label {
+    -fx-background-color: #cdeccf;
+    -fx-border-color: #2d6a4f;
+    -fx-text-fill: #1b4332;
+}
+
+.unmarked-label {
+    -fx-background-color: #fff3bf;
+    -fx-border-color: #c98a00;
+    -fx-text-fill: #5c4300;
+}
+
+.delete-label {
+    -fx-background-color: #ffe0e0;
+    -fx-border-color: #c1121f;
+    -fx-text-fill: #641220;
+}
+
+.query-label {
+    -fx-background-color: #dbeafe;
+    -fx-border-color: #2563eb;
+    -fx-text-fill: #1e3a8a;
+}
+
+.error-label {
+    -fx-background-color: #ffe5e5;
+    -fx-border-color: #9b2226;
+    -fx-text-fill: #641220;
+}
+
+.exit-label {
+    -fx-background-color: #eadcf8;
+    -fx-border-color: #6b21a8;
+    -fx-text-fill: #4c1d95;
+}
+
 #displayPicture {
     /* Shadow effect on image. */
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.5, 5, 5);

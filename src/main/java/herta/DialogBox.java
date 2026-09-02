@@ -71,8 +71,52 @@ public class DialogBox extends HBox {
      * @return a dialog box displaying Herta's response
      */
     public static DialogBox getHertaDialog(String text, Image image) {
+        return getHertaDialog(text, image, null);
+    }
+
+    /**
+     * Creates a dialog box for a Herta response with its semantic response style.
+     *
+     * @param text Herta's response
+     * @param image Herta's avatar image
+     * @param responseCategory the semantic category of the response
+     * @return a dialog box displaying Herta's response
+     */
+    public static DialogBox getHertaDialog(String text, Image image, ResponseCategory responseCategory) {
         var dialogBox = new DialogBox(text, image);
         dialogBox.flip();
+        dialogBox.applyResponseStyle(responseCategory);
         return dialogBox;
+    }
+
+    /**
+     * Applies a semantic style to Herta's response label without changing its
+     * default styling when no supported category is available.
+     *
+     * @param responseCategory the semantic category of the response
+     */
+    private void applyResponseStyle(ResponseCategory responseCategory) {
+        if (responseCategory == null) {
+            return;
+        }
+
+        if (responseCategory == ResponseCategory.ERROR) {
+            dialog.getStyleClass().add("error-label");
+            return;
+        }
+
+        String styleClass = switch (responseCategory) {
+            case ADD -> "add-label";
+            case MARK -> "marked-label";
+            case UNMARK -> "unmarked-label";
+            case DELETE -> "delete-label";
+            case QUERY -> "query-label";
+            case EXIT -> "exit-label";
+            default -> null;
+        };
+
+        if (styleClass != null) {
+            dialog.getStyleClass().add(styleClass);
+        }
     }
 }

@@ -56,7 +56,8 @@ public class MainWindow extends AnchorPane {
         HertaResponse hertaResponse = herta.getResponse(userText);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(userText),
-                DialogBox.getHertaDialog(hertaResponse.getMessage(), hertaImage));
+                DialogBox.getHertaDialog(
+                        hertaResponse.getMessage(), hertaImage, hertaResponse.getResponseCategory()));
         userInput.clear();
 
         if (hertaResponse.isExitRequested()) {
