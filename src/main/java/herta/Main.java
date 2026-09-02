@@ -1,10 +1,12 @@
 package herta;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -23,6 +25,9 @@ public class Main extends Application {
             Scene scene = new Scene(mainWindow);
 
             stage.setTitle("Herta");
+            Image appIcon = new Image(
+                    Objects.requireNonNull(Main.class.getResourceAsStream("/images/herta.png")));
+            stage.getIcons().add(appIcon);
             stage.setMinHeight(450.0);
             stage.setMinWidth(400.0);
             stage.setScene(scene);

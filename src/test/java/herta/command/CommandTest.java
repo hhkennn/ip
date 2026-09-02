@@ -191,6 +191,8 @@ class CommandTest {
 
         assertTrue(output.contains(
                 "I found nothing. Perhaps the task was only in your imagination."));
+        assertFalse(output.contains(
+                "Looking for something? How predictable. Here are the matches:"));
     }
 
     @Test

@@ -23,8 +23,26 @@ public abstract class QueryCommand extends Command {
      */
     protected void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
                                      String heading, String emptyMessage, UiOutput ui) {
-        ui.showMessage(heading);
+        showMatchingTasks(tasks, matcher, heading, emptyMessage, true, ui);
+    }
+
+    /**
+     * Displays matching tasks with configurable heading behavior for empty results.
+     *
+     * @param tasks the task list to search
+     * @param matcher the condition a task must satisfy
+     * @param heading the heading to print before the results
+     * @param emptyMessage the message to print when there are no matches
+     * @param shouldShowHeadingWhenEmpty whether to print the heading when there are no matches
+     * @param ui the output interface used to display responses
+     */
+    protected void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
+                                     String heading, String emptyMessage,
+                                     boolean shouldShowHeadingWhenEmpty, UiOutput ui) {
         List<Integer> matchingIndices = tasks.matchingIndices(matcher);
+        if (shouldShowHeadingWhenEmpty || !matchingIndices.isEmpty()) {
+            ui.showMessage(heading);
+        }
         for (int index : matchingIndices) {
             ui.showMessage((index + 1) + "." + tasks.get(index));
         }

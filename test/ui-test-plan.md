@@ -111,7 +111,6 @@ Your command?      ____________________________________________________________
      3.[T][ ] return book
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Looking for something? How predictable. Here are the matches:
      I found nothing. Perhaps the task was only in your imagination.
      ____________________________________________________________
 Your command?      ____________________________________________________________

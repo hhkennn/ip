@@ -37,6 +37,7 @@ public class FindCommand extends QueryCommand {
                         .contains(normalizedKeyword),
                 "Looking for something? How predictable. Here are the matches:",
                 "I found nothing. Perhaps the task was only in your imagination.",
+                false,
                 ui);
     }
 }

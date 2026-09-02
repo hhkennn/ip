@@ -6,6 +6,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -24,6 +25,8 @@ public class MainWindow extends AnchorPane {
     @FXML
     private TextField userInput;
     @FXML
+    private Label userInputPrompt;
+    @FXML
     private Button sendButton;
 
     private Herta herta;
@@ -31,11 +34,18 @@ public class MainWindow extends AnchorPane {
             Objects.requireNonNull(MainWindow.class.getResourceAsStream("/images/herta.png")));
 
     /**
-     * Binds the scroll position to the height of the dialog container after FXML injection.
+     * Binds the scroll position to the dialog container and displays Herta's opening messages.
      */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        dialogContainer.getChildren().add(
+                DialogBox.getHertaDialog(
+                        "Oh, you're here. I'm Herta.\nWell? What do you want?",
+                        hertaImage));
+        userInputPrompt.visibleProperty().bind(
+                userInput.textProperty().isEmpty()
+                        .and(userInput.disabledProperty().not()));
     }
 
     /**

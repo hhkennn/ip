@@ -25,6 +25,12 @@
     -fx-opacity: 1.0;
 }
 
+.input-prompt {
+    -fx-text-fill: #4b5563;
+    -fx-font: 18px "Arial";
+    -fx-padding: 6px 10px;
+}
+
 .button {
     -fx-background-color: #166534;
     -fx-text-fill: #ffffff;
