@@ -76,4 +76,6 @@ shadowJar {
 
 run {
     standardInput = System.in
+    // Keep the relative data path anchored at the project root.
+    workingDir = project.projectDir
 }
