@@ -22,7 +22,6 @@ public class Main extends Application {
             Objects.requireNonNull(this.getClass().getResourceAsStream("/images/herta.png")));
     private final Herta herta = new Herta("data/herta.txt");
 
-
     private ScrollPane scrollPane;
     private VBox dialogContainer;
     private TextField userInput;
@@ -97,10 +96,10 @@ public class Main extends Application {
      */
     private void handleUserInput() {
         String userText = userInput.getText();
-        String hertaText = herta.getResponse(userInput.getText());
+        String hertaText = herta.getResponse(userText);
         dialogContainer.getChildren().addAll(
-                new DialogBox(userText),
-                new DialogBox(hertaText, hertaImage)
+                DialogBox.getUserDialog(userText),
+                DialogBox.getHertaDialog(hertaText, hertaImage)
         );
         userInput.clear();
     }
