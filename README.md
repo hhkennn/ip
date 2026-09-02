@@ -32,3 +32,14 @@ The project has reached the stretch goal of using JUnit to test all non-trivial
 public methods across all classes, while excluding trivial constructors and
 accessors. JUnit tests must be reviewed and updated after every code change so
 that affected methods remain covered and this level of coverage is maintained.
+
+## Third-party assets
+
+The Herta avatar image is from *Honkai: Star Rail* and is used for a
+non-commercial student project.
+
+- Image: [Herta: Tea Break profile picture](https://honkai-star-rail.fandom.com/wiki/Herta:_Tea_Break_%28Profile_Picture%29)
+- Copyright: © miHoYo/HoYoverse. All rights reserved.
+
+This project is unofficial and is not affiliated with, endorsed, or sponsored
+by HoYoverse.
