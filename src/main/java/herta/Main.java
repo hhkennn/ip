@@ -23,8 +23,7 @@ public class Main extends Application {
             Scene scene = new Scene(mainWindow);
 
             stage.setTitle("Herta");
-            stage.setResizable(false);
-            stage.setMinHeight(600.0);
+            stage.setMinHeight(450.0);
             stage.setMinWidth(400.0);
             stage.setScene(scene);
             fxmlLoader.<MainWindow>getController().setHerta(herta);
