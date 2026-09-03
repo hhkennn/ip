@@ -54,8 +54,8 @@ public class Herta {
             return;
         }
 
-        boolean isExit = false;
-        while (!isExit) {
+        boolean shouldExit = false;
+        while (!shouldExit) {
             String input = ui.readCommand();
             if (input == null) {
                 ui.showSeparator();
@@ -65,9 +65,9 @@ public class Herta {
             ui.showSeparator();
 
             ResponseCategory responseCategory = processCommand(input, ui);
-            isExit = responseCategory == ResponseCategory.EXIT;
+            shouldExit = responseCategory == ResponseCategory.EXIT;
 
-            if (!isExit) {
+            if (!shouldExit) {
                 ui.showSeparator();
             }
         }

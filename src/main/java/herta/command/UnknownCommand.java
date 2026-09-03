@@ -9,7 +9,7 @@ import herta.ui.UiOutput;
  * Represents an empty or unrecognised user command.
  */
 public class UnknownCommand extends Command {
-    private final boolean emptyInput;
+    private final boolean isEmptyInput;
 
     /**
      * Creates a command that reports the appropriate error for the input.
@@ -17,7 +17,7 @@ public class UnknownCommand extends Command {
      * @param input the complete user input
      */
     public UnknownCommand(String input) {
-        emptyInput = input.isEmpty();
+        isEmptyInput = input.isEmpty();
     }
 
     /**
@@ -30,7 +30,7 @@ public class UnknownCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        if (emptyInput) {
+        if (isEmptyInput) {
             throw new HertaException("Nothing? Were you expecting me to read your mind?");
         }
         throw new HertaException("That command is invalid. Were you just guessing?\n"
