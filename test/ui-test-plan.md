@@ -12,9 +12,11 @@ invoking the runner directly assumes those prerequisites are already complete.
 
 The setup command excludes JavaFX-specific classes because these tests launch
 the console entry point directly. The runner starts a fresh process for each
-test case. The launcher clears the ignored runtime data file before starting
-each process so that persisted tasks from one case do not affect another case.
-It sends the input commands in order and compares the complete console output
+test case. The launcher runs each process in a unique temporary working
+directory with its own `data/herta.txt`, so persisted tasks from one case do
+not affect another case and the project's data file remains untouched. The
+temporary directory is removed after the process exits. It sends the input
+commands in order and compares the complete console output
 with the expected output. Add one command per line in each `Inputs` block. The
 output below is intentionally kept exact, including prompts, indentation, and
 separators.
@@ -32,7 +34,7 @@ that plan supplies a persisted data fixture before startup.
 | Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization and date formatting |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
-| Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to `data/herta.txt` |
+| Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to the test's temporary `data/herta.txt` |
 | Command matching | All supported commands | Command-name lookalikes | Lookalikes do not change state |
 
 ## Test case: Exit immediately
@@ -798,7 +800,7 @@ Your command?      ____________________________________________________________
 
 ## Test case: Save task changes to disk
 
-- Aim: Verify that successful additions, status changes, and deletion are persisted by rewriting the complete task list in `data/herta.txt`.
+- Aim: Verify that successful additions, status changes, and deletion are persisted by rewriting the complete task list in the test's temporary `data/herta.txt`.
 
 ### Inputs
 
