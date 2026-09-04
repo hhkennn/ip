@@ -68,7 +68,7 @@ class HertaTest {
     }
 
     @Test
-    void getResponse_classifiesTaskCommandsAndExecutionFailures() throws Exception {
+    void getResponse_classifiesTaskCommandsAndExecutionFailures() {
         Path dataFile = temporaryDirectory.resolve("herta.txt");
         Herta herta = new Herta(dataFile.toString());
 
@@ -86,7 +86,7 @@ class HertaTest {
         assertFalse(executionFailureResponse.isExitRequested());
     }
 
-    private String runWithInput(Path dataPath, String input) throws Exception {
+    private String runWithInput(Path dataPath, String input) {
         java.io.InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;
         ByteArrayInputStream testInput = new ByteArrayInputStream(

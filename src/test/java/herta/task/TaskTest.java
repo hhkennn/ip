@@ -16,7 +16,7 @@ class TaskTest {
 
     @Test
     void taskStatusAndFormatting_changeAfterCompletion() {
-        Task task = new Task("plain task");
+        Task task = new TestTask("plain task");
 
         assertEquals("plain task", task.getDescription());
         assertEquals(" ", task.getStatusIcon());
@@ -36,5 +36,19 @@ class TaskTest {
 
         task.markAsNotDone();
         assertFalse(task.isDone());
+    }
+
+    /**
+     * Provides a concrete implementation for testing the abstract base class.
+     */
+    private static final class TestTask extends Task {
+        TestTask(String description) {
+            super(description);
+        }
+
+        @Override
+        public String toStorageString() {
+            return "T | " + getCompletionStatusCode() + " | " + getDescription();
+        }
     }
 }

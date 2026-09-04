@@ -42,9 +42,7 @@ public enum CommandType {
         String trimmedInput = input.trim();
         CommandType[] commands = CommandType.values();
 
-        for (int i = 0; i < commands.length; i++) {
-            CommandType command = commands[i];
-
+        for (CommandType command : commands) {
             if (command == UNKNOWN) {
                 continue;
             }

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -118,7 +119,7 @@ class StorageTest {
         HertaException nullListException = assertThrows(HertaException.class, () ->
                 storage.save(null));
         HertaException nullTaskException = assertThrows(HertaException.class, () ->
-                storage.save(new TaskList(java.util.Arrays.asList((Todo) null))));
+                storage.save(new TaskList(Collections.singletonList(null))));
 
         assertEquals("Failed to save tasks: task list is null.",
                 nullListException.getMessage());

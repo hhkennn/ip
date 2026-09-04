@@ -24,11 +24,13 @@ public class Ui implements UiOutput {
      * Displays Herta's welcome screen.
      */
     public void showWelcome() {
-        String banner = " _   _           _\n"
-                + "| | | | ___ _ __| |_ __ _\n"
-                + "| |_| |/ _ \\ '__| __/ _` |\n"
-                + "|  _  |  __/ |  | || (_| |\n"
-                + "|_| |_|\\___|_|   \\__\\__,_|\n";
+        String banner = """
+                 _   _           _
+                | | | | ___ _ __| |_ __ _
+                | |_| |/ _ \\ '__| __/ _` |
+                |  _  |  __/ |  | || (_| |
+                |_| |_|\\___|_|   \\__\\__,_|
+                """;
         showSeparator();
         showMessages(banner, "Oh, you're here. I'm Herta.", "Well? What do you want?");
         showSeparator();

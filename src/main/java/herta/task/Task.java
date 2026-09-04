@@ -5,14 +5,14 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
- * Represents a task in Herta's task list.
+ * Provides common behavior for tasks in Herta's task list.
  *
  * <p>Todo, Deadline, and Event inherit the common completion and description
- * behavior from this class.</p>
+ * behavior from this abstract base class.</p>
  */
-public class Task {
-    protected String description;
-    protected boolean isDone;
+public abstract class Task {
+    private final String description;
+    private boolean isDone;
 
     /**
      * Creates a task that is initially not done.
@@ -97,9 +97,7 @@ public class Task {
      *
      * @return the serialized task text.
      */
-    public String toStorageString() {
-        return "T | " + getCompletionStatusCode() + " | " + description;
-    }
+    public abstract String toStorageString();
 
     /**
      * Returns the numeric completion status used in the data file.

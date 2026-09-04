@@ -58,7 +58,7 @@ public class ResponseCollector implements UiOutput {
     }
 
     private void append(String message) {
-        if (output.length() > 0) {
+        if (!output.isEmpty()) {
             output.append(System.lineSeparator());
         }
         output.append(message);

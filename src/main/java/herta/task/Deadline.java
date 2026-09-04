@@ -12,7 +12,7 @@ import herta.parser.DateTimeParser;
  * Represents a task that must be completed before a given date or time.
  */
 public class Deadline extends Task {
-    protected final LocalDateTime by;
+    private final LocalDateTime by;
 
     /**
      * Creates an incomplete deadline task.
@@ -79,7 +79,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toStorageString() {
-        return "D | " + getCompletionStatusCode() + " | " + description + " | "
+        return "D | " + getCompletionStatusCode() + " | " + getDescription() + " | "
                 + DateTimeParser.formatForStorage(by);
     }
 

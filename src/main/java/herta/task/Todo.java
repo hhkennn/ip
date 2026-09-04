@@ -21,7 +21,7 @@ public class Todo extends Task {
      */
     @Override
     public String toStorageString() {
-        return "T | " + getCompletionStatusCode() + " | " + description;
+        return "T | " + getCompletionStatusCode() + " | " + getDescription();
     }
 
     /**

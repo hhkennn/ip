@@ -10,7 +10,6 @@ import herta.ui.UiOutput;
  * Represents the command that searches task descriptions for a keyword.
  */
 public class FindCommand extends QueryCommand {
-    private final String keyword;
     private final String normalizedKeyword;
 
     /**
@@ -19,7 +18,6 @@ public class FindCommand extends QueryCommand {
      * @param keyword the text to find in task descriptions
      */
     public FindCommand(String keyword) {
-        this.keyword = keyword;
         normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
     }
 

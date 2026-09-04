@@ -60,35 +60,24 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Command parse(String input, CommandType commandType) throws HertaException {
-        switch (commandType) {
-            case BYE:
-                return new ExitCommand();
-            case LIST:
-                return new ListCommand();
-            case FIND:
-                return new FindCommand(parseFindKeyword(input));
-            case TODO:
-                return new TodoCommand(parseTodo(input));
-            case DEADLINE:
-                return new DeadlineCommand(parseDeadline(input));
-            case EVENT:
-                return new EventCommand(parseEvent(input));
-            case DELETE:
-                return new DeleteCommand(parseTaskIndex(input, "delete"));
-            case MARK:
-                return new MarkCommand(parseTaskIndex(input, "mark"));
-            case UNMARK:
-                return new UnmarkCommand(parseTaskIndex(input, "unmark"));
-            case FILTER:
-                return new FilterCommand(parseFilterDate(input));
-            case UPCOMING:
-                return new UpcomingCommand(parseUpcomingDays(input));
-            case SORT:
+        return switch (commandType) {
+            case BYE -> new ExitCommand();
+            case LIST -> new ListCommand();
+            case FIND -> new FindCommand(parseFindKeyword(input));
+            case TODO -> new TodoCommand(parseTodo(input));
+            case DEADLINE -> new DeadlineCommand(parseDeadline(input));
+            case EVENT -> new EventCommand(parseEvent(input));
+            case DELETE -> new DeleteCommand(parseTaskIndex(input, "delete"));
+            case MARK -> new MarkCommand(parseTaskIndex(input, "mark"));
+            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, "unmark"));
+            case FILTER -> new FilterCommand(parseFilterDate(input));
+            case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
+            case SORT -> {
                 validateSortCommand(input);
-                return new SortCommand();
-            default:
-                return new UnknownCommand(input);
-        }
+                yield new SortCommand();
+            }
+            default -> new UnknownCommand(input);
+        };
     }
 
     /**

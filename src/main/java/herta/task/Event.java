@@ -12,8 +12,8 @@ import herta.parser.DateTimeParser;
  * Represents a task that starts and ends at specified dates or times.
  */
 public class Event extends Task {
-    protected final LocalDateTime from;
-    protected final LocalDateTime to;
+    private final LocalDateTime from;
+    private final LocalDateTime to;
 
     /**
      * Creates an incomplete event task.
@@ -101,7 +101,7 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + getCompletionStatusCode() + " | " + description + " | "
+        return "E | " + getCompletionStatusCode() + " | " + getDescription() + " | "
                 + DateTimeParser.formatForStorage(from) + " | "
                 + DateTimeParser.formatForStorage(to);
     }

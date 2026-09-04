@@ -23,27 +23,14 @@ public enum ResponseCategory {
      *         unsupported command type
      */
     public static ResponseCategory fromCommandType(CommandType commandType) {
-        switch (commandType) {
-            case TODO:
-            case DEADLINE:
-            case EVENT:
-                return ADD;
-            case MARK:
-                return MARK;
-            case UNMARK:
-                return UNMARK;
-            case DELETE:
-                return DELETE;
-            case LIST:
-            case FIND:
-            case FILTER:
-            case UPCOMING:
-            case SORT:
-                return QUERY;
-            case BYE:
-                return EXIT;
-            default:
-                return ERROR;
-        }
+        return switch (commandType) {
+            case TODO, DEADLINE, EVENT -> ADD;
+            case MARK -> MARK;
+            case UNMARK -> UNMARK;
+            case DELETE -> DELETE;
+            case LIST, FIND, FILTER, UPCOMING, SORT -> QUERY;
+            case BYE -> EXIT;
+            default -> ERROR;
+        };
     }
 }

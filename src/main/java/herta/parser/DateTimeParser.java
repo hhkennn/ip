@@ -48,24 +48,17 @@ public final class DateTimeParser {
      */
     public static LocalDateTime parseUserInput(String input) {
         String normalizedInput = input.trim();
-        DateTimeParseException lastException = null;
 
         for (DateTimeFormatter formatter : USER_DATE_TIME_FORMATS) {
             try {
                 return LocalDateTime.parse(normalizedInput, formatter);
-            } catch (DateTimeParseException e) {
-                lastException = e;
+            } catch (DateTimeParseException ignored) {
+                // Try the next supported date/time format.
             }
         }
 
-        try {
-            LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
-            return date.atStartOfDay();
-        } catch (DateTimeParseException e) {
-            lastException = e;
-        }
-
-        throw lastException;
+        LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
+        return date.atStartOfDay();
     }
 
     /**
@@ -77,17 +70,18 @@ public final class DateTimeParser {
      */
     public static LocalDate parseUserDate(String input) {
         String normalizedInput = input.trim();
-        DateTimeParseException lastException = null;
 
-        for (DateTimeFormatter formatter : FILTER_DATE_FORMATS) {
+        for (int index = 0; index < FILTER_DATE_FORMATS.size(); index++) {
             try {
-                return LocalDate.parse(normalizedInput, formatter);
+                return LocalDate.parse(normalizedInput, FILTER_DATE_FORMATS.get(index));
             } catch (DateTimeParseException e) {
-                lastException = e;
+                if (index == FILTER_DATE_FORMATS.size() - 1) {
+                    throw e;
+                }
             }
         }
 
-        throw lastException;
+        throw new IllegalStateException("No filter date formats are configured.");
     }
 
     /**
