@@ -87,68 +87,130 @@ public class Storage {
      * @throws HertaException if the task list cannot be written
      */
     public void save(TaskList tasks) throws HertaException {
+        List<String> lines = serializeTasks(tasks);
+        writeStorageLines(lines);
+    }
+
+    /**
+     * Converts every task to a validated storage record.
+     *
+     * @param tasks the task list to serialize
+     * @return validated storage records in task-list order
+     * @throws HertaException if the task list or one of its records is invalid
+     */
+    private List<String> serializeTasks(TaskList tasks) throws HertaException {
         if (tasks == null) {
             throw new HertaException("Failed to save tasks: task list is null.");
         }
 
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
-            if (task == null) {
-                throw new HertaException("Failed to save tasks: task list contains a null task.");
-            }
+            lines.add(serializeTask(task));
+        }
+        return lines;
+    }
 
-            final String storageString;
-            try {
-                storageString = task.toStorageString();
-            } catch (RuntimeException e) {
-                throw new HertaException("Failed to save tasks: task contains invalid data.");
-            }
-            if (storageString == null) {
-                throw new HertaException("Failed to save tasks: task contains invalid data.");
-            }
-            if (storageString.contains("\n") || storageString.contains("\r")) {
-                throw new HertaException("Failed to save tasks: task fields cannot contain line breaks.");
-            }
-            try {
-                parseStoredTask(storageString);
-            } catch (HertaException e) {
-                throw new HertaException("Failed to save tasks: " + e.getMessage());
-            }
-            lines.add(storageString);
+    /**
+     * Converts and validates one task as a storage record.
+     *
+     * @param task the task to serialize
+     * @return the validated storage record
+     * @throws HertaException if the task or its record is invalid
+     */
+    private String serializeTask(Task task) throws HertaException {
+        if (task == null) {
+            throw new HertaException("Failed to save tasks: task list contains a null task.");
         }
 
+        final String storageString;
+        try {
+            storageString = task.toStorageString();
+        } catch (RuntimeException e) {
+            throw new HertaException("Failed to save tasks: task contains invalid data.");
+        }
+        if (storageString == null) {
+            throw new HertaException("Failed to save tasks: task contains invalid data.");
+        }
+        if (storageString.contains("\n") || storageString.contains("\r")) {
+            throw new HertaException("Failed to save tasks: task fields cannot contain line breaks.");
+        }
+        try {
+            parseStoredTask(storageString);
+        } catch (HertaException e) {
+            throw new HertaException("Failed to save tasks: " + e.getMessage());
+        }
+        return storageString;
+    }
+
+    /**
+     * Writes storage records through a temporary file and replaces the data file.
+     *
+     * @param lines the records to write
+     * @throws HertaException if the data file cannot be replaced
+     */
+    private void writeStorageLines(List<String> lines) throws HertaException {
         Path temporaryFile = null;
         try {
-            Path dataDirectory = dataFile.getParent();
-            if (dataDirectory == null) {
-                dataDirectory = Path.of(".");
-            }
-            Files.createDirectories(dataDirectory);
-            if (Files.isDirectory(dataFile)
-                    || (Files.exists(dataFile) && !Files.isRegularFile(dataFile))) {
-                throw new IOException("data path is not a regular file");
-            }
-
+            Path dataDirectory = prepareDataDirectory();
             temporaryFile = Files.createTempFile(dataDirectory, ".herta-", ".tmp");
             Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            try {
-                Files.move(temporaryFile, dataFile,
-                        StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                // Some platforms reject atomic replacement when the target already exists.
-                Files.move(temporaryFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
-            }
+            replaceDataFile(temporaryFile);
         } catch (IOException | SecurityException e) {
             throw new HertaException("Failed to save tasks: " + e.getMessage());
         } finally {
-            if (temporaryFile != null) {
-                try {
-                    Files.deleteIfExists(temporaryFile);
-                } catch (IOException | SecurityException ignored) {
-                    // The original data file is still preserved if cleanup fails.
-                }
+            deleteTemporaryFile(temporaryFile);
+        }
+    }
+
+    /**
+     * Creates the data directory and verifies that the data path can be replaced.
+     *
+     * @return the directory containing the data file
+     * @throws IOException if the data path is not a regular file or the directory
+     *         cannot be created
+     */
+    private Path prepareDataDirectory() throws IOException {
+        Path dataDirectory = dataFile.getParent();
+        if (dataDirectory == null) {
+            dataDirectory = Path.of(".");
+        }
+        Files.createDirectories(dataDirectory);
+        if (Files.isDirectory(dataFile)
+                || (Files.exists(dataFile) && !Files.isRegularFile(dataFile))) {
+            throw new IOException("data path is not a regular file");
+        }
+        return dataDirectory;
+    }
+
+    /**
+     * Replaces the data file with a temporary file, falling back when atomic
+     * replacement is unsupported by the file system.
+     *
+     * @param temporaryFile the temporary file containing the new records
+     * @throws IOException if the replacement fails
+     */
+    private void replaceDataFile(Path temporaryFile) throws IOException {
+        try {
+            Files.move(temporaryFile, dataFile,
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            // Some platforms reject atomic replacement when the target already exists.
+            Files.move(temporaryFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /**
+     * Removes a temporary file after a save attempt.
+     *
+     * @param temporaryFile the temporary file to remove, if one was created
+     */
+    private void deleteTemporaryFile(Path temporaryFile) {
+        if (temporaryFile != null) {
+            try {
+                Files.deleteIfExists(temporaryFile);
+            } catch (IOException | SecurityException ignored) {
+                // The original data file is still preserved if cleanup fails.
             }
         }
     }
