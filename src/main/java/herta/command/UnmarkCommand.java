@@ -9,7 +9,7 @@ import herta.ui.UiOutput;
 /**
  * Represents the command that marks a task as incomplete.
  */
-public class UnmarkCommand extends TaskIndexCommand {
+public class UnmarkCommand extends TaskStatusCommand {
 
     /**
      * Creates a command that marks the task at the given index as incomplete.
@@ -31,15 +31,7 @@ public class UnmarkCommand extends TaskIndexCommand {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        int taskIndex = getTaskIndex(tasks);
-        boolean wasDone = tasks.unmarkTask(taskIndex);
-        Task task = tasks.get(taskIndex);
-        try {
-            storage.save(tasks);
-        } catch (HertaException e) {
-            tasks.restoreStatus(taskIndex, wasDone);
-            throw e;
-        }
+        Task task = updateTaskStatus(tasks, storage, false);
         ui.showMessage("As you wish. It's incomplete again:");
         ui.showTask(task);
     }
