@@ -18,6 +18,8 @@ import javafx.util.Duration;
  * Controls the main GUI window for Herta.
  */
 public class MainWindow extends AnchorPane {
+    private static final int EXIT_DELAY_SECONDS = 2;
+
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -74,7 +76,7 @@ public class MainWindow extends AnchorPane {
             userInput.setDisable(true);
             sendButton.setDisable(true);
 
-            PauseTransition exitDelay = new PauseTransition(Duration.seconds(2));
+            PauseTransition exitDelay = new PauseTransition(Duration.seconds(EXIT_DELAY_SECONDS));
             exitDelay.setOnFinished(event -> Platform.exit());
             exitDelay.play();
         }

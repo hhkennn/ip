@@ -14,6 +14,8 @@ import javafx.stage.Stage;
  * Provides the JavaFX user interface entry point for Herta.
  */
 public class Main extends Application {
+    private static final double MINIMUM_WINDOW_HEIGHT = 450.0;
+    private static final double MINIMUM_WINDOW_WIDTH = 400.0;
 
     private final Herta herta = new Herta("data/herta.txt");
 
@@ -28,8 +30,8 @@ public class Main extends Application {
             Image appIcon = new Image(
                     Objects.requireNonNull(Main.class.getResourceAsStream("/images/herta.png")));
             stage.getIcons().add(appIcon);
-            stage.setMinHeight(450.0);
-            stage.setMinWidth(400.0);
+            stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
+            stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
             stage.setScene(scene);
             fxmlLoader.<MainWindow>getController().setHerta(herta);
             stage.show();
