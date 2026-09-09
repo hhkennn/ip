@@ -23,7 +23,7 @@ public class TaskList implements Iterable<Task> {
     /**
      * Creates a task list containing a copy of the supplied tasks.
      *
-     * @param initialTasks the tasks with which to initialise the list
+     * @param initialTasks the tasks with which to initialize the list
      */
     public TaskList(List<Task> initialTasks) {
         tasks = new ArrayList<>(initialTasks);
