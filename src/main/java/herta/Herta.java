@@ -58,14 +58,15 @@ public class Herta {
     public void run() {
         ui.showWelcome();
 
-        if (loadingError != null) {
-            ui.showMessage(loadingError);
+        try {
+            if (loadingError != null) {
+                ui.showMessage(loadingError);
+                return;
+            }
+            runCommandLoop();
+        } finally {
             ui.close();
-            return;
         }
-
-        runCommandLoop();
-        ui.close();
     }
 
     /**
