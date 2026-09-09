@@ -75,9 +75,9 @@ public class Parser {
             case TODO -> new TodoCommand(parseTodo(input));
             case DEADLINE -> new DeadlineCommand(parseDeadline(input));
             case EVENT -> new EventCommand(parseEvent(input));
-            case DELETE -> new DeleteCommand(parseTaskIndex(input, "delete"));
-            case MARK -> new MarkCommand(parseTaskIndex(input, "mark"));
-            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, "unmark"));
+            case DELETE -> new DeleteCommand(parseTaskIndex(input, CommandType.DELETE.getKeyword()));
+            case MARK -> new MarkCommand(parseTaskIndex(input, CommandType.MARK.getKeyword()));
+            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, CommandType.UNMARK.getKeyword()));
             case FILTER -> new FilterCommand(parseFilterDate(input));
             case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
             case SORT -> {
@@ -96,7 +96,7 @@ public class Parser {
      * @throws HertaException if the todo description is empty
      */
     public Todo parseTodo(String input) throws HertaException {
-        String description = input.substring("todo".length()).trim();
+        String description = getCommandArguments(input, CommandType.TODO);
         if (description.isEmpty()) {
             throw new HertaException("A blank todo? Even I can't organise nothing. "
                     + "Use: todo <description>.");
@@ -112,7 +112,7 @@ public class Parser {
      * @throws HertaException if the keyword is empty
      */
     public String parseFindKeyword(String input) throws HertaException {
-        String keyword = input.substring("find".length()).trim();
+        String keyword = getCommandArguments(input, CommandType.FIND);
         if (keyword.isEmpty()) {
             throw new HertaException("A blank search? Use: find <keyword>.");
         }
@@ -127,7 +127,7 @@ public class Parser {
      * @throws HertaException if the command format or date/time is invalid
      */
     public Deadline parseDeadline(String input) throws HertaException {
-        String content = input.substring("deadline".length()).trim();
+        String content = getCommandArguments(input, CommandType.DEADLINE);
         String[] deadlineParts = content.split("\\s+/by\\s+", 2);
         if (deadlineParts.length != 2) {
             throw new HertaException("Did you even read the deadline format? "
@@ -167,7 +167,7 @@ public class Parser {
      * @throws HertaException if the command format or any field is invalid
      */
     private EventParts parseEventParts(String input) throws HertaException {
-        String content = input.substring("event".length()).trim();
+        String content = getCommandArguments(input, CommandType.EVENT);
         String[] eventParts = content.split("\\s+/from\\s+", 2);
         if (eventParts.length != 2) {
             throw new HertaException(EVENT_FORMAT_ERROR);
@@ -213,7 +213,7 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
-        String[] parts = input.substring("filter".length()).trim().split("\\s+", 2);
+        String[] parts = getCommandArguments(input, CommandType.FILTER).split("\\s+", 2);
         if (parts.length != 2 || !parts[0].equals("/on")) {
             throw new HertaException("You forgot the /on. Use: filter /on <date>.");
         }
@@ -233,7 +233,7 @@ public class Parser {
      * @throws HertaException if the command does not contain a positive number
      */
     public int parseUpcomingDays(String input) throws HertaException {
-        String daysInput = input.substring("upcoming".length()).trim();
+        String daysInput = getCommandArguments(input, CommandType.UPCOMING);
         try {
             int days = Integer.parseInt(daysInput);
             if (days <= 0) {
@@ -272,6 +272,17 @@ public class Parser {
         } catch (NumberFormatException e) {
             throw new HertaException("That's not a task number. Try: " + command + " 1.");
         }
+    }
+
+    /**
+     * Returns the argument portion of a command after its recognized keyword.
+     *
+     * @param input the complete command input
+     * @param commandType the command type whose keyword prefixes the input
+     * @return the trimmed command arguments
+     */
+    private String getCommandArguments(String input, CommandType commandType) {
+        return input.substring(commandType.getKeyword().length()).trim();
     }
 
     /**
