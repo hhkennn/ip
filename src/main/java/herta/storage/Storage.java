@@ -29,11 +29,15 @@ public class Storage {
     private static final int DESCRIPTION_INDEX = 2;
     private static final int FIRST_DATE_INDEX = 3;
     private static final int SECOND_DATE_INDEX = 4;
+    private static final String TODO_TYPE = "T";
+    private static final String DEADLINE_TYPE = "D";
+    private static final String EVENT_TYPE = "E";
+    private static final String INCOMPLETE_STATUS = "0";
+    private static final String COMPLETED_STATUS = "1";
     private static final int MINIMUM_PART_COUNT = 2;
     private static final int TODO_PART_COUNT = 3;
     private static final int DEADLINE_PART_COUNT = 4;
     private static final int EVENT_PART_COUNT = 5;
-    private static final int COMPLETED_STATUS = 1;
 
     private final Path dataFile;
 
@@ -278,9 +282,9 @@ public class Storage {
      */
     private Task parseStoredTask(String line) throws HertaException {
         String[] parts = splitStorageRecord(line);
-        int status = validateStorageRecord(parts);
+        boolean isCompleted = validateStorageRecord(parts);
         Task task = createTask(parts);
-        if (status == COMPLETED_STATUS) {
+        if (isCompleted) {
             task.markAsDone();
         }
         return task;
@@ -304,19 +308,19 @@ public class Storage {
      * Validates the schema and fields of a serialized task record.
      *
      * @param parts the storage fields to validate
-     * @return the numeric completion status from the record
+     * @return {@code true} if the record marks the task as complete
      * @throws HertaException if the record is malformed
      */
-    private int validateStorageRecord(String[] parts) throws HertaException {
+    private boolean validateStorageRecord(String[] parts) throws HertaException {
         if (parts.length < MINIMUM_PART_COUNT) {
             throw new HertaException("Invalid saved task: missing task type or status.");
         }
 
         String type = parts[TYPE_INDEX];
         int expectedParts = switch (type) {
-            case "T" -> TODO_PART_COUNT;
-            case "D" -> DEADLINE_PART_COUNT;
-            case "E" -> EVENT_PART_COUNT;
+            case TODO_TYPE -> TODO_PART_COUNT;
+            case DEADLINE_TYPE -> DEADLINE_PART_COUNT;
+            case EVENT_TYPE -> EVENT_PART_COUNT;
             default -> throw new HertaException("Invalid saved task: unknown task type '"
                     + type + "'.");
         };
@@ -326,17 +330,18 @@ public class Storage {
                     + " requires " + expectedParts + " fields.");
         }
 
-        if (!parts[STATUS_INDEX].equals("0") && !parts[STATUS_INDEX].equals("1")) {
-            throw new HertaException("Invalid saved task: completion status must be 0 or 1.");
+        String status = parts[STATUS_INDEX];
+        if (!INCOMPLETE_STATUS.equals(status) && !COMPLETED_STATUS.equals(status)) {
+            throw new HertaException("Invalid saved task: completion status must be "
+                    + INCOMPLETE_STATUS + " or " + COMPLETED_STATUS + ".");
         }
-        int status = Integer.parseInt(parts[STATUS_INDEX]);
 
         for (int i = DESCRIPTION_INDEX; i < parts.length; i++) {
             if (parts[i].isBlank()) {
                 throw new HertaException("Invalid saved task: task fields cannot be blank.");
             }
         }
-        return status;
+        return COMPLETED_STATUS.equals(status);
     }
 
     /**
@@ -350,9 +355,9 @@ public class Storage {
         final Task task;
         try {
             task = switch (parts[TYPE_INDEX]) {
-                case "T" -> new Todo(parts[DESCRIPTION_INDEX]);
-                case "D" -> Deadline.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX]);
-                case "E" -> Event.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX],
+                case TODO_TYPE -> new Todo(parts[DESCRIPTION_INDEX]);
+                case DEADLINE_TYPE -> Deadline.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX]);
+                case EVENT_TYPE -> Event.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX],
                         parts[SECOND_DATE_INDEX]);
                 default -> throw new HertaException("Invalid saved task: unknown task type '"
                         + parts[TYPE_INDEX] + "'.");
