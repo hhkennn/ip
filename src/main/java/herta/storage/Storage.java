@@ -63,9 +63,6 @@ public class Storage {
      */
     public TaskList load() throws HertaException {
         try {
-            if (Files.isDirectory(dataFile)) {
-                throw new HertaException("Failed to load tasks: data path is not a regular file.");
-            }
             if (Files.notExists(dataFile)) {
                 return new TaskList();
             }
