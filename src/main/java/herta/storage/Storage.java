@@ -175,8 +175,7 @@ public class Storage {
             dataDirectory = Path.of(".");
         }
         Files.createDirectories(dataDirectory);
-        if (Files.isDirectory(dataFile)
-                || (Files.exists(dataFile) && !Files.isRegularFile(dataFile))) {
+        if (Files.exists(dataFile) && !Files.isRegularFile(dataFile)) {
             throw new IOException("data path is not a regular file");
         }
         return dataDirectory;
