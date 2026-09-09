@@ -56,36 +56,21 @@ public class Storage {
      * @throws HertaException if the data file cannot be read or parsed
      */
     public TaskList load() throws HertaException {
-        TaskList tasks = new TaskList();
-
         try {
             if (Files.isDirectory(dataFile)) {
                 throw new HertaException("Failed to load tasks: data path is not a regular file.");
             }
             if (Files.notExists(dataFile)) {
-                return tasks;
+                return new TaskList();
             }
             if (!Files.isRegularFile(dataFile)) {
                 throw new HertaException("Failed to load tasks: data path is not a regular file.");
             }
 
-            List<String> lines = readStorageLines();
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                if (!line.isBlank()) {
-                    try {
-                        tasks.add(parseStoredTask(line));
-                    } catch (HertaException e) {
-                        throw new HertaException("Failed to load tasks at line "
-                                + (i + 1) + ": " + e.getMessage());
-                    }
-                }
-            }
+            return parseStorageLines(readStorageLines());
         } catch (IOException | SecurityException e) {
             throw new HertaException("Failed to load tasks: " + e.getMessage());
         }
-
-        return tasks;
     }
 
     /**
@@ -246,6 +231,42 @@ public class Storage {
             }
         }
         return lines;
+    }
+
+    /**
+     * Reconstructs all tasks from the non-blank lines in the data file.
+     *
+     * @param lines the lines read from the data file
+     * @return the reconstructed task list
+     * @throws HertaException if a line contains an invalid task record
+     */
+    private TaskList parseStorageLines(List<String> lines) throws HertaException {
+        TaskList tasks = new TaskList();
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            if (line.isBlank()) {
+                continue;
+            }
+            tasks.add(parseStorageLine(line, i + 1));
+        }
+        return tasks;
+    }
+
+    /**
+     * Parses one storage line and adds its source line number to any error.
+     *
+     * @param line one line in Herta's storage format
+     * @param lineNumber the one-based source line number
+     * @return the reconstructed task
+     * @throws HertaException if the line does not contain a valid task record
+     */
+    private Task parseStorageLine(String line, int lineNumber) throws HertaException {
+        try {
+            return parseStoredTask(line);
+        } catch (HertaException e) {
+            throw new HertaException("Failed to load tasks at line "
+                    + lineNumber + ": " + e.getMessage());
+        }
     }
 
     /**
