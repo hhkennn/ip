@@ -28,7 +28,8 @@ public class Main extends Application {
 
             stage.setTitle("Herta");
             Image appIcon = new Image(
-                    Objects.requireNonNull(Main.class.getResourceAsStream("/images/herta.png")));
+                    Objects.requireNonNull(MainWindow.class.getResourceAsStream(
+                            MainWindow.HERTA_IMAGE_RESOURCE)));
             stage.getIcons().add(appIcon);
             stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
             stage.setMinWidth(MINIMUM_WINDOW_WIDTH);

@@ -18,6 +18,8 @@ import javafx.util.Duration;
  * Controls the main GUI window for Herta.
  */
 public class MainWindow extends AnchorPane {
+    /** Resource path shared by the avatar and application icon. */
+    static final String HERTA_IMAGE_RESOURCE = "/images/herta.png";
     private static final int EXIT_DELAY_SECONDS = 2;
 
     @FXML
@@ -33,7 +35,7 @@ public class MainWindow extends AnchorPane {
 
     private Herta herta;
     private final Image hertaImage = new Image(
-            Objects.requireNonNull(MainWindow.class.getResourceAsStream("/images/herta.png")));
+            Objects.requireNonNull(MainWindow.class.getResourceAsStream(HERTA_IMAGE_RESOURCE)));
 
     /**
      * Binds the scroll position to the dialog container and displays Herta's opening messages.
