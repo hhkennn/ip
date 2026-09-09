@@ -13,6 +13,8 @@ import herta.ui.UiOutput;
  * Represents the command that displays tasks in chronological order.
  */
 public class SortCommand extends Command {
+    /** Sort value that places tasks without a date after dated tasks. */
+    private static final LocalDateTime UNSCHEDULED_TASK_SORT_TIME = LocalDateTime.MAX;
 
     /**
      * Displays all tasks sorted by their scheduled date without changing the
@@ -25,7 +27,7 @@ public class SortCommand extends Command {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
-                task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
+                task.getScheduledDateTime().orElse(UNSCHEDULED_TASK_SORT_TIME)));
 
         ui.showMessage("There. Your tasks are in date order.");
         for (int index : sortedIndices) {
