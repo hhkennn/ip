@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -194,8 +196,8 @@ public class Storage {
         try {
             Files.move(temporaryFile, dataFile,
                     StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            // Some platforms reject atomic replacement when the target already exists.
+        } catch (AtomicMoveNotSupportedException | FileAlreadyExistsException e) {
+            // Fall back only when atomic replacement is unsupported or rejected for the target.
             Files.move(temporaryFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
         }
     }
