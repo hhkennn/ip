@@ -100,11 +100,6 @@ public class DialogBox extends HBox {
             return;
         }
 
-        if (responseCategory == ResponseCategory.ERROR) {
-            dialog.getStyleClass().add("error-label");
-            return;
-        }
-
         String styleClass = switch (responseCategory) {
             case ADD -> "add-label";
             case MARK -> "marked-label";
@@ -112,11 +107,10 @@ public class DialogBox extends HBox {
             case DELETE -> "delete-label";
             case QUERY -> "query-label";
             case EXIT -> "exit-label";
-            default -> null;
+            case ERROR -> "error-label";
+            default -> throw new IllegalStateException(
+                    "Unsupported response category: " + responseCategory);
         };
-
-        if (styleClass != null) {
-            dialog.getStyleClass().add(styleClass);
-        }
+        dialog.getStyleClass().add(styleClass);
     }
 }
