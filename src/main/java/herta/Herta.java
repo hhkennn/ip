@@ -62,22 +62,20 @@ public class Herta {
      * Reads and processes commands until the user exits or input reaches EOF.
      */
     private void runCommandLoop() {
-        boolean shouldExit = false;
-        while (!shouldExit) {
+        while (true) {
             String input = ui.readCommand();
             if (input == null) {
                 ui.showSeparator();
                 ui.showGoodbye();
-                break;
+                return;
             }
             ui.showSeparator();
 
             ResponseCategory responseCategory = processCommand(input, ui);
-            shouldExit = responseCategory == ResponseCategory.EXIT;
-
-            if (!shouldExit) {
-                ui.showSeparator();
+            if (responseCategory == ResponseCategory.EXIT) {
+                return;
             }
+            ui.showSeparator();
         }
     }
 
