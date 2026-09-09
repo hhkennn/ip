@@ -22,16 +22,6 @@ public class HertaResponse {
     }
 
     /**
-     * Creates an unclassified response for compatibility with existing callers.
-     *
-     * @param message the message to display
-     * @param exitRequested whether the application should exit
-     */
-    public HertaResponse(String message, boolean exitRequested) {
-        this(message, exitRequested, exitRequested ? ResponseCategory.EXIT : ResponseCategory.ERROR);
-    }
-
-    /**
      * Returns the message generated while processing the command.
      *
      * @return the response message
