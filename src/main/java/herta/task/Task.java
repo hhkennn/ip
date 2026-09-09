@@ -11,6 +11,9 @@ import java.util.Optional;
  * behavior from this abstract base class.</p>
  */
 public abstract class Task {
+    /** Separates fields in serialized task records. */
+    protected static final String STORAGE_FIELD_SEPARATOR = " | ";
+
     private static final int INCOMPLETE_STATUS_CODE = 0;
     private static final int COMPLETED_STATUS_CODE = 1;
 
