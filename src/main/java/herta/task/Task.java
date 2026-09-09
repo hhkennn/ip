@@ -28,6 +28,8 @@ public abstract class Task {
      * @param description the task description.
      */
     public Task(String description) {
+        assert description != null && !description.isBlank()
+                : "A task must have a non-blank description.";
         this.description = description;
         this.isDone = false;
     }
@@ -95,6 +97,8 @@ public abstract class Task {
      * @return {@code true} if the task is scheduled within the window
      */
     public boolean isUpcoming(LocalDateTime now, LocalDateTime until) {
+        assert now != null && until != null : "An upcoming window needs two endpoints.";
+        assert !until.isBefore(now) : "An upcoming window must end at or after it starts.";
         return getScheduledDateTime()
                 .map(dateTime -> !dateTime.isBefore(now) && dateTime.isBefore(until))
                 .orElse(false);

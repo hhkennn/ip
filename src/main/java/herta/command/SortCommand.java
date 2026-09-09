@@ -28,6 +28,8 @@ public class SortCommand extends Command {
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
                 task.getScheduledDateTime().orElse(UNSCHEDULED_TASK_SORT_TIME)));
+        assert sortedIndices.size() == tasks.size()
+                : "Sorting must produce one display index for every task.";
 
         ui.showMessage("There. Your tasks are in date order.");
         for (int index : sortedIndices) {

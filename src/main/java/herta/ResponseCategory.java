@@ -22,6 +22,7 @@ public enum ResponseCategory {
      *         unsupported command type
      */
     public static ResponseCategory fromCommandType(CommandType commandType) {
+        assert commandType != null : "A response category requires a command type.";
         return switch (commandType) {
             case TODO, DEADLINE, EVENT -> ADD;
             case MARK -> MARK;

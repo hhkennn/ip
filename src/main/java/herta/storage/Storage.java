@@ -134,7 +134,8 @@ public class Storage {
             throw new HertaException("Failed to save tasks: task fields cannot contain line breaks.");
         }
         try {
-            parseStoredTask(storageString);
+            Task parsedTask = parseStoredTask(storageString);
+            assert parsedTask != null : "A validated storage record must produce a task.";
         } catch (HertaException e) {
             throw new HertaException("Failed to save tasks: " + e.getMessage());
         }

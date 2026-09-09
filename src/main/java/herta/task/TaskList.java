@@ -145,6 +145,13 @@ public class TaskList implements Iterable<Task> {
         }
         sortedIndices.sort((first, second) -> comparator.compare(
                 tasks.get(first), tasks.get(second)));
+
+        assert sortedIndices.size() == tasks.size()
+                : "Sorting must retain one index for every task.";
+        for (int index : sortedIndices) {
+            assert index >= 0 && index < tasks.size()
+                    : "A sorted task index must refer to the current task list.";
+        }
         return sortedIndices;
     }
 

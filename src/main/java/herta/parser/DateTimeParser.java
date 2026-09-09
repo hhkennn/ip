@@ -68,6 +68,7 @@ public final class DateTimeParser {
      */
     public static LocalDate parseUserDate(String input) {
         String normalizedInput = input.trim();
+        assert !FILTER_DATE_FORMATS.isEmpty() : "At least one filter date format is required.";
 
         try {
             return LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);

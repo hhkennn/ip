@@ -20,6 +20,7 @@ public class UpcomingCommand extends QueryCommand {
      * @param days the positive number of days in the search window
      */
     public UpcomingCommand(int days) {
+        assert days > 0 : "An upcoming command must search a positive number of days.";
         this.days = days;
     }
 

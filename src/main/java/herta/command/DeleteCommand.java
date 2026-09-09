@@ -34,8 +34,12 @@ public class DeleteCommand extends TaskIndexCommand {
         Task task = tasks.get(taskIndex);
         TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
         updatedTasks.remove(taskIndex);
+        assert updatedTasks.size() == tasks.size() - 1
+                : "The staged list must contain exactly one fewer task.";
         storage.save(updatedTasks);
         tasks.remove(taskIndex);
+        assert tasks.size() == updatedTasks.size()
+                : "The live list must match the successfully saved list.";
         ui.showMessage("There. It's gone:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
