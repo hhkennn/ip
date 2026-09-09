@@ -16,6 +16,8 @@ public abstract class Task {
 
     private static final int INCOMPLETE_STATUS_CODE = 0;
     private static final int COMPLETED_STATUS_CODE = 1;
+    private static final String INCOMPLETE_STATUS_ICON = " ";
+    private static final String COMPLETED_STATUS_ICON = "X";
 
     private final String description;
     private boolean isDone;
@@ -36,7 +38,7 @@ public abstract class Task {
      * @return {@code X} if the task is done, or a blank space otherwise
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return isDone ? COMPLETED_STATUS_ICON : INCOMPLETE_STATUS_ICON;
     }
 
     /**
