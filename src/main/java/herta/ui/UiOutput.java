@@ -19,7 +19,9 @@ public interface UiOutput {
      *
      * @param task the task to display
      */
-    void showTask(Task task);
+    default void showTask(Task task) {
+        showMessage("  " + task);
+    }
 
     /**
      * Displays a task with its one-based list number.
@@ -27,14 +29,20 @@ public interface UiOutput {
      * @param taskNumber the one-based number shown to the user
      * @param task the task to display
      */
-    void showTask(int taskNumber, Task task);
+    default void showTask(int taskNumber, Task task) {
+        showMessage(taskNumber + "." + task);
+    }
 
     /**
      * Displays the number of tasks to the user.
      *
      * @param taskCount the number of tasks
      */
-    void showTaskCount(int taskCount);
+    default void showTaskCount(int taskCount) {
+        String taskNoun = taskCount == 1 ? "task" : "tasks";
+        showMessage("That makes " + taskCount + " " + taskNoun
+                + ". Try to keep up.");
+    }
 
     /**
      * Displays Herta's goodbye message.
