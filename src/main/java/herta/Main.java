@@ -17,7 +17,7 @@ public class Main extends Application {
     private static final double MINIMUM_WINDOW_HEIGHT = 450.0;
     private static final double MINIMUM_WINDOW_WIDTH = 400.0;
 
-    private final Herta herta = new Herta("data/herta.txt");
+    private final Herta herta = new Herta();
 
     @Override
     public void start(Stage stage) {

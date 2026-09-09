@@ -14,11 +14,20 @@ import herta.ui.UiOutput;
  * Provides the command-line entry point for the Herta task manager.
  */
 public class Herta {
+    private static final String DEFAULT_DATA_FILE = "data/herta.txt";
+
     private final Ui ui;
     private final Storage storage;
     private final Parser parser;
     private final TaskList tasks;
     private final String loadingError;
+
+    /**
+     * Creates a Herta instance backed by the default data file.
+     */
+    public Herta() {
+        this(DEFAULT_DATA_FILE);
+    }
 
     /**
      * Creates a Herta instance backed by the specified data file.
@@ -105,7 +114,7 @@ public class Herta {
      * @param args command-line arguments, which are not used
      */
     public static void main(String[] args) {
-        new Herta("data/herta.txt").run();
+        new Herta().run();
     }
 
     /**
