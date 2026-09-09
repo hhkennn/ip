@@ -32,6 +32,10 @@ public class Parser {
     private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
             + "such as 2019-10-15 or 2/12/2019 1800.";
 
+    /** Holds the validated fields extracted from an event command. */
+    private record EventParts(String description, String fromInput, String toInput) {
+    }
+
     /**
      * Identifies the command represented by the user's input.
      *
@@ -149,20 +153,20 @@ public class Parser {
      * @throws HertaException if the command format, date/time, or event range is invalid
      */
     public Event parseEvent(String input) throws HertaException {
-        String[] eventParts = parseEventParts(input);
-        LocalDateTime from = parseUserDateTime(eventParts[1], EVENT_DATE_ERROR);
-        LocalDateTime to = parseUserDateTime(eventParts[2], EVENT_DATE_ERROR);
-        return createEvent(eventParts[0], from, to);
+        EventParts eventParts = parseEventParts(input);
+        LocalDateTime from = parseUserDateTime(eventParts.fromInput(), EVENT_DATE_ERROR);
+        LocalDateTime to = parseUserDateTime(eventParts.toInput(), EVENT_DATE_ERROR);
+        return createEvent(eventParts.description(), from, to);
     }
 
     /**
      * Extracts and validates the description and date/time inputs from an event command.
      *
      * @param input the complete event command
-     * @return the description, start input, and end input in that order
+     * @return the validated event fields
      * @throws HertaException if the command format or any field is invalid
      */
-    private String[] parseEventParts(String input) throws HertaException {
+    private EventParts parseEventParts(String input) throws HertaException {
         String content = input.substring("event".length()).trim();
         String[] eventParts = content.split("\\s+/from\\s+", 2);
         if (eventParts.length != 2) {
@@ -180,7 +184,7 @@ public class Parser {
         if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
             throw new HertaException(EVENT_FORMAT_ERROR);
         }
-        return new String[] {description, fromInput, toInput};
+        return new EventParts(description, fromInput, toInput);
     }
 
     /**
