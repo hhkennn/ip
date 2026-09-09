@@ -27,6 +27,10 @@ import herta.task.Todo;
  * Interprets user commands and converts their arguments into domain values.
  */
 public class Parser {
+    private static final String EVENT_FORMAT_ERROR = "Did you even read the event format? "
+            + "Use: event <description> /from <start> /to <end>.";
+    private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
+            + "such as 2019-10-15 or 2/12/2019 1800.";
 
     /**
      * Identifies the command represented by the user's input.
@@ -145,31 +149,51 @@ public class Parser {
      * @throws HertaException if the command format, date/time, or event range is invalid
      */
     public Event parseEvent(String input) throws HertaException {
+        String[] eventParts = parseEventParts(input);
+        LocalDateTime from = parseUserDateTime(eventParts[1], EVENT_DATE_ERROR);
+        LocalDateTime to = parseUserDateTime(eventParts[2], EVENT_DATE_ERROR);
+        return createEvent(eventParts[0], from, to);
+    }
+
+    /**
+     * Extracts and validates the description and date/time inputs from an event command.
+     *
+     * @param input the complete event command
+     * @return the description, start input, and end input in that order
+     * @throws HertaException if the command format or any field is invalid
+     */
+    private String[] parseEventParts(String input) throws HertaException {
         String content = input.substring("event".length()).trim();
         String[] eventParts = content.split("\\s+/from\\s+", 2);
         if (eventParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
 
         String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
         if (timeParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
 
         String description = eventParts[0].trim();
         String fromInput = timeParts[0].trim();
         String toInput = timeParts[1].trim();
         if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
+        return new String[] {description, fromInput, toInput};
+    }
 
-        LocalDateTime from = parseUserDateTime(fromInput,
-                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
-        LocalDateTime to = parseUserDateTime(toInput,
-                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
+    /**
+     * Creates an event and translates invalid time ranges into a user-facing error.
+     *
+     * @param description the event description
+     * @param from the event start
+     * @param to the event end
+     * @return the event with the supplied details
+     * @throws HertaException if the end does not occur after the start
+     */
+    private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
+            throws HertaException {
         try {
             return new Event(description, from, to);
         } catch (IllegalArgumentException e) {
