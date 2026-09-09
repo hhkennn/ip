@@ -253,16 +253,8 @@ public class Parser {
         if (days <= 0) {
             throw new HertaException(UPCOMING_RANGE_ERROR);
         }
+        assert days > 0 : "A parsed upcoming range must be positive.";
         return days;
-            int days = Integer.parseInt(daysInput);
-            if (days <= 0) {
-                throw new NumberFormatException();
-            }
-            assert days > 0 : "A parsed upcoming range must be positive.";
-            return days;
-        } catch (NumberFormatException e) {
-            throw new HertaException("That range makes no sense. Use a positive number of days.");
-        }
     }
 
     /**

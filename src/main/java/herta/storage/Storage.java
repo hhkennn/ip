@@ -265,7 +265,9 @@ public class Storage {
      */
     private Task parseStorageLine(String line, int lineNumber) throws HertaException {
         try {
-            return parseStoredTask(line);
+            Task task = parseStoredTask(line);
+            assert task != null : "A valid storage line must produce a task.";
+            return task;
         } catch (HertaException e) {
             throw new HertaException("Failed to load tasks at line "
                     + lineNumber + ": " + e.getMessage());
