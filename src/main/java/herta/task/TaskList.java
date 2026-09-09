@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Owns Herta's ordered collection of tasks and its task-related operations.
@@ -114,13 +116,10 @@ public class TaskList implements Iterable<Task> {
      * @return matching zero-based task indices in their current list order
      */
     public List<Integer> matchingIndices(Predicate<Task> matcher) {
-        List<Integer> matchingIndices = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            if (matcher.test(tasks.get(i))) {
-                matchingIndices.add(i);
-            }
-        }
-        return matchingIndices;
+        return IntStream.range(0, tasks.size())
+                .filter(index -> matcher.test(tasks.get(index)))
+                .boxed()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -131,13 +130,11 @@ public class TaskList implements Iterable<Task> {
      * @return zero-based task indices in sorted order
      */
     public List<Integer> sortedIndices(Comparator<Task> comparator) {
-        List<Integer> sortedIndices = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            sortedIndices.add(i);
-        }
-        sortedIndices.sort((first, second) -> comparator.compare(
-                tasks.get(first), tasks.get(second)));
-        return sortedIndices;
+        return IntStream.range(0, tasks.size())
+                .boxed()
+                .sorted((first, second) -> comparator.compare(
+                        tasks.get(first), tasks.get(second)))
+                .collect(Collectors.toList());
     }
 
     /**

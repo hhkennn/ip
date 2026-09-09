@@ -1,5 +1,7 @@
 package herta.parser;
 
+import java.util.Arrays;
+
 /**
  * Represents the commands supported by Herta.
  */
@@ -40,21 +42,12 @@ public enum CommandType {
      */
     public static CommandType fromInput(String input) {
         String trimmedInput = input.trim();
-        CommandType[] commands = CommandType.values();
-
-        for (CommandType command : commands) {
-            if (command == UNKNOWN) {
-                continue;
-            }
-
-            boolean isExactMatch = trimmedInput.equals(command.keyword);
-            boolean hasArguments = trimmedInput.startsWith(command.keyword + " ");
-
-            if (isExactMatch || (command.acceptsArguments && hasArguments)) {
-                return command;
-            }
-        }
-
-        return UNKNOWN;
+        return Arrays.stream(values())
+                .filter(command -> command != UNKNOWN)
+                .filter(command -> trimmedInput.equals(command.keyword)
+                        || (command.acceptsArguments
+                        && trimmedInput.startsWith(command.keyword + " ")))
+                .findFirst()
+                .orElse(UNKNOWN);
     }
 }
