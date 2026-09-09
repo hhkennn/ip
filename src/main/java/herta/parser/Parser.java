@@ -84,9 +84,9 @@ public class Parser {
             case TODO -> new TodoCommand(parseTodo(input));
             case DEADLINE -> new DeadlineCommand(parseDeadline(input));
             case EVENT -> new EventCommand(parseEvent(input));
-            case DELETE -> new DeleteCommand(parseTaskIndex(input, CommandType.DELETE.getKeyword()));
-            case MARK -> new MarkCommand(parseTaskIndex(input, CommandType.MARK.getKeyword()));
-            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, CommandType.UNMARK.getKeyword()));
+            case DELETE -> new DeleteCommand(parseTaskIndex(input, commandType.getKeyword()));
+            case MARK -> new MarkCommand(parseTaskIndex(input, commandType.getKeyword()));
+            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case FILTER -> new FilterCommand(parseFilterDate(input));
             case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
             case SORT -> {
