@@ -34,10 +34,13 @@ public class UnmarkCommand extends TaskIndexCommand {
         int taskIndex = getTaskIndex(tasks);
         boolean wasDone = tasks.unmarkTask(taskIndex);
         Task task = tasks.get(taskIndex);
+        assert !task.isDone() : "An unmarked task must be incomplete before saving.";
         try {
             storage.save(tasks);
         } catch (HertaException e) {
             tasks.restoreStatus(taskIndex, wasDone);
+            assert tasks.get(taskIndex).isDone() == wasDone
+                    : "A failed unmark operation must restore the previous status.";
             throw e;
         }
         ui.showMessage("As you wish. It's incomplete again:");

@@ -31,10 +31,15 @@ public abstract class AddCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
+        assert task != null : "An add command must contain a task.";
         TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
         updatedTasks.add(task);
+        assert updatedTasks.size() == tasks.size() + 1
+                : "The staged list must contain exactly one added task.";
         storage.save(updatedTasks);
         tasks.add(task);
+        assert tasks.size() == updatedTasks.size()
+                : "The live list must match the successfully saved list.";
         ui.showMessage("There. I've added it:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());

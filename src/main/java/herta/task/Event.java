@@ -130,5 +130,7 @@ public class Event extends Task {
         if (!from.isBefore(to)) {
             throw new IllegalArgumentException("Event end must be after its start.");
         }
+
+        assert from.isBefore(to) : "Validated events must have a positive duration.";
     }
 }
