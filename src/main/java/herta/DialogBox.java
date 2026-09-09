@@ -90,8 +90,8 @@ public class DialogBox extends HBox {
     }
 
     /**
-     * Applies a semantic style to Herta's response label without changing its
-     * default styling when no supported category is available.
+     * Applies a semantic style to Herta's response label when a category is supplied.
+     * A missing category leaves the default styling unchanged.
      *
      * @param responseCategory the semantic category of the response
      */
