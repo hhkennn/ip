@@ -31,6 +31,8 @@ public class Parser {
             + "Use: event <description> /from <start> /to <end>.";
     private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
             + "such as 2019-10-15 or 2/12/2019 1800.";
+    private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
+            + "Use a positive number of days.";
 
     /** Holds the validated fields extracted from an event command. */
     private record EventParts(String description, String fromInput, String toInput) {
@@ -234,15 +236,16 @@ public class Parser {
      */
     public int parseUpcomingDays(String input) throws HertaException {
         String daysInput = getCommandArguments(input, CommandType.UPCOMING);
+        final int days;
         try {
-            int days = Integer.parseInt(daysInput);
-            if (days <= 0) {
-                throw new NumberFormatException();
-            }
-            return days;
+            days = Integer.parseInt(daysInput);
         } catch (NumberFormatException e) {
-            throw new HertaException("That range makes no sense. Use a positive number of days.");
+            throw new HertaException(UPCOMING_RANGE_ERROR);
         }
+        if (days <= 0) {
+            throw new HertaException(UPCOMING_RANGE_ERROR);
+        }
+        return days;
     }
 
     /**
