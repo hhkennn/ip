@@ -29,6 +29,9 @@ public abstract class TaskIndexCommand extends Command {
         if (taskIndex < 0 || taskIndex >= tasks.size()) {
             throw new HertaException("That task doesn't exist. Did you even check the list?");
         }
+
+        assert taskIndex >= 0 && taskIndex < tasks.size()
+                : "A validated task index must refer to the current task list.";
         return taskIndex;
     }
 }

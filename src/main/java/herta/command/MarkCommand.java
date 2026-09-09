@@ -34,10 +34,13 @@ public class MarkCommand extends TaskIndexCommand {
         int taskIndex = getTaskIndex(tasks);
         boolean wasDone = tasks.markTask(taskIndex);
         Task task = tasks.get(taskIndex);
+        assert task.isDone() : "A marked task must be complete before saving.";
         try {
             storage.save(tasks);
         } catch (HertaException e) {
             tasks.restoreStatus(taskIndex, wasDone);
+            assert tasks.get(taskIndex).isDone() == wasDone
+                    : "A failed mark operation must restore the previous status.";
             throw e;
         }
         ui.showMessage("There. It's marked complete:");

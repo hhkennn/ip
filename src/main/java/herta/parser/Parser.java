@@ -60,6 +60,8 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Command parse(String input, CommandType commandType) throws HertaException {
+        assert input != null && commandType != null
+                : "Command parsing requires input and an identified command type.";
         return switch (commandType) {
             case BYE -> new ExitCommand();
             case LIST -> new ListCommand();
@@ -211,6 +213,7 @@ public class Parser {
             if (days <= 0) {
                 throw new NumberFormatException();
             }
+            assert days > 0 : "A parsed upcoming range must be positive.";
             return days;
         } catch (NumberFormatException e) {
             throw new HertaException("That range makes no sense. Use a positive number of days.");
