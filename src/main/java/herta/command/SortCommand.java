@@ -29,7 +29,7 @@ public class SortCommand extends Command {
 
         ui.showMessage("There. Your tasks are in date order.");
         for (int index : sortedIndices) {
-            ui.showMessage((index + 1) + "." + tasks.get(index));
+            ui.showTask(index + 1, tasks.get(index));
         }
     }
 }

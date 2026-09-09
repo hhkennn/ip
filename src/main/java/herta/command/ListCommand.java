@@ -20,7 +20,7 @@ public class ListCommand extends Command {
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         ui.showMessage("Let's see what you've managed to pile up:");
         for (int i = 0; i < tasks.size(); i++) {
-            ui.showMessage((i + 1) + "." + tasks.get(i));
+            ui.showTask(i + 1, tasks.get(i));
         }
     }
 }

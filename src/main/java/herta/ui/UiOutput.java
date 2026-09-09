@@ -22,6 +22,14 @@ public interface UiOutput {
     void showTask(Task task);
 
     /**
+     * Displays a task with its one-based list number.
+     *
+     * @param taskNumber the one-based number shown to the user
+     * @param task the task to display
+     */
+    void showTask(int taskNumber, Task task);
+
+    /**
      * Displays the number of tasks to the user.
      *
      * @param taskCount the number of tasks

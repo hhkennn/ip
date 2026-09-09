@@ -44,7 +44,7 @@ public abstract class QueryCommand extends Command {
             ui.showMessage(heading);
         }
         for (int index : matchingIndices) {
-            ui.showMessage((index + 1) + "." + tasks.get(index));
+            ui.showTask(index + 1, tasks.get(index));
         }
         if (matchingIndices.isEmpty()) {
             ui.showMessage(emptyMessage);

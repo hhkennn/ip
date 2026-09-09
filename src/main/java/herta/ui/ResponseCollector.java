@@ -29,6 +29,17 @@ public class ResponseCollector implements UiOutput {
     }
 
     /**
+     * Adds a numbered task to the collected response.
+     *
+     * @param taskNumber the one-based number shown to the user
+     * @param task the task to collect
+     */
+    @Override
+    public void showTask(int taskNumber, Task task) {
+        append(taskNumber + "." + task);
+    }
+
+    /**
      * Adds the task count to the collected response.
      *
      * @param taskCount the number of tasks

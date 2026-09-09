@@ -24,6 +24,7 @@ class UiTest {
             Ui ui = new Ui();
             ui.showMessage("first\nsecond");
             ui.showTask(new Todo("read book"));
+            ui.showTask(2, new Todo("write book"));
             ui.showTaskCount(1);
             ui.showTaskCount(2);
             ui.showSeparator();
@@ -33,6 +34,7 @@ class UiTest {
         assertTrue(output.contains("     first"));
         assertTrue(output.contains("     second"));
         assertTrue(output.contains("       [T][ ] read book"));
+        assertTrue(output.contains("     2.[T][ ] write book"));
         assertTrue(output.contains("That makes 1 task. Try to keep up."));
         assertTrue(output.contains("That makes 2 tasks. Try to keep up."));
         assertTrue(output.contains("Leaving already? Goodbye."));

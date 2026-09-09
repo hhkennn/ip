@@ -91,6 +91,17 @@ public class Ui implements UiOutput {
     }
 
     /**
+     * Displays a numbered task using the standard message formatting.
+     *
+     * @param taskNumber the one-based number shown to the user
+     * @param task the task to display
+     */
+    @Override
+    public void showTask(int taskNumber, Task task) {
+        showMessage(taskNumber + "." + task);
+    }
+
+    /**
      * Displays the task count using the correct singular or plural noun.
      *
      * @param taskCount the number of tasks
