@@ -22,7 +22,7 @@ public abstract class QueryCommand extends Command {
      * @param ui the output interface used to display responses
      */
     protected void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
-                                     String heading, String emptyMessage, UiOutput ui) {
+                                      String heading, String emptyMessage, UiOutput ui) {
         showMatchingTasks(tasks, matcher, heading, emptyMessage, true, ui);
     }
 
@@ -36,9 +36,9 @@ public abstract class QueryCommand extends Command {
      * @param shouldShowHeadingWhenEmpty whether to print the heading when there are no matches
      * @param ui the output interface used to display responses
      */
-    protected void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
-                                     String heading, String emptyMessage,
-                                     boolean shouldShowHeadingWhenEmpty, UiOutput ui) {
+    private void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
+                                   String heading, String emptyMessage,
+                                   boolean shouldShowHeadingWhenEmpty, UiOutput ui) {
         List<Integer> matchingIndices = tasks.matchingIndices(matcher);
         if (shouldShowHeadingWhenEmpty || !matchingIndices.isEmpty()) {
             ui.showMessage(heading);
@@ -49,5 +49,20 @@ public abstract class QueryCommand extends Command {
         if (matchingIndices.isEmpty()) {
             ui.showMessage(emptyMessage);
         }
+    }
+
+    /**
+     * Displays matching tasks without a heading when there are no matches.
+     *
+     * @param tasks the task list to search
+     * @param matcher the condition a task must satisfy
+     * @param heading the heading to print before the results
+     * @param emptyMessage the message to print when there are no matches
+     * @param ui the output interface used to display responses
+     */
+    protected void showMatchingTasksWithoutEmptyHeading(TaskList tasks, Predicate<Task> matcher,
+                                                         String heading, String emptyMessage,
+                                                         UiOutput ui) {
+        showMatchingTasks(tasks, matcher, heading, emptyMessage, false, ui);
     }
 }
