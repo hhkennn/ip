@@ -31,9 +31,10 @@ public class Herta {
         parser = new Parser();
 
         TaskList loadedTasks;
-        String loadError = null;
+        String loadError;
         try {
             loadedTasks = storage.load();
+            loadError = null;
         } catch (HertaException e) {
             loadedTasks = new TaskList();
             loadError = e.getMessage();
