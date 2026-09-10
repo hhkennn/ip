@@ -1,7 +1,5 @@
 package herta.ui;
 
-import herta.task.Task;
-
 /**
  * Collects command output so that it can be returned to a graphical user interface.
  */
@@ -16,28 +14,6 @@ public class ResponseCollector implements UiOutput {
     @Override
     public void showMessage(String message) {
         append(message);
-    }
-
-    /**
-     * Adds a task to the collected response.
-     *
-     * @param task the task to collect
-     */
-    @Override
-    public void showTask(Task task) {
-        append("  " + task);
-    }
-
-    /**
-     * Adds the task count to the collected response.
-     *
-     * @param taskCount the number of tasks
-     */
-    @Override
-    public void showTaskCount(int taskCount) {
-        String taskNoun = taskCount == 1 ? "task" : "tasks";
-        append("That makes " + taskCount + " " + taskNoun
-                + ". Try to keep up.");
     }
 
     /**

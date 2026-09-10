@@ -6,7 +6,7 @@ import herta.task.TaskList;
 import herta.ui.UiOutput;
 
 /**
- * Represents an empty or unrecognised user command.
+ * Represents an empty or unrecognized user command.
  */
 public class UnknownCommand extends Command {
     private final boolean isEmptyInput;

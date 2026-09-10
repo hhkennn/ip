@@ -12,6 +12,7 @@ import herta.parser.DateTimeParser;
  * Represents a task that starts and ends at specified dates or times.
  */
 public class Event extends Task {
+    private static final String STORAGE_TYPE = "E";
     private final LocalDateTime from;
     private final LocalDateTime to;
 
@@ -101,8 +102,9 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + getCompletionStatusCode() + " | " + getDescription() + " | "
-                + DateTimeParser.formatForStorage(from) + " | "
+        return STORAGE_TYPE + STORAGE_FIELD_SEPARATOR + getCompletionStatusCode()
+                + STORAGE_FIELD_SEPARATOR + getDescription() + STORAGE_FIELD_SEPARATOR
+                + DateTimeParser.formatForStorage(from) + STORAGE_FIELD_SEPARATOR
                 + DateTimeParser.formatForStorage(to);
     }
 
@@ -114,7 +116,7 @@ public class Event extends Task {
      */
     @Override
     public String toString() {
-        return "[E]" + super.toString() + " (from: "
+        return "[" + STORAGE_TYPE + "]" + super.toString() + " (from: "
                 + DateTimeParser.formatForDisplay(from) + " to: "
                 + DateTimeParser.formatForDisplay(to) + ")";
     }

@@ -25,9 +25,7 @@ public final class DateTimeParser {
 
     private static final DateTimeFormatter ISO_DATE_FORMAT =
             strictFormatter("uuuu-MM-dd");
-    private static final List<DateTimeFormatter> FILTER_DATE_FORMATS = List.of(
-            ISO_DATE_FORMAT,
-            strictFormatter("d/M/uuuu"));
+    private static final DateTimeFormatter SLASH_DATE_FORMAT = strictFormatter("d/M/uuuu");
     private static final DateTimeFormatter STORAGE_FORMAT =
             DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private static final DateTimeFormatter DATE_OUTPUT_FORMAT =
@@ -70,19 +68,12 @@ public final class DateTimeParser {
      */
     public static LocalDate parseUserDate(String input) {
         String normalizedInput = input.trim();
-        assert !FILTER_DATE_FORMATS.isEmpty() : "At least one filter date format is required.";
 
-        for (int index = 0; index < FILTER_DATE_FORMATS.size(); index++) {
-            try {
-                return LocalDate.parse(normalizedInput, FILTER_DATE_FORMATS.get(index));
-            } catch (DateTimeParseException e) {
-                if (index == FILTER_DATE_FORMATS.size() - 1) {
-                    throw e;
-                }
-            }
+        try {
+            return LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            return LocalDate.parse(normalizedInput, SLASH_DATE_FORMAT);
         }
-
-        throw new IllegalStateException("No filter date formats are configured.");
     }
 
     /**

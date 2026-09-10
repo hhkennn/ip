@@ -57,4 +57,13 @@ public enum CommandType {
 
         return UNKNOWN;
     }
+
+    /**
+     * Returns the keyword used to recognize this command.
+     *
+     * @return the command keyword
+     */
+    String getKeyword() {
+        return keyword;
+    }
 }

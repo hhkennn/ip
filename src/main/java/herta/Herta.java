@@ -14,11 +14,20 @@ import herta.ui.UiOutput;
  * Provides the command-line entry point for the Herta task manager.
  */
 public class Herta {
+    private static final String DEFAULT_DATA_FILE = "data/herta.txt";
+
     private final Ui ui;
     private final Storage storage;
     private final Parser parser;
     private final TaskList tasks;
     private final String loadingError;
+
+    /**
+     * Creates a Herta instance backed by the default data file.
+     */
+    public Herta() {
+        this(DEFAULT_DATA_FILE);
+    }
 
     /**
      * Creates a Herta instance backed by the specified data file.
@@ -31,9 +40,10 @@ public class Herta {
         parser = new Parser();
 
         TaskList loadedTasks;
-        String loadError = null;
+        String loadError;
         try {
             loadedTasks = storage.load();
+            loadError = null;
         } catch (HertaException e) {
             loadedTasks = new TaskList();
             loadError = e.getMessage();
@@ -48,31 +58,36 @@ public class Herta {
     public void run() {
         ui.showWelcome();
 
-        if (loadingError != null) {
-            ui.showMessage(loadingError);
+        try {
+            if (loadingError != null) {
+                ui.showMessage(loadingError);
+                return;
+            }
+            runCommandLoop();
+        } finally {
             ui.close();
-            return;
         }
+    }
 
-        boolean shouldExit = false;
-        while (!shouldExit) {
+    /**
+     * Reads and processes commands until the user exits or input reaches EOF.
+     */
+    private void runCommandLoop() {
+        while (true) {
             String input = ui.readCommand();
             if (input == null) {
                 ui.showSeparator();
                 ui.showGoodbye();
-                break;
+                return;
             }
             ui.showSeparator();
 
             ResponseCategory responseCategory = processCommand(input, ui);
-            shouldExit = responseCategory == ResponseCategory.EXIT;
-
-            if (!shouldExit) {
-                ui.showSeparator();
+            if (responseCategory == ResponseCategory.EXIT) {
+                return;
             }
+            ui.showSeparator();
         }
-
-        ui.close();
     }
 
     /**
@@ -100,7 +115,7 @@ public class Herta {
      * @param args command-line arguments, which are not used
      */
     public static void main(String[] args) {
-        new Herta("data/herta.txt").run();
+        new Herta().run();
     }
 
     /**

@@ -27,6 +27,23 @@ import herta.task.Todo;
  * Interprets user commands and converts their arguments into domain values.
  */
 public class Parser {
+    private static final String DEADLINE_MARKER = "/by";
+    private static final String DEADLINE_FORMAT_ERROR = "Did you even read the deadline format? "
+            + "Use: deadline <description> /by <date/time>.";
+    private static final String EVENT_FROM_MARKER = "/from";
+    private static final String EVENT_TO_MARKER = "/to";
+    private static final String EVENT_FORMAT_ERROR = "Did you even read the event format? "
+            + "Use: event <description> /from <start> /to <end>.";
+    private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
+            + "such as 2019-10-15 or 2/12/2019 1800.";
+    private static final String FILTER_DATE_MARKER = "/on";
+    private static final String DATE_SORT_COMMAND = "sort date";
+    private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
+            + "Use a positive number of days.";
+
+    /** Holds the validated fields extracted from an event command. */
+    private record EventParts(String description, String fromInput, String toInput) {
+    }
 
     /**
      * Identifies the command represented by the user's input.
@@ -69,9 +86,9 @@ public class Parser {
             case TODO -> new TodoCommand(parseTodo(input));
             case DEADLINE -> new DeadlineCommand(parseDeadline(input));
             case EVENT -> new EventCommand(parseEvent(input));
-            case DELETE -> new DeleteCommand(parseTaskIndex(input, "delete"));
-            case MARK -> new MarkCommand(parseTaskIndex(input, "mark"));
-            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, "unmark"));
+            case DELETE -> new DeleteCommand(parseTaskIndex(input, commandType.getKeyword()));
+            case MARK -> new MarkCommand(parseTaskIndex(input, commandType.getKeyword()));
+            case UNMARK -> new UnmarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case FILTER -> new FilterCommand(parseFilterDate(input));
             case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
             case SORT -> {
@@ -90,7 +107,7 @@ public class Parser {
      * @throws HertaException if the todo description is empty
      */
     public Todo parseTodo(String input) throws HertaException {
-        String description = input.substring("todo".length()).trim();
+        String description = getCommandArguments(input, CommandType.TODO);
         if (description.isEmpty()) {
             throw new HertaException("A blank todo? Even I can't organise nothing. "
                     + "Use: todo <description>.");
@@ -106,7 +123,7 @@ public class Parser {
      * @throws HertaException if the keyword is empty
      */
     public String parseFindKeyword(String input) throws HertaException {
-        String keyword = input.substring("find".length()).trim();
+        String keyword = getCommandArguments(input, CommandType.FIND);
         if (keyword.isEmpty()) {
             throw new HertaException("A blank search? Use: find <keyword>.");
         }
@@ -121,18 +138,16 @@ public class Parser {
      * @throws HertaException if the command format or date/time is invalid
      */
     public Deadline parseDeadline(String input) throws HertaException {
-        String content = input.substring("deadline".length()).trim();
-        String[] deadlineParts = content.split("\\s+/by\\s+", 2);
+        String content = getCommandArguments(input, CommandType.DEADLINE);
+        String[] deadlineParts = content.split("\\s+" + DEADLINE_MARKER + "\\s+", 2);
         if (deadlineParts.length != 2) {
-            throw new HertaException("Did you even read the deadline format? "
-                    + "Use: deadline <description> /by <date/time>.");
+            throw new HertaException(DEADLINE_FORMAT_ERROR);
         }
 
         String description = deadlineParts[0].trim();
         String byInput = deadlineParts[1].trim();
         if (description.isEmpty() || byInput.isEmpty()) {
-            throw new HertaException("Did you even read the deadline format? "
-                    + "Use: deadline <description> /by <date/time>.");
+            throw new HertaException(DEADLINE_FORMAT_ERROR);
         }
 
         return new Deadline(description, parseUserDateTime(byInput,
@@ -147,31 +162,51 @@ public class Parser {
      * @throws HertaException if the command format, date/time, or event range is invalid
      */
     public Event parseEvent(String input) throws HertaException {
-        String content = input.substring("event".length()).trim();
-        String[] eventParts = content.split("\\s+/from\\s+", 2);
+        EventParts eventParts = parseEventParts(input);
+        LocalDateTime from = parseUserDateTime(eventParts.fromInput(), EVENT_DATE_ERROR);
+        LocalDateTime to = parseUserDateTime(eventParts.toInput(), EVENT_DATE_ERROR);
+        return createEvent(eventParts.description(), from, to);
+    }
+
+    /**
+     * Extracts and validates the description and date/time inputs from an event command.
+     *
+     * @param input the complete event command
+     * @return the validated event fields
+     * @throws HertaException if the command format or any field is invalid
+     */
+    private EventParts parseEventParts(String input) throws HertaException {
+        String content = getCommandArguments(input, CommandType.EVENT);
+        String[] eventParts = content.split("\\s+" + EVENT_FROM_MARKER + "\\s+", 2);
         if (eventParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
 
-        String[] timeParts = eventParts[1].split("\\s+/to\\s+", 2);
+        String[] timeParts = eventParts[1].split("\\s+" + EVENT_TO_MARKER + "\\s+", 2);
         if (timeParts.length != 2) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
 
         String description = eventParts[0].trim();
         String fromInput = timeParts[0].trim();
         String toInput = timeParts[1].trim();
         if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
-            throw new HertaException("Did you even read the event format? "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FORMAT_ERROR);
         }
+        return new EventParts(description, fromInput, toInput);
+    }
 
-        LocalDateTime from = parseUserDateTime(fromInput,
-                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
-        LocalDateTime to = parseUserDateTime(toInput,
-                "Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.");
+    /**
+     * Creates an event and translates invalid time ranges into a user-facing error.
+     *
+     * @param description the event description
+     * @param from the event start
+     * @param to the event end
+     * @return the event with the supplied details
+     * @throws HertaException if the end does not occur after the start
+     */
+    private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
+            throws HertaException {
         try {
             return new Event(description, from, to);
         } catch (IllegalArgumentException e) {
@@ -187,9 +222,10 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
-        String[] parts = input.substring("filter".length()).trim().split("\\s+", 2);
-        if (parts.length != 2 || !parts[0].equals("/on")) {
-            throw new HertaException("You forgot the /on. Use: filter /on <date>.");
+        String[] parts = getCommandArguments(input, CommandType.FILTER).split("\\s+", 2);
+        if (parts.length != 2 || !parts[0].equals(FILTER_DATE_MARKER)) {
+            throw new HertaException("You forgot the " + FILTER_DATE_MARKER
+                    + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
         }
 
         try {
@@ -207,17 +243,18 @@ public class Parser {
      * @throws HertaException if the command does not contain a positive number
      */
     public int parseUpcomingDays(String input) throws HertaException {
-        String daysInput = input.substring("upcoming".length()).trim();
+        String daysInput = getCommandArguments(input, CommandType.UPCOMING);
+        final int days;
         try {
-            int days = Integer.parseInt(daysInput);
-            if (days <= 0) {
-                throw new NumberFormatException();
-            }
-            assert days > 0 : "A parsed upcoming range must be positive.";
-            return days;
+            days = Integer.parseInt(daysInput);
         } catch (NumberFormatException e) {
-            throw new HertaException("That range makes no sense. Use a positive number of days.");
+            throw new HertaException(UPCOMING_RANGE_ERROR);
         }
+        if (days <= 0) {
+            throw new HertaException(UPCOMING_RANGE_ERROR);
+        }
+        assert days > 0 : "A parsed upcoming range must be positive.";
+        return days;
     }
 
     /**
@@ -227,8 +264,9 @@ public class Parser {
      * @throws HertaException if the command does not request date sorting
      */
     public void validateSortCommand(String input) throws HertaException {
-        if (!input.equals("sort date")) {
-            throw new HertaException("That is not a sorting option. Use: sort date.");
+        if (!input.equals(DATE_SORT_COMMAND)) {
+            throw new HertaException("That is not a sorting option. Use: "
+                    + DATE_SORT_COMMAND + ".");
         }
     }
 
@@ -247,6 +285,17 @@ public class Parser {
         } catch (NumberFormatException e) {
             throw new HertaException("That's not a task number. Try: " + command + " 1.");
         }
+    }
+
+    /**
+     * Returns the argument portion of a command after its recognized keyword.
+     *
+     * @param input the complete command input
+     * @param commandType the command type whose keyword prefixes the input
+     * @return the trimmed command arguments
+     */
+    private String getCommandArguments(String input, CommandType commandType) {
+        return input.substring(commandType.getKeyword().length()).trim();
     }
 
     /**

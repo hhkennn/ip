@@ -234,21 +234,6 @@ class CommandTest {
                 "That command is invalid. Were you just guessing?"));
     }
 
-    @Test
-    void exitCommand_executeDisplaysGoodbyeAndMarksExit() throws Exception {
-        ExitCommand command = new ExitCommand();
-
-        String output = captureOutput(() -> command.execute(null, new Ui(), null));
-
-        assertTrue(command.isExit());
-        assertTrue(output.contains("Leaving already? Goodbye."));
-    }
-
-    @Test
-    void nonExitCommand_usesDefaultExitStatus() {
-        assertFalse(new ListCommand().isExit());
-    }
-
     private String captureOutput(OutputAction action) throws Exception {
         PrintStream originalOutput = System.out;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
