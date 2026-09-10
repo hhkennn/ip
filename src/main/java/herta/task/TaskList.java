@@ -130,11 +130,19 @@ public class TaskList implements Iterable<Task> {
      * @return zero-based task indices in sorted order
      */
     public List<Integer> sortedIndices(Comparator<Task> comparator) {
-        return IntStream.range(0, tasks.size())
+        List<Integer> sortedIndices = IntStream.range(0, tasks.size())
                 .boxed()
                 .sorted((first, second) -> comparator.compare(
                         tasks.get(first), tasks.get(second)))
                 .collect(Collectors.toList());
+
+        assert sortedIndices.size() == tasks.size()
+                : "Sorting must retain one index for every task.";
+        for (int index : sortedIndices) {
+            assert index >= 0 && index < tasks.size()
+                    : "A sorted task index must refer to the current task.";
+        }
+        return sortedIndices;
     }
 
     /**
