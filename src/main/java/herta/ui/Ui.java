@@ -2,8 +2,6 @@ package herta.ui;
 
 import java.util.Scanner;
 
-import herta.task.Task;
-
 /**
  * Handles user interaction for Herta, including console input and output.
  */
@@ -78,28 +76,6 @@ public class Ui implements UiOutput {
         for (String line : lines) {
             System.out.println(INDENT + line);
         }
-    }
-
-    /**
-     * Displays a task using the indentation used for task details.
-     *
-     * @param task the task to display
-     */
-    @Override
-    public void showTask(Task task) {
-        showMessage("  " + task);
-    }
-
-    /**
-     * Displays the task count using the correct singular or plural noun.
-     *
-     * @param taskCount the number of tasks
-     */
-    @Override
-    public void showTaskCount(int taskCount) {
-        String taskNoun = taskCount == 1 ? "task" : "tasks";
-        showMessage("That makes " + taskCount + " " + taskNoun
-                + ". Try to keep up.");
     }
 
     /**

@@ -25,7 +25,7 @@ public class TaskList implements Iterable<Task> {
     /**
      * Creates a task list containing a copy of the supplied tasks.
      *
-     * @param initialTasks the tasks with which to initialise the list
+     * @param initialTasks the tasks with which to initialize the list
      */
     public TaskList(List<Task> initialTasks) {
         tasks = new ArrayList<>(initialTasks);
@@ -76,10 +76,7 @@ public class TaskList implements Iterable<Task> {
      * @return {@code true} if the task was already complete
      */
     public boolean markTask(int index) {
-        Task task = get(index);
-        boolean wasDone = task.isDone();
-        task.markAsDone();
-        return wasDone;
+        return updateTaskStatus(index, true);
     }
 
     /**
@@ -89,9 +86,24 @@ public class TaskList implements Iterable<Task> {
      * @return {@code true} if the task was complete before this operation
      */
     public boolean unmarkTask(int index) {
+        return updateTaskStatus(index, false);
+    }
+
+    /**
+     * Sets a task's completion status and returns its previous status.
+     *
+     * @param index the zero-based task index
+     * @param shouldBeDone the completion status to apply
+     * @return {@code true} if the task was complete before this operation
+     */
+    private boolean updateTaskStatus(int index, boolean shouldBeDone) {
         Task task = get(index);
         boolean wasDone = task.isDone();
-        task.markAsNotDone();
+        if (shouldBeDone) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
+        }
         return wasDone;
     }
 
@@ -102,11 +114,7 @@ public class TaskList implements Iterable<Task> {
      * @param wasDone the status to restore
      */
     public void restoreStatus(int index, boolean wasDone) {
-        if (wasDone) {
-            get(index).markAsDone();
-        } else {
-            get(index).markAsNotDone();
-        }
+        updateTaskStatus(index, wasDone);
     }
 
     /**

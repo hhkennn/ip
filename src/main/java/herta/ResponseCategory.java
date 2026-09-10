@@ -3,8 +3,7 @@ package herta;
 import herta.parser.CommandType;
 
 /**
- * Represents the semantic category of a successfully processed command
- * response.
+ * Represents the semantic category of a command response.
  */
 public enum ResponseCategory {
     ADD,

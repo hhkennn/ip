@@ -32,12 +32,11 @@ public class FindCommand extends QueryCommand {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
-        showMatchingTasks(tasks,
+        showMatchingTasksWithoutEmptyHeading(tasks,
                 task -> task.getDescription().toLowerCase(Locale.ROOT)
                         .contains(normalizedKeyword),
                 "Looking for something? How predictable. Here are the matches:",
                 "I found nothing. Perhaps the task was only in your imagination.",
-                false,
                 ui);
     }
 }

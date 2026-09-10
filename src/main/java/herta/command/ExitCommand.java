@@ -21,13 +21,4 @@ public class ExitCommand extends Command {
         ui.showGoodbye();
     }
 
-    /**
-     * Marks this command as terminating the application.
-     *
-     * @return always {@code true}
-     */
-    @Override
-    public boolean isExit() {
-        return true;
-    }
 }

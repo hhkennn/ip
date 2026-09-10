@@ -21,12 +21,4 @@ public abstract class Command {
     public abstract void execute(TaskList tasks, UiOutput ui, Storage storage)
             throws HertaException;
 
-    /**
-     * Indicates whether executing this command should end the application.
-     *
-     * @return {@code true} when the command exits Herta
-     */
-    public boolean isExit() {
-        return false;
-    }
 }

@@ -4,6 +4,7 @@ package herta.task;
  * Represents a task that has no date or time attached to it.
  */
 public class Todo extends Task {
+    private static final String STORAGE_TYPE = "T";
 
     /**
      * Creates an incomplete todo task.
@@ -21,7 +22,8 @@ public class Todo extends Task {
      */
     @Override
     public String toStorageString() {
-        return "T | " + getCompletionStatusCode() + " | " + getDescription();
+        return STORAGE_TYPE + STORAGE_FIELD_SEPARATOR + getCompletionStatusCode()
+                + STORAGE_FIELD_SEPARATOR + getDescription();
     }
 
     /**
@@ -31,6 +33,6 @@ public class Todo extends Task {
      */
     @Override
     public String toString() {
-        return "[T]" + super.toString();
+        return "[" + STORAGE_TYPE + "]" + super.toString();
     }
 }

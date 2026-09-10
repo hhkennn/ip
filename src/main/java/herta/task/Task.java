@@ -11,6 +11,14 @@ import java.util.Optional;
  * behavior from this abstract base class.</p>
  */
 public abstract class Task {
+    /** Separates fields in serialized task records. */
+    protected static final String STORAGE_FIELD_SEPARATOR = " | ";
+
+    private static final int INCOMPLETE_STATUS_CODE = 0;
+    private static final int COMPLETED_STATUS_CODE = 1;
+    private static final String INCOMPLETE_STATUS_ICON = " ";
+    private static final String COMPLETED_STATUS_ICON = "X";
+
     private final String description;
     private boolean isDone;
 
@@ -32,7 +40,7 @@ public abstract class Task {
      * @return {@code X} if the task is done, or a blank space otherwise
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return isDone ? COMPLETED_STATUS_ICON : INCOMPLETE_STATUS_ICON;
     }
 
     /**
@@ -109,7 +117,7 @@ public abstract class Task {
      * @return {@code 1} when done, or {@code 0} otherwise
      */
     protected int getCompletionStatusCode() {
-        return isDone ? 1 : 0;
+        return isDone ? COMPLETED_STATUS_CODE : INCOMPLETE_STATUS_CODE;
     }
 
     /**
