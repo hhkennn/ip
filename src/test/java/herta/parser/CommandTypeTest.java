@@ -17,6 +17,9 @@ class CommandTypeTest {
         assertEquals(CommandType.LIST, CommandType.fromInput("list"));
         assertEquals(CommandType.FIND, CommandType.fromInput("find book"));
         assertEquals(CommandType.BYE, CommandType.fromInput("bye"));
+        assertEquals(CommandType.ARCHIVE, CommandType.fromInput("archive 1-2"));
+        assertEquals(CommandType.ARCHIVED, CommandType.fromInput("archived extra"));
+        assertEquals(CommandType.RESTORE, CommandType.fromInput("restore 1"));
     }
 
     @Test
@@ -26,5 +29,6 @@ class CommandTypeTest {
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("list extra"));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("byebye"));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput(""));
+        assertEquals(CommandType.UNKNOWN, CommandType.fromInput("ARCHIVE 1"));
     }
 }

@@ -1,14 +1,19 @@
 package herta.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import herta.command.ArchiveCommand;
+import herta.command.ArchivedCommand;
 import herta.command.DeadlineCommand;
 import herta.command.DeleteCommand;
 import herta.command.EventCommand;
@@ -17,6 +22,7 @@ import herta.command.FilterCommand;
 import herta.command.FindCommand;
 import herta.command.ListCommand;
 import herta.command.MarkCommand;
+import herta.command.RestoreCommand;
 import herta.command.SortCommand;
 import herta.command.TodoCommand;
 import herta.command.UnknownCommand;
@@ -48,6 +54,9 @@ class ParserTest {
         assertInstanceOf(MarkCommand.class, parser.parse("mark 1"));
         assertInstanceOf(UnmarkCommand.class, parser.parse("unmark 1"));
         assertInstanceOf(DeleteCommand.class, parser.parse("delete 1"));
+        assertInstanceOf(ArchiveCommand.class, parser.parse("archive 1-2"));
+        assertInstanceOf(ArchivedCommand.class, parser.parse("archived"));
+        assertInstanceOf(RestoreCommand.class, parser.parse("restore 1"));
         assertInstanceOf(ExitCommand.class, parser.parse("bye"));
         assertInstanceOf(UnknownCommand.class, parser.parse("unknown command"));
     }
@@ -190,11 +199,61 @@ class ParserTest {
     }
 
     @Test
+    void parseArchiveSelection_validSelectors_returnsRangesInInputOrder() throws HertaException {
+        ArchiveSelection selection = parser.parseArchiveSelection("archive 02 2-2 3-5 4");
+
+        assertFalse(selection.isAll());
+        assertEquals(List.of(new ArchiveRange(2, 2), new ArchiveRange(2, 2),
+                new ArchiveRange(3, 5), new ArchiveRange(4, 4)), selection.getRanges());
+        assertEquals(new ArchiveRange(2, 2),
+                parser.parseArchiveSelection("archive 0000000000000000000002").getRanges().get(0));
+        assertTrue(parser.parseArchiveSelection("archive all").isAll());
+    }
+
+    @Test
+    void parseArchiveSelection_invalidInput_usesSpecificSelectionErrors() {
+        assertEquals("Use: archive <number> [<number> ...], archive <start>-<end>, or archive all.",
+                assertArchiveError("archive").getMessage());
+        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+                assertArchiveError("archive -1").getMessage());
+        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+                assertArchiveError("archive 1 - 3").getMessage());
+        assertEquals("That range makes no sense. Use an ascending range such as archive 2-5.",
+                assertArchiveError("archive 5-2").getMessage());
+        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+                assertArchiveError("archive 999999999999999999").getMessage());
+        assertEquals("Use archive all by itself, or select task numbers and ranges.",
+                assertArchiveError("archive all 1").getMessage());
+    }
+
+    @Test
+    void parseRestoreTaskNumber_validAndInvalidInputs_areDistinguished() throws HertaException {
+        assertEquals(0, parser.parseRestoreTaskNumber("restore 001"));
+        assertEquals(0, parser.parseRestoreTaskNumber("restore 0000000000000000000001"));
+        for (String input : List.of("restore", "restore 1 2", "restore 1-2", "restore -1",
+                "restore +1", "restore 999999999999999999")) {
+            HertaException exception = assertRestoreError(input);
+            String expected = input.equals("restore")
+                    ? "Use: restore <archived task number>."
+                    : "That's not an archived task number. Try: restore 1.";
+            assertEquals(expected, exception.getMessage());
+        }
+    }
+
+    @Test
     void validateSortCommand_onlyAcceptsDateSorting() throws HertaException {
         parser.validateSortCommand("sort date");
 
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.validateSortCommand("sort time"));
         assertEquals("That is not a sorting option. Use: sort date.", exception.getMessage());
+    }
+
+    private HertaException assertArchiveError(String input) {
+        return assertThrows(HertaException.class, () -> parser.parseArchiveSelection(input));
+    }
+
+    private HertaException assertRestoreError(String input) {
+        return assertThrows(HertaException.class, () -> parser.parseRestoreTaskNumber(input));
     }
 }

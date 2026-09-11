@@ -17,6 +17,9 @@ public enum CommandType {
     MARK("mark", true),
     UNMARK("unmark", true),
     DELETE("delete", true),
+    ARCHIVE("archive", true),
+    ARCHIVED("archived", true),
+    RESTORE("restore", true),
     BYE("bye", false),
     UNKNOWN("", false);
 

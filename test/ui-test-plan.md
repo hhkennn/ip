@@ -12,7 +12,8 @@ invoking the runner directly assumes those prerequisites are already complete.
 
 The setup command excludes JavaFX-specific classes because these tests launch
 the console entry point directly. The runner starts a fresh process for each
-test case. The launcher runs each process in a unique temporary working
+test case. The reset helper seeds a two-record archive fixture only for the
+dedicated `restore 1` fixture case below. The launcher runs each process in a unique temporary working
 directory with its own `data/herta.txt`, so persisted tasks from one case do
 not affect another case and the project's data file remains untouched. The
 temporary directory is removed after the process exits. It sends the input
@@ -35,6 +36,10 @@ that plan supplies a persisted data fixture before startup.
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
 | Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to the test's temporary `data/herta.txt` |
+| Archive tasks | Numbers, ranges, mixed and repeated selectors, `archive all` | Invalid, descending, out-of-bounds, and incomplete selections | Archived output follows active-list order and active commands remain isolated |
+| View archive | Populated and empty archive | Arguments supplied to `archived` | Archive numbering is independent from active numbering |
+| Restore tasks | Completed archive task and leading-zero number | Malformed, multiple, ranged, and out-of-bounds numbers | Restored task is appended to active tasks |
+| Archive persistence | Archive then load in a fresh process | File failures are covered by JUnit tests | Cross-process persistence is verified in `test/archive-persistence-ui-test-plan.md` |
 | Command matching | All supported commands | Command-name lookalikes | Lookalikes do not change state |
 
 ## Test case: Exit immediately
@@ -58,6 +63,367 @@ bye
      |_| |_|\___|_|   \__\__,_|
      Oh, you're here. I'm Herta.
      Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Restore completed and incomplete archived tasks
+
+- Aim: Verify that completed and incomplete archive records loaded from storage can both be restored, that restoration appends to the active list, and that the archive becomes empty afterward.
+
+### Inputs
+
+```text
+archived
+restore 1
+restore 1
+list
+archived
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the tasks you've archived:
+     1.[T][X] completed archive task
+     2.[T][ ] incomplete archive task
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've restored it:
+       [T][X] completed archive task
+     That makes 1 active task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've restored it:
+       [T][ ] incomplete archive task
+     That makes 2 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][X] completed archive task
+     2.[T][ ] incomplete archive task
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     No archived tasks.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Archive selectors and ordering
+
+- Aim: Verify one-based numbers, leading-zero numbers, inclusive ranges, mixed selectors, duplicate and overlapping selector de-duplication, active-list ordering, and incomplete-task rejection.
+
+### Inputs
+
+```text
+todo first
+todo second
+todo third
+archive 1
+mark 1
+archive 01
+mark 1
+mark 2
+archive 2 1-2 2-2 1
+archived
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] first
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] second
+     That makes 2 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] third
+     That makes 3 tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Only completed tasks can be archived. Mark the task complete first.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] first
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've archived 1 completed task:
+       [T][X] first
+     That leaves 2 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] second
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] third
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've archived 2 completed tasks:
+       [T][X] second
+       [T][X] third
+     That leaves 0 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the tasks you've archived:
+     1.[T][X] first
+     2.[T][X] second
+     3.[T][X] third
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Archive all state handling
+
+- Aim: Verify empty-active-list handling, no-completed-task handling, archiving all completed active tasks, and populated archive viewing.
+
+### Inputs
+
+```text
+archive all
+todo pending
+archive all
+mark 1
+archive all
+archived
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Nothing to archive. The active task list is already empty.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] pending
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Nothing to archive. There are no completed active tasks.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] pending
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've archived 1 completed task:
+       [T][X] pending
+     That leaves 0 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the tasks you've archived:
+     1.[T][X] pending
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Archive and restore an active task
+
+- Aim: Verify populated and empty archive views, restoring a completed task, appending it to the active list, and active-list isolation.
+
+### Inputs
+
+```text
+todo active
+mark 1
+archive 1
+archived
+list
+restore 01
+archived
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] active
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] active
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've archived 1 completed task:
+       [T][X] active
+     That leaves 0 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the tasks you've archived:
+     1.[T][X] active
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've restored it:
+       [T][X] active
+     That makes 1 active task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     No archived tasks.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][X] active
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Reject invalid archive and restore selections
+
+- Aim: Verify dedicated syntax, invalid-selection, descending-range, all-combination, archive-number, and out-of-bounds errors, including `archived extra` recognition.
+
+### Inputs
+
+```text
+todo pending
+archive
+archive 0
+archive -1
+archive +1
+archive 1 - 2
+archive 2-1
+archive 999999999999999999
+archive all 1
+archived extra
+restore
+restore 1 2
+restore 1-2
+restore -1
+restore +1
+restore 0
+restore 99999
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] pending
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: archive <number> [<number> ...], archive <start>-<end>, or archive all.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That task doesn't exist. Did you even check the list?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not a valid task selection. Try: archive 1 3-5.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not a valid task selection. Try: archive 1 3-5.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not a valid task selection. Try: archive 1 3-5.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That range makes no sense. Use an ascending range such as archive 2-5.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not a valid task selection. Try: archive 1 3-5.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use archive all by itself, or select task numbers and ranges.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: archived.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: restore <archived task number>.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not an archived task number. Try: restore 1.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not an archived task number. Try: restore 1.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not an archived task number. Try: restore 1.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That's not an archived task number. Try: restore 1.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That archived task doesn't exist. Did you even check the archived list?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     That archived task doesn't exist. Did you even check the archived list?
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -342,7 +708,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -351,7 +717,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -360,27 +726,27 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -604,7 +970,7 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -659,11 +1025,11 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, and bye.
+     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.

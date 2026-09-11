@@ -35,6 +35,6 @@ public class UnknownCommand extends Command {
         }
         throw new HertaException("That command is invalid. Were you just guessing?\n"
                 + "Try todo, deadline, event, list, find, filter, upcoming, sort, "
-                + "mark, unmark, delete, and bye.");
+                + "mark, unmark, delete, archive, archived, restore, and bye.");
     }
 }

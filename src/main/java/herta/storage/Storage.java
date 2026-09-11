@@ -40,6 +40,9 @@ public class Storage {
     private static final int TODO_PART_COUNT = 3;
     private static final int DEADLINE_PART_COUNT = 4;
     private static final int EVENT_PART_COUNT = 5;
+    private static final String ACTIVE_LOAD_PREFIX = "Failed to load tasks: ";
+    private static final String ARCHIVE_LOAD_PREFIX = "Failed to load archived tasks: ";
+    private static final String RECORD_LOAD_PREFIX = "Failed to load tasks ";
 
     private final Path dataFile;
 
@@ -53,6 +56,58 @@ public class Storage {
     }
 
     /**
+     * Returns the path managed by this storage.
+     *
+     * @return the configured data-file path
+     */
+    public Path getDataFile() {
+        return dataFile;
+    }
+
+    /**
+     * Resolves the archive path that belongs beside an active data file.
+     *
+     * @param activeFilePath the configured active data-file path
+     * @return the archive path in the active file's parent directory
+     */
+    public static Path resolveArchivePath(String activeFilePath) {
+        Path activePath = Path.of(activeFilePath);
+        Path parent = activePath.getParent();
+        if (parent == null) {
+            parent = Path.of(".");
+        }
+        return parent.resolve("archive.txt");
+    }
+
+    /**
+     * Rejects active and archive paths that identify the same file.
+     *
+     * @param activeFile the active-task path
+     * @param archiveFile the archive-task path
+     * @throws HertaException if the paths conflict or cannot be compared
+     */
+    public static void validateDistinctPaths(Path activeFile, Path archiveFile)
+            throws HertaException {
+        Path normalizedActive = activeFile.toAbsolutePath().normalize();
+        Path normalizedArchive = archiveFile.toAbsolutePath().normalize();
+        if (normalizedActive.equals(normalizedArchive)) {
+            throw new HertaException(ARCHIVE_LOAD_PREFIX
+                    + "active and archive paths must be different files.");
+        }
+
+        try {
+            if (Files.exists(normalizedActive) && Files.exists(normalizedArchive)
+                    && Files.isSameFile(normalizedActive, normalizedArchive)) {
+                throw new HertaException(ARCHIVE_LOAD_PREFIX
+                        + "active and archive paths must be different files.");
+            }
+        } catch (IOException | SecurityException e) {
+            throw new HertaException(ARCHIVE_LOAD_PREFIX
+                    + "unable to compare active and archive paths.");
+        }
+    }
+
+    /**
      * Loads all saved tasks from the data file.
      *
      * <p>A missing data file represents a fresh start, so an empty task list
@@ -62,17 +117,43 @@ public class Storage {
      * @throws HertaException if the data file cannot be read or parsed
      */
     public TaskList load() throws HertaException {
+        return loadWithPrefix(ACTIVE_LOAD_PREFIX, RECORD_LOAD_PREFIX);
+    }
+
+    /**
+     * Loads archived tasks from this storage file.
+     *
+     * <p>A missing archive file represents an empty archive.</p>
+     *
+     * @return the archived task list reconstructed from saved lines
+     * @throws HertaException if the archive cannot be read or parsed
+     */
+    public TaskList loadArchived() throws HertaException {
+        return loadWithPrefix(ARCHIVE_LOAD_PREFIX, ARCHIVE_LOAD_PREFIX + RECORD_LOAD_PREFIX);
+    }
+
+    /**
+     * Loads tasks while retaining the error wording appropriate to the file's role.
+     *
+     * @param loadPrefix the prefix for file-level load failures
+     * @param recordPrefix the prefix for malformed-record failures
+     * @return the loaded task list
+     * @throws HertaException if the file cannot be read or parsed
+     */
+    private TaskList loadWithPrefix(String loadPrefix, String recordPrefix) throws HertaException {
         try {
             if (Files.notExists(dataFile)) {
                 return new TaskList();
             }
             if (!Files.isRegularFile(dataFile)) {
-                throw new HertaException("Failed to load tasks: data path is not a regular file.");
+                throw new HertaException(loadPrefix + "data path is not a regular file.");
             }
 
-            return parseStorageLines(readStorageLines());
+            return parseStorageLines(readStorageLines(), recordPrefix);
+        } catch (HertaException e) {
+            throw e;
         } catch (IOException | SecurityException e) {
-            throw new HertaException("Failed to load tasks: " + e.getMessage());
+            throw new HertaException(loadPrefix + e.getMessage());
         }
     }
 
@@ -88,6 +169,53 @@ public class Storage {
     public void save(TaskList tasks) throws HertaException {
         List<String> lines = serializeTasks(tasks);
         writeStorageLines(lines);
+    }
+
+    /**
+     * Stages and commits two task files as one logical operation.
+     *
+     * <p>Both collections are serialized and validated before either target file is changed.
+     * If either commit fails, the original contents or absence of both files are restored.</p>
+     *
+     * @param archiveStorage storage for the second task file
+     * @param activeTasks the resulting active collection
+     * @param archivedTasks the resulting archive collection
+     * @param failurePrefix the user-facing prefix for persistence failures
+     * @throws HertaException if validation, writing, committing, or rollback fails
+     */
+    public void saveBoth(Storage archiveStorage, TaskList activeTasks,
+                         TaskList archivedTasks, String failurePrefix) throws HertaException {
+        Path temporaryActiveFile = null;
+        Path temporaryArchiveFile = null;
+        FileSnapshot originalActiveFile = null;
+        FileSnapshot originalArchiveFile = null;
+        try {
+            List<String> activeLines = serializeTasks(activeTasks);
+            List<String> archiveLines = archiveStorage.serializeTasks(archivedTasks);
+            originalActiveFile = FileSnapshot.capture(dataFile);
+            originalArchiveFile = FileSnapshot.capture(archiveStorage.dataFile);
+
+            temporaryActiveFile = writeTemporaryFile(activeLines);
+            temporaryArchiveFile = archiveStorage.writeTemporaryFile(archiveLines);
+            replaceDataFile(temporaryActiveFile);
+            temporaryActiveFile = null;
+            archiveStorage.replaceDataFile(temporaryArchiveFile);
+            temporaryArchiveFile = null;
+        } catch (HertaException e) {
+            throw withFailurePrefix(failurePrefix, e.getMessage());
+        } catch (IOException | SecurityException e) {
+            String reason = e.getMessage();
+            try {
+                restoreFile(originalActiveFile);
+                restoreFile(originalArchiveFile);
+            } catch (IOException | SecurityException rollbackError) {
+                reason = reason + "; rollback failed: " + rollbackError.getMessage();
+            }
+            throw withFailurePrefix(failurePrefix, reason);
+        } finally {
+            deleteTemporaryFile(temporaryActiveFile);
+            deleteTemporaryFile(temporaryArchiveFile);
+        }
     }
 
     /**
@@ -151,15 +279,33 @@ public class Storage {
     private void writeStorageLines(List<String> lines) throws HertaException {
         Path temporaryFile = null;
         try {
-            Path dataDirectory = prepareDataDirectory();
-            temporaryFile = Files.createTempFile(dataDirectory, ".herta-", ".tmp");
-            Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            temporaryFile = writeTemporaryFile(lines);
             replaceDataFile(temporaryFile);
         } catch (IOException | SecurityException e) {
             throw new HertaException("Failed to save tasks: " + e.getMessage());
         } finally {
             deleteTemporaryFile(temporaryFile);
+        }
+    }
+
+    /**
+     * Writes validated lines to a temporary file beside this storage's target.
+     *
+     * @param lines the records to write
+     * @return the temporary file path
+     * @throws IOException if the directory or temporary file cannot be created
+     */
+    private Path writeTemporaryFile(List<String> lines) throws IOException {
+        Path dataDirectory = prepareDataDirectory();
+        Path temporaryFile = null;
+        try {
+            temporaryFile = Files.createTempFile(dataDirectory, ".herta-", ".tmp");
+            Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return temporaryFile;
+        } catch (IOException | SecurityException e) {
+            deleteTemporaryFile(temporaryFile);
+            throw e;
         }
     }
 
@@ -243,14 +389,14 @@ public class Storage {
      * @return the reconstructed task list
      * @throws HertaException if a line contains an invalid task record
      */
-    private TaskList parseStorageLines(List<String> lines) throws HertaException {
+    private TaskList parseStorageLines(List<String> lines, String recordPrefix) throws HertaException {
         TaskList tasks = new TaskList();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.isBlank()) {
                 continue;
             }
-            tasks.add(parseStorageLine(line, i + 1));
+            tasks.add(parseStorageLine(line, i + 1, recordPrefix));
         }
         return tasks;
     }
@@ -263,14 +409,60 @@ public class Storage {
      * @return the reconstructed task
      * @throws HertaException if the line does not contain a valid task record
      */
-    private Task parseStorageLine(String line, int lineNumber) throws HertaException {
+    private Task parseStorageLine(String line, int lineNumber, String recordPrefix)
+            throws HertaException {
         try {
             Task task = parseStoredTask(line);
             assert task != null : "A valid storage line must produce a task.";
             return task;
         } catch (HertaException e) {
-            throw new HertaException("Failed to load tasks at line "
+            throw new HertaException(recordPrefix + "at line "
                     + lineNumber + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Restores one target file to its captured contents or captured absence.
+     *
+     * @param snapshot the target's original state
+     * @throws IOException if restoration fails
+     */
+    private void restoreFile(FileSnapshot snapshot) throws IOException {
+        if (snapshot == null) {
+            return;
+        }
+        if (!snapshot.existed()) {
+            Files.deleteIfExists(snapshot.path());
+            return;
+        }
+        Files.write(snapshot.path(), snapshot.contents(), StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+    }
+
+    /**
+     * Adds the operation-specific prefix to a persistence failure.
+     *
+     * @param failurePrefix the required response prefix
+     * @param reason the specific failure reason
+     * @return the wrapped exception
+     */
+    private HertaException withFailurePrefix(String failurePrefix, String reason) {
+        String safeReason = reason == null || reason.isBlank() ? "unknown persistence error" : reason;
+        return new HertaException(failurePrefix + safeReason);
+    }
+
+    /**
+     * Captures the exact bytes and existence state of one target file.
+     *
+     * @param path the target path
+     * @return the captured file state
+     * @throws IOException if the existing file cannot be read
+     */
+    private record FileSnapshot(Path path, boolean existed, byte[] contents) {
+        private static FileSnapshot capture(Path path) throws IOException {
+            boolean existed = Files.exists(path);
+            byte[] contents = existed ? Files.readAllBytes(path) : new byte[0];
+            return new FileSnapshot(path, existed, contents);
         }
     }
 

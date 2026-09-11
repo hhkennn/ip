@@ -1,9 +1,14 @@
 package herta.parser;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
+import herta.command.ArchiveCommand;
+import herta.command.ArchivedCommand;
 import herta.command.Command;
 import herta.command.DeadlineCommand;
 import herta.command.DeleteCommand;
@@ -13,6 +18,7 @@ import herta.command.FilterCommand;
 import herta.command.FindCommand;
 import herta.command.ListCommand;
 import herta.command.MarkCommand;
+import herta.command.RestoreCommand;
 import herta.command.SortCommand;
 import herta.command.TodoCommand;
 import herta.command.UnknownCommand;
@@ -40,6 +46,16 @@ public class Parser {
     private static final String DATE_SORT_COMMAND = "sort date";
     private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
             + "Use a positive number of days.";
+    private static final String ARCHIVE_USAGE = "Use: archive <number> [<number> ...], "
+            + "archive <start>-<end>, or archive all.";
+    private static final String ARCHIVE_SELECTION_ERROR = "That's not a valid task selection. "
+            + "Try: archive 1 3-5.";
+    private static final String ARCHIVE_DESCENDING_RANGE_ERROR = "That range makes no sense. "
+            + "Use an ascending range such as archive 2-5.";
+    private static final String ARCHIVE_ALL_ERROR = "Use archive all by itself, or select task numbers and ranges.";
+    private static final String RESTORE_USAGE = "Use: restore <archived task number>.";
+    private static final String RESTORE_NUMBER_ERROR = "That's not an archived task number. "
+            + "Try: restore 1.";
 
     /** Holds the validated fields extracted from an event command. */
     private record EventParts(String description, String fromInput, String toInput) {
@@ -89,6 +105,14 @@ public class Parser {
             case DELETE -> new DeleteCommand(parseTaskIndex(input, commandType.getKeyword()));
             case MARK -> new MarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case UNMARK -> new UnmarkCommand(parseTaskIndex(input, commandType.getKeyword()));
+            case ARCHIVE -> new ArchiveCommand(parseArchiveSelection(input));
+            case ARCHIVED -> {
+                if (!getCommandArguments(input, commandType).isEmpty()) {
+                    throw new HertaException("Use: archived.");
+                }
+                yield new ArchivedCommand();
+            }
+            case RESTORE -> new RestoreCommand(parseRestoreTaskNumber(input));
             case FILTER -> new FilterCommand(parseFilterDate(input));
             case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
             case SORT -> {
@@ -284,6 +308,88 @@ public class Parser {
             return Integer.parseInt(taskNumber) - 1;
         } catch (NumberFormatException e) {
             throw new HertaException("That's not a task number. Try: " + command + " 1.");
+        }
+    }
+
+    /**
+     * Parses the selectors from an archive command.
+     *
+     * @param input the complete archive command
+     * @return the validated archive selection
+     * @throws HertaException if the selectors are malformed or out of integer range
+     */
+    public ArchiveSelection parseArchiveSelection(String input) throws HertaException {
+        String arguments = getCommandArguments(input, CommandType.ARCHIVE);
+        if (arguments.isEmpty()) {
+            throw new HertaException(ARCHIVE_USAGE);
+        }
+
+        String[] selectorInputs = arguments.split("\\s+");
+        boolean hasAllSelector = false;
+        for (String selectorInput : selectorInputs) {
+            if (selectorInput.equals("all")) {
+                hasAllSelector = true;
+            }
+        }
+        if (hasAllSelector) {
+            if (selectorInputs.length == 1) {
+                return new ArchiveSelection(List.of(), true);
+            }
+            throw new HertaException(ARCHIVE_ALL_ERROR);
+        }
+
+        List<String[]> rawRanges = new ArrayList<>();
+        for (String selectorInput : selectorInputs) {
+            if (!selectorInput.matches("\\d+(?:-\\d+)?")) {
+                throw new HertaException(ARCHIVE_SELECTION_ERROR);
+            }
+            String[] endpoints = selectorInput.split("-", -1);
+            rawRanges.add(endpoints);
+        }
+
+        for (String[] endpoints : rawRanges) {
+            if (endpoints.length == 2
+                    && new BigInteger(endpoints[0]).compareTo(new BigInteger(endpoints[1])) > 0) {
+                throw new HertaException(ARCHIVE_DESCENDING_RANGE_ERROR);
+            }
+        }
+
+        List<ArchiveRange> ranges = new ArrayList<>();
+        try {
+            for (String[] endpoints : rawRanges) {
+                BigInteger startValue = new BigInteger(endpoints[0]);
+                BigInteger endValue = endpoints.length == 1
+                        ? startValue : new BigInteger(endpoints[1]);
+                int start = startValue.intValueExact();
+                int end = endValue.intValueExact();
+                ranges.add(new ArchiveRange(start, end));
+            }
+        } catch (ArithmeticException e) {
+            throw new HertaException(ARCHIVE_SELECTION_ERROR);
+        }
+        return new ArchiveSelection(ranges, false);
+    }
+
+    /**
+     * Parses the single archive task number from a restore command.
+     *
+     * @param input the complete restore command
+     * @return the selected archive task number, converted to a zero-based index
+     * @throws HertaException if the argument is missing or not a non-negative integer
+     */
+    public int parseRestoreTaskNumber(String input) throws HertaException {
+        String arguments = getCommandArguments(input, CommandType.RESTORE);
+        if (arguments.isEmpty()) {
+            throw new HertaException(RESTORE_USAGE);
+        }
+        if (!arguments.matches("\\d+")) {
+            throw new HertaException(RESTORE_NUMBER_ERROR);
+        }
+
+        try {
+            return new BigInteger(arguments).intValueExact() - 1;
+        } catch (ArithmeticException e) {
+            throw new HertaException(RESTORE_NUMBER_ERROR);
         }
     }
 

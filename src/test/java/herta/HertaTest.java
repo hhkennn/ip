@@ -86,6 +86,43 @@ class HertaTest {
         assertFalse(executionFailureResponse.isExitRequested());
     }
 
+    @Test
+    void startup_missingArchiveFile_isValid() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+
+        Herta herta = new Herta(dataFile.toString());
+
+        assertTrue(herta.isReady());
+        assertEquals("No archived tasks.", herta.getResponse("archived").getMessage());
+    }
+
+    @Test
+    void startup_invalidArchiveFile_exposesErrorAndRejectsResponses() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Path archiveFile = dataFile.resolveSibling("archive.txt");
+        Files.writeString(archiveFile, "X | 0 | invalid\n");
+
+        Herta herta = new Herta(dataFile.toString());
+
+        assertFalse(herta.isReady());
+        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks: "));
+        HertaResponse response = herta.getResponse("list");
+        assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
+        assertEquals(herta.getLoadingError(), response.getMessage());
+    }
+
+    @Test
+    void startupConflictingArchivePath_failsBeforeProcessingCommands() throws Exception {
+        Path archiveNamedActiveFile = temporaryDirectory.resolve("archive.txt");
+        Files.writeString(archiveNamedActiveFile, "T | 0 | task\n");
+
+        Herta herta = new Herta(archiveNamedActiveFile.toString());
+
+        assertFalse(herta.isReady());
+        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks: "));
+        assertEquals(ResponseCategory.ERROR, herta.getResponse("archived").getResponseCategory());
+    }
+
     private String runWithInput(Path dataPath, String input) {
         java.io.InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;

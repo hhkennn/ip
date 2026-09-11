@@ -1,6 +1,7 @@
 package herta.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 
 import herta.exception.HertaException;
@@ -125,5 +127,78 @@ class StorageTest {
                 nullListException.getMessage());
         assertEquals("Failed to save tasks: task list contains a null task.",
                 nullTaskException.getMessage());
+    }
+
+    @Test
+    void loadArchived_missingAndEmptyFiles_returnEmptyArchive() throws Exception {
+        Path archiveFile = temporaryDirectory.resolve("archive.txt");
+        Storage storage = new Storage(archiveFile.toString());
+
+        assertEquals(0, storage.loadArchived().size());
+        storage.save(new TaskList());
+        assertTrue(Files.exists(archiveFile));
+        assertEquals(0, storage.loadArchived().size());
+    }
+
+    @Test
+    void loadArchived_preservesIncompleteRecordsAndUsesArchiveErrors() throws Exception {
+        Path archiveFile = temporaryDirectory.resolve("archive.txt");
+        Files.writeString(archiveFile, "T | 0 | incomplete\n");
+
+        TaskList archivedTasks = new Storage(archiveFile.toString()).loadArchived();
+
+        assertFalse(archivedTasks.get(0).isDone());
+        Files.writeString(archiveFile, "T | 2 | invalid\n");
+        Storage storage = new Storage(archiveFile.toString());
+        HertaException exception = assertThrows(HertaException.class, storage::loadArchived);
+        assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
+    }
+
+    @Test
+    void loadArchived_invalidEncoding_reportsArchiveStartupFailure() throws Exception {
+        Path archiveFile = temporaryDirectory.resolve("archive.txt");
+        Files.write(archiveFile, new byte[] {(byte) 0xc3, (byte) 0x28});
+
+        Storage storage = new Storage(archiveFile.toString());
+        HertaException exception = assertThrows(HertaException.class, storage::loadArchived);
+
+        assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
+    }
+
+    @Test
+    void saveBoth_failureRestoresOriginalAbsence() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("tasks.txt");
+        Path archiveDirectory = temporaryDirectory.resolve("archive.txt");
+        Files.createDirectory(archiveDirectory);
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveDirectory.toString());
+
+        Executable action = () -> saveBothForTest(activeStorage, archiveStorage);
+        HertaException exception = assertThrows(HertaException.class, action);
+
+        assertTrue(exception.getMessage().startsWith("Failed to archive tasks: "));
+        assertTrue(Files.notExists(activeFile));
+        assertTrue(Files.isDirectory(archiveDirectory));
+    }
+
+    @Test
+    void validateDistinctPaths_rejectsNormalizedConflicts() {
+        Path activeFile = temporaryDirectory.resolve("data").resolve("herta.txt");
+        Path conflictingArchive = temporaryDirectory.resolve("data").resolve(".").resolve("herta.txt");
+
+        Executable action = () -> validatePathsForTest(activeFile, conflictingArchive);
+        HertaException exception = assertThrows(HertaException.class, action);
+
+        assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
+    }
+
+    private void saveBothForTest(Storage activeStorage, Storage archiveStorage)
+            throws HertaException {
+        activeStorage.saveBoth(archiveStorage, new TaskList(), new TaskList(),
+                "Failed to archive tasks: ");
+    }
+
+    private void validatePathsForTest(Path activeFile, Path archiveFile) throws HertaException {
+        Storage.validateDistinctPaths(activeFile, archiveFile);
     }
 }

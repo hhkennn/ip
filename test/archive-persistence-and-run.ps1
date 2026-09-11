@@ -1,27 +1,20 @@
 $repositoryDirectory = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $temporaryDirectory = Join-Path ([System.IO.Path]::GetTempPath()) (
-    'herta-ui-test-' + [System.Guid]::NewGuid().ToString('N'))
+    'herta-archive-ui-test-' + [System.Guid]::NewGuid().ToString('N'))
 $temporaryDataDirectory = Join-Path $temporaryDirectory 'data'
 $outputDirectory = Join-Path $repositoryDirectory 'out'
-$commands = @($input)
+$secondSessionCommands = @($input)
+$firstSessionCommands = @('todo persisted task', 'mark 1', 'archive 1', 'bye')
 
 New-Item -ItemType Directory -Path $temporaryDataDirectory -Force | Out-Null
-
-if ($commands -contains 'restore 1') {
-    $archiveFile = Join-Path $temporaryDataDirectory 'archive.txt'
-    $savedArchiveTasks = @(
-        'T | 1 | completed archive task',
-        'T | 0 | incomplete archive task'
-    )
-    $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllLines($archiveFile, $savedArchiveTasks, $utf8WithoutBom)
-}
 
 $exitCode = 1
 Push-Location -LiteralPath $temporaryDirectory
 try {
-    $commands | & java -cp $outputDirectory herta.Herta
-    $exitCode = $LASTEXITCODE
+    $firstSessionCommands | & java -cp $outputDirectory herta.Herta
+    $firstExitCode = $LASTEXITCODE
+    $secondSessionCommands | & java -cp $outputDirectory herta.Herta
+    $exitCode = if ($firstExitCode -eq 0) { $LASTEXITCODE } else { $firstExitCode }
 } finally {
     Pop-Location
     Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force -ErrorAction SilentlyContinue
