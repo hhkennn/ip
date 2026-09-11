@@ -105,6 +105,8 @@ public class DialogBox extends HBox {
             case MARK -> "marked-label";
             case UNMARK -> "unmarked-label";
             case DELETE -> "delete-label";
+            case ARCHIVE -> "archive-label";
+            case RESTORE -> "restore-label";
             case QUERY -> "query-label";
             case EXIT -> "exit-label";
             case ERROR -> "error-label";

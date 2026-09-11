@@ -70,6 +70,16 @@ public class TaskList implements Iterable<Task> {
     }
 
     /**
+     * Replaces this list's contents with a copy of another task list.
+     *
+     * @param replacement the task list whose contents should be copied
+     */
+    public void replaceWith(TaskList replacement) {
+        tasks.clear();
+        tasks.addAll(replacement.asUnmodifiableList());
+    }
+
+    /**
      * Marks a task as complete and returns its previous status.
      *
      * @param index the zero-based task index

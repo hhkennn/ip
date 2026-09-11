@@ -10,6 +10,8 @@ public enum ResponseCategory {
     MARK,
     UNMARK,
     DELETE,
+    ARCHIVE,
+    RESTORE,
     QUERY,
     EXIT,
     ERROR;
@@ -28,7 +30,9 @@ public enum ResponseCategory {
             case MARK -> MARK;
             case UNMARK -> UNMARK;
             case DELETE -> DELETE;
-            case LIST, FIND, FILTER, UPCOMING, SORT -> QUERY;
+            case ARCHIVE -> ARCHIVE;
+            case RESTORE -> RESTORE;
+            case LIST, FIND, FILTER, UPCOMING, SORT, ARCHIVED -> QUERY;
             case BYE -> EXIT;
             default -> ERROR;
         };

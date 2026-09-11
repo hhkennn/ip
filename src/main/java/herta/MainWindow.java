@@ -59,6 +59,13 @@ public class MainWindow extends AnchorPane {
      */
     public void setHerta(Herta herta) {
         this.herta = herta;
+        if (!herta.isReady()) {
+            dialogContainer.getChildren().add(
+                    DialogBox.getHertaDialog(
+                            herta.getLoadingError(), hertaImage, ResponseCategory.ERROR));
+            userInput.setDisable(true);
+            sendButton.setDisable(true);
+        }
     }
 
     /**
@@ -66,6 +73,9 @@ public class MainWindow extends AnchorPane {
      */
     @FXML
     private void handleUserInput() {
+        if (herta == null || !herta.isReady()) {
+            return;
+        }
         String userText = userInput.getText();
         HertaResponse hertaResponse = herta.getResponse(userText);
         dialogContainer.getChildren().addAll(

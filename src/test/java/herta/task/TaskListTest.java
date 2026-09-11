@@ -32,6 +32,19 @@ class TaskListTest {
     }
 
     @Test
+    void replaceWith_copiesReplacementContents() {
+        TaskList tasks = new TaskList(List.of(new Todo("old")));
+        TaskList replacement = new TaskList(List.of(new Todo("new")));
+
+        tasks.replaceWith(replacement);
+
+        assertEquals(1, tasks.size());
+        assertEquals("new", tasks.get(0).getDescription());
+        replacement.add(new Todo("later"));
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
     void markUnmarkAndRestoreStatus_updateTaskAndReportPreviousStatus() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 

@@ -5,6 +5,7 @@ import herta.exception.HertaException;
 import herta.parser.CommandType;
 import herta.parser.Parser;
 import herta.storage.Storage;
+import herta.storage.TaskRepository;
 import herta.task.TaskList;
 import herta.ui.ResponseCollector;
 import herta.ui.Ui;
@@ -17,9 +18,8 @@ public class Herta {
     private static final String DEFAULT_DATA_FILE = "data/herta.txt";
 
     private final Ui ui;
-    private final Storage storage;
     private final Parser parser;
-    private final TaskList tasks;
+    private final TaskRepository repository;
     private final String loadingError;
 
     /**
@@ -36,19 +36,21 @@ public class Herta {
      */
     public Herta(String filePath) {
         ui = new Ui();
-        storage = new Storage(filePath);
         parser = new Parser();
 
-        TaskList loadedTasks;
+        TaskRepository loadedRepository;
         String loadError;
         try {
-            loadedTasks = storage.load();
+            loadedRepository = TaskRepository.load(filePath);
             loadError = null;
         } catch (HertaException e) {
-            loadedTasks = new TaskList();
+            Storage activeStorage = new Storage(filePath);
+            Storage archiveStorage = new Storage(Storage.resolveArchivePath(filePath).toString());
+            loadedRepository = new TaskRepository(activeStorage, archiveStorage,
+                    new TaskList(), new TaskList());
             loadError = e.getMessage();
         }
-        tasks = loadedTasks;
+        repository = loadedRepository;
         loadingError = loadError;
     }
 
@@ -98,10 +100,14 @@ public class Herta {
      * @return the semantic category of the processed command response
      */
     private ResponseCategory processCommand(String input, UiOutput output) {
+        if (!isReady()) {
+            output.showMessage(loadingError);
+            return ResponseCategory.ERROR;
+        }
         CommandType commandType = parser.parseCommandType(input);
         try {
             Command command = parser.parse(input, commandType);
-            command.execute(tasks, output, storage);
+            command.execute(repository, output);
             return ResponseCategory.fromCommandType(commandType);
         } catch (HertaException e) {
             output.showMessage(e.getMessage());
@@ -129,5 +135,23 @@ public class Herta {
         ResponseCategory responseCategory = processCommand(input, response);
         boolean exitRequested = responseCategory == ResponseCategory.EXIT;
         return new HertaResponse(response.getOutput(), exitRequested, responseCategory);
+    }
+
+    /**
+     * Indicates whether startup completed successfully and commands may be processed.
+     *
+     * @return {@code true} when both task collections are ready
+     */
+    public boolean isReady() {
+        return loadingError == null;
+    }
+
+    /**
+     * Returns the startup error, if startup failed.
+     *
+     * @return the startup error or {@code null} when Herta is ready
+     */
+    public String getLoadingError() {
+        return loadingError;
     }
 }
