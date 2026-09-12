@@ -7,17 +7,17 @@ import java.util.List;
  */
 public final class ArchiveSelection {
     private final List<ArchiveRange> ranges;
-    private final boolean all;
+    private final boolean isAllSelected;
 
     /**
      * Creates an archive selection.
      *
      * @param ranges the inclusive, one-based ranges selected by the user
-     * @param all whether the selection targets every completed active task
+     * @param isAllSelected whether the selection targets every completed active task
      */
-    public ArchiveSelection(List<ArchiveRange> ranges, boolean all) {
+    public ArchiveSelection(List<ArchiveRange> ranges, boolean isAllSelected) {
         this.ranges = List.copyOf(ranges);
-        this.all = all;
+        this.isAllSelected = isAllSelected;
     }
 
     /**
@@ -25,8 +25,8 @@ public final class ArchiveSelection {
      *
      * @return {@code true} when every completed active task is selected
      */
-    public boolean isAll() {
-        return all;
+    public boolean isAllSelected() {
+        return isAllSelected;
     }
 
     /**

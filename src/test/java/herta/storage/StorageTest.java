@@ -51,7 +51,7 @@ class StorageTest {
         Todo loadedTodo = assertInstanceOf(Todo.class, loadedTasks.get(0));
         Deadline loadedDeadline = assertInstanceOf(Deadline.class, loadedTasks.get(1));
         Event loadedEvent = assertInstanceOf(Event.class, loadedTasks.get(2));
-        assertTrue(loadedTodo.isDone());
+        assertTrue(loadedTodo.isCompleted());
         assertEquals(deadline.getBy(), loadedDeadline.getBy());
         assertEquals(event.getFrom(), loadedEvent.getFrom());
         assertEquals(event.getTo(), loadedEvent.getTo());
@@ -147,7 +147,7 @@ class StorageTest {
 
         TaskList archivedTasks = new Storage(archiveFile.toString()).loadArchived();
 
-        assertFalse(archivedTasks.get(0).isDone());
+        assertFalse(archivedTasks.get(0).isCompleted());
         Files.writeString(archiveFile, "T | 2 | invalid\n");
         Storage storage = new Storage(archiveFile.toString());
         HertaException exception = assertThrows(HertaException.class, storage::loadArchived);

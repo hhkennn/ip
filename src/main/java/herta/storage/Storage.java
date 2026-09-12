@@ -431,7 +431,7 @@ public class Storage {
         if (snapshot == null) {
             return;
         }
-        if (!snapshot.existed()) {
+        if (!snapshot.wasPresent()) {
             Files.deleteIfExists(snapshot.path());
             return;
         }
@@ -458,11 +458,11 @@ public class Storage {
      * @return the captured file state
      * @throws IOException if the existing file cannot be read
      */
-    private record FileSnapshot(Path path, boolean existed, byte[] contents) {
+    private record FileSnapshot(Path path, boolean wasPresent, byte[] contents) {
         private static FileSnapshot capture(Path path) throws IOException {
-            boolean existed = Files.exists(path);
-            byte[] contents = existed ? Files.readAllBytes(path) : new byte[0];
-            return new FileSnapshot(path, existed, contents);
+            boolean wasPresent = Files.exists(path);
+            byte[] contents = wasPresent ? Files.readAllBytes(path) : new byte[0];
+            return new FileSnapshot(path, wasPresent, contents);
         }
     }
 
@@ -475,7 +475,7 @@ public class Storage {
      */
     private Task parseStoredTask(String line) throws HertaException {
         String[] parts = splitStorageRecord(line);
-        boolean isCompleted = validateStorageRecord(parts);
+        boolean isCompleted = isCompletedStorageRecord(parts);
         Task task = createTask(parts);
         if (isCompleted) {
             task.markAsDone();
@@ -498,13 +498,13 @@ public class Storage {
     }
 
     /**
-     * Validates the schema and fields of a serialized task record.
+     * Validates a serialized task record and checks whether it is complete.
      *
      * @param parts the storage fields to validate
      * @return {@code true} if the record marks the task as complete
      * @throws HertaException if the record is malformed
      */
-    private boolean validateStorageRecord(String[] parts) throws HertaException {
+    private boolean isCompletedStorageRecord(String[] parts) throws HertaException {
         if (parts.length < MINIMUM_PART_COUNT) {
             throw new HertaException("Invalid saved task: missing task type or status.");
         }

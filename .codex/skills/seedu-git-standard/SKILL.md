@@ -39,6 +39,9 @@ repeated here: [SE-EDU Git conventions](https://se-education.org/guides/conventi
 
 - Before drafting or executing a commit, inspect the staged diff and confirm the
   subject and body follow these rules. Keep unrelated changes out of the commit.
+- Install the repository hook with `git config core.hooksPath .githooks` and
+  treat a failed local commit-message check as blocking. The hook validates
+  subject and body length before Git creates the commit.
 - Do not commit or push unless the user explicitly authorizes that action. When
   authorization is given, use this skill to validate the final message before
   running Git.

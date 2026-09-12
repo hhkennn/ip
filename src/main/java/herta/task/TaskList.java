@@ -80,51 +80,46 @@ public class TaskList implements Iterable<Task> {
     }
 
     /**
-     * Marks a task as complete and returns its previous status.
+     * Marks a task as complete.
      *
      * @param index the zero-based task index
-     * @return {@code true} if the task was already complete
      */
-    public boolean markTask(int index) {
-        return updateTaskStatus(index, true);
+    public void markTask(int index) {
+        updateTaskStatus(index, true);
     }
 
     /**
-     * Marks a task as incomplete and returns its previous status.
+     * Marks a task as incomplete.
      *
      * @param index the zero-based task index
-     * @return {@code true} if the task was complete before this operation
      */
-    public boolean unmarkTask(int index) {
-        return updateTaskStatus(index, false);
+    public void unmarkTask(int index) {
+        updateTaskStatus(index, false);
     }
 
     /**
-     * Sets a task's completion status and returns its previous status.
+     * Sets a task's completion status.
      *
      * @param index the zero-based task index
-     * @param shouldBeDone the completion status to apply
-     * @return {@code true} if the task was complete before this operation
+     * @param shouldBeCompleted the completion status to apply
      */
-    private boolean updateTaskStatus(int index, boolean shouldBeDone) {
+    private void updateTaskStatus(int index, boolean shouldBeCompleted) {
         Task task = get(index);
-        boolean wasDone = task.isDone();
-        if (shouldBeDone) {
+        if (shouldBeCompleted) {
             task.markAsDone();
         } else {
             task.markAsNotDone();
         }
-        return wasDone;
     }
 
     /**
      * Restores a task's completion status after a failed persistence attempt.
      *
      * @param index the zero-based task index
-     * @param wasDone the status to restore
+     * @param wasCompleted the status to restore
      */
-    public void restoreStatus(int index, boolean wasDone) {
-        updateTaskStatus(index, wasDone);
+    public void restoreStatus(int index, boolean wasCompleted) {
+        updateTaskStatus(index, wasCompleted);
     }
 
     /**

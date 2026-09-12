@@ -20,7 +20,7 @@ public abstract class Task {
     private static final String COMPLETED_STATUS_ICON = "X";
 
     private final String description;
-    private boolean isDone;
+    private boolean isCompleted;
 
     /**
      * Creates a task that is initially not done.
@@ -31,7 +31,7 @@ public abstract class Task {
         assert description != null && !description.isBlank()
                 : "A task must have a non-blank description.";
         this.description = description;
-        this.isDone = false;
+        this.isCompleted = false;
     }
 
     /**
@@ -40,21 +40,21 @@ public abstract class Task {
      * @return {@code X} if the task is done, or a blank space otherwise
      */
     public String getStatusIcon() {
-        return isDone ? COMPLETED_STATUS_ICON : INCOMPLETE_STATUS_ICON;
+        return isCompleted ? COMPLETED_STATUS_ICON : INCOMPLETE_STATUS_ICON;
     }
 
     /**
      * Marks this task as done.
      */
     public void markAsDone() {
-        isDone = true;
+        isCompleted = true;
     }
 
     /**
      * Marks this task as not done.
      */
     public void markAsNotDone() {
-        isDone = false;
+        isCompleted = false;
     }
 
     /**
@@ -62,8 +62,8 @@ public abstract class Task {
      *
      * @return {@code true} if the task is complete
      */
-    public boolean isDone() {
-        return isDone;
+    public boolean isCompleted() {
+        return isCompleted;
     }
 
     /**
@@ -117,7 +117,7 @@ public abstract class Task {
      * @return {@code 1} when done, or {@code 0} otherwise
      */
     protected int getCompletionStatusCode() {
-        return isDone ? COMPLETED_STATUS_CODE : INCOMPLETE_STATUS_CODE;
+        return isCompleted ? COMPLETED_STATUS_CODE : INCOMPLETE_STATUS_CODE;
     }
 
     /**

@@ -24,24 +24,27 @@ public abstract class TaskStatusCommand extends TaskIndexCommand {
      *
      * @param tasks the task list to update
      * @param storage the storage used to persist the status change
-     * @param shouldBeDone the completion status to apply
+     * @param shouldBeCompleted the completion status to apply
      * @return the updated task
      * @throws HertaException if the selected task is invalid or cannot be saved
      */
-    protected Task updateTaskStatus(TaskList tasks, Storage storage, boolean shouldBeDone)
+    protected Task updateTaskStatus(TaskList tasks, Storage storage, boolean shouldBeCompleted)
             throws HertaException {
         int taskIndex = getTaskIndex(tasks);
-        boolean wasDone = shouldBeDone
-                ? tasks.markTask(taskIndex)
-                : tasks.unmarkTask(taskIndex);
+        boolean wasCompleted = tasks.get(taskIndex).isCompleted();
+        if (shouldBeCompleted) {
+            tasks.markTask(taskIndex);
+        } else {
+            tasks.unmarkTask(taskIndex);
+        }
         Task task = tasks.get(taskIndex);
-        assert task.isDone() == shouldBeDone
+        assert task.isCompleted() == shouldBeCompleted
                 : "The task status must match the requested status before saving.";
         try {
             storage.save(tasks);
         } catch (HertaException e) {
-            tasks.restoreStatus(taskIndex, wasDone);
-            assert tasks.get(taskIndex).isDone() == wasDone
+            tasks.restoreStatus(taskIndex, wasCompleted);
+            assert tasks.get(taskIndex).isCompleted() == wasCompleted
                     : "A failed status update must restore the previous status.";
             throw e;
         }

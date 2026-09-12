@@ -16,6 +16,7 @@ bin/
 
 # Temp files
 _temp/
+/tmp/
 
 # Runtime task data
 data/herta.txt

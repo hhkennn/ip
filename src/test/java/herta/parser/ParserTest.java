@@ -202,12 +202,12 @@ class ParserTest {
     void parseArchiveSelection_validSelectors_returnsRangesInInputOrder() throws HertaException {
         ArchiveSelection selection = parser.parseArchiveSelection("archive 02 2-2 3-5 4");
 
-        assertFalse(selection.isAll());
+        assertFalse(selection.isAllSelected());
         assertEquals(List.of(new ArchiveRange(2, 2), new ArchiveRange(2, 2),
                 new ArchiveRange(3, 5), new ArchiveRange(4, 4)), selection.getRanges());
         assertEquals(new ArchiveRange(2, 2),
                 parser.parseArchiveSelection("archive 0000000000000000000002").getRanges().get(0));
-        assertTrue(parser.parseArchiveSelection("archive all").isAll());
+        assertTrue(parser.parseArchiveSelection("archive all").isAllSelected());
     }
 
     @Test

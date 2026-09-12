@@ -41,18 +41,18 @@ public class ArchiveCommand extends Command {
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
         TaskList activeTasks = repository.getActiveTasks();
         Set<Integer> selectedIndices = getSelectedIndices(activeTasks);
-        if (selection.isAll() && activeTasks.size() == 0) {
+        if (selection.isAllSelected() && activeTasks.size() == 0) {
             ui.showMessage("Nothing to archive. The active task list is already empty.");
             return;
         }
-        if (selection.isAll() && selectedIndices.isEmpty()) {
+        if (selection.isAllSelected() && selectedIndices.isEmpty()) {
             ui.showMessage("Nothing to archive. There are no completed active tasks.");
             return;
         }
 
-        if (!selection.isAll()) {
+        if (!selection.isAllSelected()) {
             for (int index : selectedIndices) {
-                if (!activeTasks.get(index).isDone()) {
+                if (!activeTasks.get(index).isCompleted()) {
                     throw new HertaException(
                             "Only completed tasks can be archived. Mark the task complete first.");
                 }
@@ -105,8 +105,8 @@ public class ArchiveCommand extends Command {
      */
     private Set<Integer> getSelectedIndices(TaskList activeTasks) throws HertaException {
         Set<Integer> selectedIndices = new TreeSet<>();
-        if (selection.isAll()) {
-            selectedIndices.addAll(activeTasks.matchingIndices(Task::isDone));
+        if (selection.isAllSelected()) {
+            selectedIndices.addAll(activeTasks.matchingIndices(Task::isCompleted));
             return selectedIndices;
         }
 

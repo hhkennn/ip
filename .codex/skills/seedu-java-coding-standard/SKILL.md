@@ -23,9 +23,13 @@ behavioral change. Use the source guide for details not repeated here:
   `XMLParser`). Use longer names for values with wider scope and short names only
   for local scratch values. Use `i`, `j`, or `k` for iterators, with `j` and `k`
   reserved for nested loops.
-- Name booleans so they read as predicates (`is`, `has`, `can`, `should`, or
-  `was`), use the same convention for boolean setters' parameters, and use
-  plural names for collections. Give related constants a shared prefix.
+- Prefix boolean fields, local variables, parameters, and record components with
+  a predicate such as `is`, `has`, `can`, `should`, or `was`. Avoid vague names
+  such as `all`, `done`, `valid`, or `requested`. Boolean methods should also
+  read as predicates; action methods that return an operation status are an
+  exception when their Javadoc explains what the status represents. Use the
+  same convention for boolean setter parameters, and use plural names for
+  collections. Give related constants a shared prefix.
 
 ## Layout and whitespace
 
@@ -72,3 +76,5 @@ After changing Java code, review the relevant tests and run the project checks
 with Java 25. Use Checkstyle as the automated conformance check; do not weaken
 the project Checkstyle configuration to hide a violation. For topics this guide
 does not cover, follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
+Review the CS2103 code-quality guidance as well, especially method length,
+class size, and keeping each method at one level of abstraction.

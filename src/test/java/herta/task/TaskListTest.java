@@ -45,21 +45,24 @@ class TaskListTest {
     }
 
     @Test
-    void markUnmarkAndRestoreStatus_updateTaskAndReportPreviousStatus() {
+    void markUnmarkAndRestoreStatus_updateTaskStatus() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        assertFalse(tasks.markTask(0));
-        assertTrue(tasks.get(0).isDone());
-        assertTrue(tasks.markTask(0));
+        assertFalse(tasks.get(0).isCompleted());
+        tasks.markTask(0);
+        assertTrue(tasks.get(0).isCompleted());
+        tasks.markTask(0);
+        assertTrue(tasks.get(0).isCompleted());
 
-        assertTrue(tasks.unmarkTask(0));
-        assertFalse(tasks.get(0).isDone());
-        assertFalse(tasks.unmarkTask(0));
+        tasks.unmarkTask(0);
+        assertFalse(tasks.get(0).isCompleted());
+        tasks.unmarkTask(0);
+        assertFalse(tasks.get(0).isCompleted());
 
         tasks.restoreStatus(0, true);
-        assertTrue(tasks.get(0).isDone());
+        assertTrue(tasks.get(0).isCompleted());
         tasks.restoreStatus(0, false);
-        assertFalse(tasks.get(0).isDone());
+        assertFalse(tasks.get(0).isCompleted());
     }
 
     @Test

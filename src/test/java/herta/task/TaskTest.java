@@ -20,7 +20,7 @@ class TaskTest {
 
         assertEquals("plain task", task.getDescription());
         assertEquals(" ", task.getStatusIcon());
-        assertFalse(task.isDone());
+        assertFalse(task.isCompleted());
         assertFalse(task.occursOn(LocalDate.of(2019, 10, 15)));
         assertTrue(task.getScheduledDateTime().isEmpty());
         assertFalse(task.isUpcoming(LocalDateTime.MIN, LocalDateTime.MAX));
@@ -29,13 +29,13 @@ class TaskTest {
 
         task.markAsDone();
 
-        assertTrue(task.isDone());
+        assertTrue(task.isCompleted());
         assertEquals("X", task.getStatusIcon());
         assertEquals("T | 1 | plain task", task.toStorageString());
         assertEquals("[X] plain task", task.toString());
 
         task.markAsNotDone();
-        assertFalse(task.isDone());
+        assertFalse(task.isCompleted());
     }
 
     /**

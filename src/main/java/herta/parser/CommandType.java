@@ -24,17 +24,17 @@ public enum CommandType {
     UNKNOWN("", false);
 
     private final String keyword;
-    private final boolean acceptsArguments;
+    private final boolean canAcceptArguments;
 
     /**
      * Creates a command type.
      *
      * @param keyword the text used to identify the command.
-     * @param acceptsArguments whether the command may be followed by arguments.
+     * @param canAcceptArguments whether the command may be followed by arguments.
      */
-    CommandType(String keyword, boolean acceptsArguments) {
+    CommandType(String keyword, boolean canAcceptArguments) {
         this.keyword = keyword;
-        this.acceptsArguments = acceptsArguments;
+        this.canAcceptArguments = canAcceptArguments;
     }
 
     /**
@@ -48,7 +48,7 @@ public enum CommandType {
         return Arrays.stream(values())
                 .filter(command -> command != UNKNOWN)
                 .filter(command -> trimmedInput.equals(command.keyword)
-                        || (command.acceptsArguments
+                        || (command.canAcceptArguments
                         && trimmedInput.startsWith(command.keyword + " ")))
                 .findFirst()
                 .orElse(UNKNOWN);

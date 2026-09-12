@@ -5,19 +5,19 @@ package herta;
  */
 public class HertaResponse {
     private final String message;
-    private final boolean exitRequested;
+    private final boolean isExitRequested;
     private final ResponseCategory responseCategory;
 
     /**
      * Creates a response with its message, exit status, and semantic category.
      *
      * @param message the message to display
-     * @param exitRequested whether the application should exit
+     * @param isExitRequested whether the application should exit
      * @param responseCategory the semantic category of the response
      */
-    public HertaResponse(String message, boolean exitRequested, ResponseCategory responseCategory) {
+    public HertaResponse(String message, boolean isExitRequested, ResponseCategory responseCategory) {
         this.message = message;
-        this.exitRequested = exitRequested;
+        this.isExitRequested = isExitRequested;
         this.responseCategory = responseCategory;
     }
 
@@ -36,7 +36,7 @@ public class HertaResponse {
      * @return {@code true} if the application should exit
      */
     public boolean isExitRequested() {
-        return exitRequested;
+        return isExitRequested;
     }
 
     /**

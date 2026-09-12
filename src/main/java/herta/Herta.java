@@ -133,8 +133,8 @@ public class Herta {
     public HertaResponse getResponse(String input) {
         ResponseCollector response = new ResponseCollector();
         ResponseCategory responseCategory = processCommand(input, response);
-        boolean exitRequested = responseCategory == ResponseCategory.EXIT;
-        return new HertaResponse(response.getOutput(), exitRequested, responseCategory);
+        boolean isExitRequested = responseCategory == ResponseCategory.EXIT;
+        return new HertaResponse(response.getOutput(), isExitRequested, responseCategory);
     }
 
     /**

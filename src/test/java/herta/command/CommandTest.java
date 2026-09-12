@@ -86,12 +86,12 @@ class CommandTest {
 
         String markOutput = captureOutput(() ->
                 new MarkCommand(0).execute(tasks, new Ui(), storage));
-        assertTrue(todo.isDone());
+        assertTrue(todo.isCompleted());
         assertTrue(markOutput.contains("There. It's marked complete:"));
 
         String unmarkOutput = captureOutput(() ->
                 new UnmarkCommand(0).execute(tasks, new Ui(), storage));
-        assertFalse(todo.isDone());
+        assertFalse(todo.isCompleted());
         assertTrue(unmarkOutput.contains("As you wish. It's incomplete again:"));
 
         String deleteOutput = captureOutput(() ->
@@ -112,12 +112,12 @@ class CommandTest {
 
         assertThrows(HertaException.class, () ->
                 new MarkCommand(0).execute(tasks, new Ui(), failingStorage));
-        assertFalse(todo.isDone());
+        assertFalse(todo.isCompleted());
 
         todo.markAsDone();
         assertThrows(HertaException.class, () ->
                 new UnmarkCommand(0).execute(tasks, new Ui(), failingStorage));
-        assertTrue(todo.isDone());
+        assertTrue(todo.isCompleted());
 
         assertThrows(HertaException.class, () ->
                 new DeleteCommand(0).execute(tasks, new Ui(), failingStorage));
@@ -431,7 +431,7 @@ class CommandTest {
 
         assertTrue(exception.getMessage().startsWith("Failed to archive tasks: "));
         assertEquals(1, activeTasks.size());
-        assertTrue(activeTasks.get(0).isDone());
+        assertTrue(activeTasks.get(0).isCompleted());
         assertEquals("T | 1 | completed\n", Files.readString(activeFile));
     }
 

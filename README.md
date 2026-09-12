@@ -24,6 +24,18 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
 
+## Git commit checks
+
+Enable the repository's local commit-message hook once after cloning:
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+The hook rejects overlong commit subjects and body lines, and requires a body
+for commits that contain substantial changes. It runs before Git creates the
+commit, so formatting problems are caught locally rather than by CI.
+
 ## AI Assistance
 
 I have used OpenAI Codex as an AI-assisted coding tool throughout the development of this project. It was used to suggest, generate, explain, debug, and refine code, including command parsing, command dispatch, task operations, and EOF handling. I reviewed, adapted, and tested the resulting code.

@@ -43,7 +43,7 @@ public class UpcomingCommand extends QueryCommand {
         }
 
         showMatchingTasks(tasks,
-                task -> !task.isDone() && task.isUpcoming(now, until),
+                task -> !task.isCompleted() && task.isUpcoming(now, until),
                 "Your next " + days + " days. Try not to fall behind:",
                 "Nothing upcoming. Enjoy the silence while it lasts.",
                 ui);
