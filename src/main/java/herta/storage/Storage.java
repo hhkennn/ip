@@ -124,8 +124,6 @@ public class Storage {
                 throw new HertaException(loadPrefix + "data path is not a regular file.");
             }
             return converter.parseStorageLines(fileManager.readLines(), recordPrefix);
-        } catch (HertaException e) {
-            throw e;
         } catch (IOException | SecurityException e) {
             throw new HertaException(loadPrefix + e.getMessage());
         }
@@ -147,7 +145,7 @@ public class Storage {
     }
 
     /**
-     * Stages and replaces two task files as one logical operation.
+     * Stages and replaces the active and archived task files as one logical operation.
      *
      * <p>If either commit fails, the original contents or absence of both files are restored.</p>
      *
@@ -157,8 +155,9 @@ public class Storage {
      * @param failurePrefix the user-facing prefix for persistence failures
      * @throws HertaException if validation, writing, replacing, or rollback fails
      */
-    public void saveBoth(Storage archiveStorage, TaskList activeTasks,
-                         TaskList archivedTasks, String failurePrefix) throws HertaException {
+    public void saveActiveAndArchivedTasks(Storage archiveStorage, TaskList activeTasks,
+                                           TaskList archivedTasks, String failurePrefix)
+            throws HertaException {
         StorageFileManager.FileSnapshot originalActiveFile = null;
         StorageFileManager.FileSnapshot originalArchiveFile = null;
         try {

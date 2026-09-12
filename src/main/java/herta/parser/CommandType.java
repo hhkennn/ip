@@ -62,4 +62,14 @@ public enum CommandType {
     String getKeyword() {
         return keyword;
     }
+
+    /**
+     * Extracts the arguments after this command type's keyword.
+     *
+     * @param input the complete command input
+     * @return the trimmed command arguments
+     */
+    String extractArguments(String input) {
+        return input.substring(keyword.length()).trim();
+    }
 }

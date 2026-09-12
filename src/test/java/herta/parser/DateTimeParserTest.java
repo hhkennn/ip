@@ -15,28 +15,28 @@ import org.junit.jupiter.api.Test;
 class DateTimeParserTest {
 
     @Test
-    void parseUserInput_supportedDateTimeFormats_returnsExpectedDateTime() {
+    void parseUserDateTime_supportedFormats_returnsExpectedDateTime() {
         LocalDateTime expected = LocalDateTime.of(2019, 12, 2, 18, 0);
 
-        assertEquals(expected, DateTimeParser.parseUserInput("2/12/2019 1800"));
-        assertEquals(expected, DateTimeParser.parseUserInput("2019-12-02 1800"));
-        assertEquals(expected, DateTimeParser.parseUserInput("2019-12-02 18:00"));
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2/12/2019 1800"));
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2019-12-02 1800"));
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2019-12-02 18:00"));
     }
 
     @Test
-    void parseUserInput_dateOnlyInput_returnsStartOfDay() {
+    void parseUserDateTime_dateOnlyInput_returnsStartOfDay() {
         assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0),
-                DateTimeParser.parseUserInput("2019-12-02"));
+                DateTimeParser.parseUserDateTime("2019-12-02"));
     }
 
     @Test
-    void parseUserInput_surroundingWhitespace_returnsExpectedDateTime() {
+    void parseUserDateTime_surroundingWhitespace_returnsExpectedDateTime() {
         assertEquals(LocalDateTime.of(2019, 12, 2, 18, 0),
-                DateTimeParser.parseUserInput("  2/12/2019 1800  "));
+                DateTimeParser.parseUserDateTime("  2/12/2019 1800  "));
     }
 
     @Test
-    void parseUserInput_invalidInput_throwsDateTimeParseException() {
+    void parseUserDateTime_invalidInput_throwsDateTimeParseException() {
         String[] invalidInputs = {
             "31/02/2019 1800",
             "2019-10-15 2460",
@@ -47,7 +47,7 @@ class DateTimeParserTest {
 
         for (String input : invalidInputs) {
             assertThrows(DateTimeParseException.class, () ->
-                    DateTimeParser.parseUserInput(input));
+                    DateTimeParser.parseUserDateTime(input));
         }
     }
 
@@ -76,28 +76,28 @@ class DateTimeParserTest {
     }
 
     @Test
-    void parseStoredValue_datetimeInput_returnsExpectedDateTime() {
+    void parseStoredDateTime_datetimeInput_returnsExpectedDateTime() {
         LocalDateTime expected = LocalDateTime.of(2019, 12, 2, 18, 0);
 
-        assertEquals(expected, DateTimeParser.parseStoredValue("2019-12-02T18:00:00"));
+        assertEquals(expected, DateTimeParser.parseStoredDateTime("2019-12-02T18:00:00"));
     }
 
     @Test
-    void parseStoredValue_dateOnlyInput_returnsStartOfDay() {
+    void parseStoredDateTime_dateOnlyInput_returnsStartOfDay() {
         assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0),
-                DateTimeParser.parseStoredValue("2019-12-02"));
+                DateTimeParser.parseStoredDateTime("2019-12-02"));
     }
 
     @Test
-    void parseStoredValue_surroundingWhitespace_returnsExpectedDateTime() {
+    void parseStoredDateTime_surroundingWhitespace_returnsExpectedDateTime() {
         assertEquals(LocalDateTime.of(2019, 12, 2, 18, 0),
-                DateTimeParser.parseStoredValue("  2019-12-02T18:00:00  "));
+                DateTimeParser.parseStoredDateTime("  2019-12-02T18:00:00  "));
     }
 
     @Test
-    void parseStoredValue_invalidInput_throwsDateTimeParseException() {
+    void parseStoredDateTime_invalidInput_throwsDateTimeParseException() {
         assertThrows(DateTimeParseException.class, () ->
-                DateTimeParser.parseStoredValue("2019-02-30T18:00:00"));
+                DateTimeParser.parseStoredDateTime("2019-02-30T18:00:00"));
     }
 
     @Test

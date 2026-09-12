@@ -46,15 +46,17 @@ public class ArchiveCommand extends Command {
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
         TaskList activeTasks = repository.getActiveTasks();
         Set<Integer> selectedIndices = getSelectedIndices(activeTasks);
-        if (showNoTasksMessage(activeTasks, selectedIndices, ui)) {
+        if (isNoOpArchiveSelection(activeTasks, selectedIndices)) {
+            showNoTasksMessage(activeTasks, ui);
             return;
         }
 
         validateCompletedTasks(activeTasks, selectedIndices);
         ArchiveResult result = archiveSelectedTasks(activeTasks, repository.getArchivedTasks(),
                 selectedIndices);
-        repository.saveBoth(result.activeTasks(), result.archivedTasks(), ARCHIVE_FAILURE_PREFIX);
-        repository.replaceCollections(result.activeTasks(), result.archivedTasks());
+        repository.saveActiveAndArchivedTasks(result.activeTasks(), result.archivedTasks(),
+                ARCHIVE_FAILURE_PREFIX);
+        repository.replaceActiveAndArchivedTasks(result.activeTasks(), result.archivedTasks());
         showArchiveResult(result, selectedIndices.size(), ui);
     }
 
@@ -72,26 +74,29 @@ public class ArchiveCommand extends Command {
     }
 
     /**
-     * Displays a no-op explanation for an all-task selection that has nothing to archive.
+     * Checks whether an all-task selection would move no tasks.
      *
      * @param activeTasks the active task collection
      * @param selectedIndices the resolved task indices
-     * @param ui the output interface
-     * @return {@code true} when the command should stop without archiving
+     * @return {@code true} when the selection should stop without archiving
      */
-    private boolean showNoTasksMessage(TaskList activeTasks, Set<Integer> selectedIndices, UiOutput ui) {
-        if (!selection.isAllSelected()) {
-            return false;
-        }
+    private boolean isNoOpArchiveSelection(TaskList activeTasks, Set<Integer> selectedIndices) {
+        return selection.isAllSelected()
+                && (activeTasks.size() == 0 || selectedIndices.isEmpty());
+    }
+
+    /**
+     * Displays a no-op explanation for an all-task selection that has nothing to archive.
+     *
+     * @param activeTasks the active task collection
+     * @param ui the output interface
+     */
+    private void showNoTasksMessage(TaskList activeTasks, UiOutput ui) {
         if (activeTasks.size() == 0) {
             ui.showMessage("Nothing to archive. The active task list is already empty.");
-            return true;
-        }
-        if (selectedIndices.isEmpty()) {
+        } else {
             ui.showMessage("Nothing to archive. There are no completed active tasks.");
-            return true;
         }
-        return false;
     }
 
     /**

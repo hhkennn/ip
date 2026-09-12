@@ -83,7 +83,7 @@ public class Parser {
             case UNMARK -> new UnmarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case ARCHIVE -> new ArchiveCommand(parseArchiveSelection(input));
             case ARCHIVED -> {
-                if (!getCommandArguments(input, commandType).isEmpty()) {
+                if (!commandType.extractArguments(input).isEmpty()) {
                     throw new HertaException("Use: archived.");
                 }
                 yield new ArchivedCommand();
@@ -118,7 +118,7 @@ public class Parser {
      * @throws HertaException if the keyword is empty
      */
     public String parseFindKeyword(String input) throws HertaException {
-        String keyword = getCommandArguments(input, CommandType.FIND);
+        String keyword = CommandType.FIND.extractArguments(input);
         if (keyword.isEmpty()) {
             throw new HertaException("A blank search? Use: find <keyword>.");
         }
@@ -155,14 +155,14 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
-        String[] parts = getCommandArguments(input, CommandType.FILTER).split("\\s+", 2);
-        if (parts.length != 2 || !parts[0].equals(FILTER_DATE_MARKER)) {
+        String[] filterParts = CommandType.FILTER.extractArguments(input).split("\\s+", 2);
+        if (filterParts.length != 2 || !filterParts[0].equals(FILTER_DATE_MARKER)) {
             throw new HertaException("You forgot the " + FILTER_DATE_MARKER
                     + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
         }
 
         try {
-            return DateTimeParser.parseUserDate(parts[1]);
+            return DateTimeParser.parseUserDate(filterParts[1]);
         } catch (DateTimeParseException e) {
             throw new HertaException("That date won't do. Try 2019-10-15 or 15/10/2019.");
         }
@@ -176,7 +176,7 @@ public class Parser {
      * @throws HertaException if the command does not contain a positive number
      */
     public int parseUpcomingDays(String input) throws HertaException {
-        String daysInput = getCommandArguments(input, CommandType.UPCOMING);
+        String daysInput = CommandType.UPCOMING.extractArguments(input);
         final int days;
         try {
             days = Integer.parseInt(daysInput);
@@ -207,16 +207,16 @@ public class Parser {
      * Parses a one-based task number from a task-selection command.
      *
      * @param input the complete task-selection command
-     * @param command the command keyword used in the input
+     * @param commandKeyword the command keyword used in the input
      * @return the corresponding zero-based task index
      * @throws HertaException if the task number is not numeric
      */
-    public int parseTaskIndex(String input, String command) throws HertaException {
-        String taskNumber = input.substring(command.length()).trim();
+    public int parseTaskIndex(String input, String commandKeyword) throws HertaException {
+        String taskNumber = input.substring(commandKeyword.length()).trim();
         try {
             return Integer.parseInt(taskNumber) - 1;
         } catch (NumberFormatException e) {
-            throw new HertaException("That's not a task number. Try: " + command + " 1.");
+            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
         }
     }
 
@@ -240,16 +240,5 @@ public class Parser {
      */
     public int parseRestoreTaskNumber(String input) throws HertaException {
         return archiveCommandParser.parseRestoreTaskNumber(input);
-    }
-
-    /**
-     * Returns the argument portion of a command after its recognized keyword.
-     *
-     * @param input the complete command input
-     * @param commandType the command type whose keyword prefixes the input
-     * @return the trimmed command arguments
-     */
-    private String getCommandArguments(String input, CommandType commandType) {
-        return input.substring(commandType.getKeyword().length()).trim();
     }
 }

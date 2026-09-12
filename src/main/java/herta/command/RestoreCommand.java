@@ -44,8 +44,9 @@ public class RestoreCommand extends Command {
         updatedArchivedTasks.remove(archiveIndex);
         updatedActiveTasks.add(task);
 
-        repository.saveBoth(updatedActiveTasks, updatedArchivedTasks, RESTORE_FAILURE_PREFIX);
-        repository.replaceCollections(updatedActiveTasks, updatedArchivedTasks);
+        repository.saveActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks,
+                RESTORE_FAILURE_PREFIX);
+        repository.replaceActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks);
         ui.showMessage("There. I've restored it:");
         ui.showTask(task);
         ui.showMessage("That makes " + updatedActiveTasks.size() + " active "

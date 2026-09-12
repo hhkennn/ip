@@ -95,17 +95,18 @@ public final class TaskRepository {
     }
 
     /**
-     * Saves both resulting collections as one logical operation.
+     * Saves the resulting active and archived collections as one logical operation.
      *
      * @param updatedActiveTasks the resulting active collection
      * @param updatedArchivedTasks the resulting archive collection
      * @param failurePrefix the required user-facing persistence-error prefix
      * @throws HertaException if validation, staging, commit, or rollback fails
      */
-    public void saveBoth(TaskList updatedActiveTasks, TaskList updatedArchivedTasks,
-                         String failurePrefix) throws HertaException {
-        activeStorage.saveBoth(archiveStorage, updatedActiveTasks, updatedArchivedTasks,
-                failurePrefix);
+    public void saveActiveAndArchivedTasks(TaskList updatedActiveTasks,
+                                           TaskList updatedArchivedTasks, String failurePrefix)
+            throws HertaException {
+        activeStorage.saveActiveAndArchivedTasks(archiveStorage, updatedActiveTasks,
+                updatedArchivedTasks, failurePrefix);
     }
 
     /**
@@ -114,7 +115,8 @@ public final class TaskRepository {
      * @param updatedActiveTasks the newly saved active collection
      * @param updatedArchivedTasks the newly saved archive collection
      */
-    public void replaceCollections(TaskList updatedActiveTasks, TaskList updatedArchivedTasks) {
+    public void replaceActiveAndArchivedTasks(TaskList updatedActiveTasks,
+                                              TaskList updatedArchivedTasks) {
         activeTasks.replaceWith(updatedActiveTasks);
         archivedTasks.replaceWith(updatedArchivedTasks);
     }

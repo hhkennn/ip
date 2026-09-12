@@ -166,14 +166,14 @@ class StorageTest {
     }
 
     @Test
-    void saveBoth_failureRestoresOriginalAbsence() throws Exception {
+    void saveActiveAndArchivedTasks_failureRestoresOriginalAbsence() throws Exception {
         Path activeFile = temporaryDirectory.resolve("tasks.txt");
         Path archiveDirectory = temporaryDirectory.resolve("archive.txt");
         Files.createDirectory(archiveDirectory);
         Storage activeStorage = new Storage(activeFile.toString());
         Storage archiveStorage = new Storage(archiveDirectory.toString());
 
-        Executable action = () -> saveBothForTest(activeStorage, archiveStorage);
+        Executable action = () -> saveActiveAndArchivedTasksForTest(activeStorage, archiveStorage);
         HertaException exception = assertThrows(HertaException.class, action);
 
         assertTrue(exception.getMessage().startsWith("Failed to archive tasks: "));
@@ -192,9 +192,9 @@ class StorageTest {
         assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
     }
 
-    private void saveBothForTest(Storage activeStorage, Storage archiveStorage)
+    private void saveActiveAndArchivedTasksForTest(Storage activeStorage, Storage archiveStorage)
             throws HertaException {
-        activeStorage.saveBoth(archiveStorage, new TaskList(), new TaskList(),
+        activeStorage.saveActiveAndArchivedTasks(archiveStorage, new TaskList(), new TaskList(),
                 "Failed to archive tasks: ");
     }
 

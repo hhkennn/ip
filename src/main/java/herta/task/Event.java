@@ -41,8 +41,8 @@ public class Event extends Task {
      */
     public static Event fromStorage(String description, String fromText, String toText) {
         try {
-            LocalDateTime from = DateTimeParser.parseStoredValue(fromText);
-            LocalDateTime to = DateTimeParser.parseStoredValue(toText);
+            LocalDateTime from = DateTimeParser.parseStoredDateTime(fromText);
+            LocalDateTime to = DateTimeParser.parseStoredDateTime(toText);
             return new Event(description, from, to);
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid saved event date/time: "

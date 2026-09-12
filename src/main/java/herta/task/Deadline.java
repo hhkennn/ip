@@ -36,7 +36,7 @@ public class Deadline extends Task {
      */
     public static Deadline fromStorage(String description, String byText) {
         try {
-            return new Deadline(description, DateTimeParser.parseStoredValue(byText));
+            return new Deadline(description, DateTimeParser.parseStoredDateTime(byText));
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid saved deadline date/time: "
                     + byText + ".", e);

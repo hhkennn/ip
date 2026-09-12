@@ -142,9 +142,9 @@ final class TaskStorageConverter {
      * @throws HertaException if the line does not contain a supported task type
      */
     private Task parseStoredTask(String line) throws HertaException {
-        String[] parts = splitStorageRecord(line);
-        boolean isCompleted = isCompletedStorageRecord(parts);
-        Task task = createTask(parts);
+        String[] storageFields = splitStorageRecord(line);
+        boolean isCompleted = validateAndCheckCompletion(storageFields);
+        Task task = createTask(storageFields);
         if (isCompleted) {
             task.markAsDone();
         }
@@ -168,21 +168,21 @@ final class TaskStorageConverter {
     /**
      * Validates a serialized task record and checks whether it is complete.
      *
-     * @param parts the storage fields to validate
+     * @param storageFields the storage fields to validate
      * @return {@code true} if the record marks the task as complete
      * @throws HertaException if the record is malformed
      */
-    private boolean isCompletedStorageRecord(String[] parts) throws HertaException {
-        if (parts.length < MINIMUM_PART_COUNT) {
+    private boolean validateAndCheckCompletion(String[] storageFields) throws HertaException {
+        if (storageFields.length < MINIMUM_PART_COUNT) {
             throw new HertaException("Invalid saved task: missing task type or status.");
         }
 
-        String type = parts[TYPE_INDEX];
+        String type = storageFields[TYPE_INDEX];
         int expectedPartCount = getExpectedPartCount(type);
-        validatePartCount(parts, type, expectedPartCount);
-        validateStatus(parts[STATUS_INDEX]);
-        validateTaskFields(parts);
-        return COMPLETED_STATUS.equals(parts[STATUS_INDEX]);
+        validatePartCount(storageFields, type, expectedPartCount);
+        validateStatus(storageFields[STATUS_INDEX]);
+        validateTaskFields(storageFields);
+        return COMPLETED_STATUS.equals(storageFields[STATUS_INDEX]);
     }
 
     /**
@@ -205,14 +205,14 @@ final class TaskStorageConverter {
     /**
      * Checks that a serialized task contains the expected number of fields.
      *
-     * @param parts the serialized task fields
+     * @param storageFields the serialized task fields
      * @param type the serialized task type
      * @param expectedPartCount the expected field count
      * @throws HertaException if the field count is invalid
      */
-    private void validatePartCount(String[] parts, String type, int expectedPartCount)
+    private void validatePartCount(String[] storageFields, String type, int expectedPartCount)
             throws HertaException {
-        if (parts.length != expectedPartCount) {
+        if (storageFields.length != expectedPartCount) {
             throw new HertaException("Invalid saved task: type " + type
                     + " requires " + expectedPartCount + " fields.");
         }
@@ -234,12 +234,12 @@ final class TaskStorageConverter {
     /**
      * Checks that serialized task fields after the status are non-blank.
      *
-     * @param parts the serialized task fields
+     * @param storageFields the serialized task fields
      * @throws HertaException if a task field is blank
      */
-    private void validateTaskFields(String[] parts) throws HertaException {
-        for (int i = DESCRIPTION_INDEX; i < parts.length; i++) {
-            if (parts[i].isBlank()) {
+    private void validateTaskFields(String[] storageFields) throws HertaException {
+        for (int i = DESCRIPTION_INDEX; i < storageFields.length; i++) {
+            if (storageFields[i].isBlank()) {
                 throw new HertaException("Invalid saved task: task fields cannot be blank.");
             }
         }
@@ -248,20 +248,21 @@ final class TaskStorageConverter {
     /**
      * Reconstructs a task from validated storage fields.
      *
-     * @param parts the validated storage fields
+     * @param storageFields the validated storage fields
      * @return the reconstructed task
      * @throws HertaException if the task type cannot be reconstructed
      */
-    private Task createTask(String[] parts) throws HertaException {
+    private Task createTask(String[] storageFields) throws HertaException {
         final Task task;
         try {
-            task = switch (parts[TYPE_INDEX]) {
-                case TODO_TYPE -> new Todo(parts[DESCRIPTION_INDEX]);
-                case DEADLINE_TYPE -> Deadline.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX]);
-                case EVENT_TYPE -> Event.fromStorage(parts[DESCRIPTION_INDEX], parts[FIRST_DATE_INDEX],
-                        parts[SECOND_DATE_INDEX]);
+            task = switch (storageFields[TYPE_INDEX]) {
+                case TODO_TYPE -> new Todo(storageFields[DESCRIPTION_INDEX]);
+                case DEADLINE_TYPE -> Deadline.fromStorage(storageFields[DESCRIPTION_INDEX],
+                        storageFields[FIRST_DATE_INDEX]);
+                case EVENT_TYPE -> Event.fromStorage(storageFields[DESCRIPTION_INDEX],
+                        storageFields[FIRST_DATE_INDEX], storageFields[SECOND_DATE_INDEX]);
                 default -> throw new HertaException("Invalid saved task: unknown task type '"
-                        + parts[TYPE_INDEX] + "'.");
+                        + storageFields[TYPE_INDEX] + "'.");
             };
         } catch (IllegalArgumentException e) {
             throw new HertaException(e.getMessage());

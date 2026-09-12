@@ -44,7 +44,7 @@ public final class DateTimeParser {
      * @return the parsed date/time, with date-only input represented at midnight
      * @throws DateTimeParseException if the input does not match a supported format
      */
-    public static LocalDateTime parseUserInput(String input) {
+    public static LocalDateTime parseUserDateTime(String input) {
         String normalizedInput = input.trim();
 
         for (DateTimeFormatter formatter : USER_DATE_TIME_FORMATS) {
@@ -83,7 +83,7 @@ public final class DateTimeParser {
      * @return the parsed date/time
      * @throws DateTimeParseException if the stored value is invalid
      */
-    public static LocalDateTime parseStoredValue(String input) {
+    public static LocalDateTime parseStoredDateTime(String input) {
         String normalizedInput = input.trim();
         try {
             return LocalDateTime.parse(normalizedInput, STORAGE_FORMAT);

@@ -29,7 +29,7 @@ final class ArchiveCommandParser {
      * @throws HertaException if the selectors are malformed or out of integer range
      */
     ArchiveSelection parseArchiveSelection(String input) throws HertaException {
-        String arguments = getCommandArguments(input, CommandType.ARCHIVE);
+        String arguments = CommandType.ARCHIVE.extractArguments(input);
         if (arguments.isEmpty()) {
             throw new HertaException(ARCHIVE_USAGE);
         }
@@ -146,7 +146,7 @@ final class ArchiveCommandParser {
      * @throws HertaException if the argument is missing or not a non-negative integer
      */
     int parseRestoreTaskNumber(String input) throws HertaException {
-        String arguments = getCommandArguments(input, CommandType.RESTORE);
+        String arguments = CommandType.RESTORE.extractArguments(input);
         if (arguments.isEmpty()) {
             throw new HertaException(RESTORE_USAGE);
         }
@@ -161,14 +161,4 @@ final class ArchiveCommandParser {
         }
     }
 
-    /**
-     * Returns the argument portion of a command after its recognized keyword.
-     *
-     * @param input the complete command input
-     * @param commandType the command type whose keyword prefixes the input
-     * @return the trimmed command arguments
-     */
-    private String getCommandArguments(String input, CommandType commandType) {
-        return input.substring(commandType.getKeyword().length()).trim();
-    }
 }

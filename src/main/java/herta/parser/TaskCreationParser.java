@@ -34,7 +34,7 @@ final class TaskCreationParser {
      * @throws HertaException if the todo description is empty
      */
     Todo parseTodo(String input) throws HertaException {
-        String description = getCommandArguments(input, CommandType.TODO);
+        String description = CommandType.TODO.extractArguments(input);
         if (description.isEmpty()) {
             throw new HertaException("A blank todo? Even I can't organise nothing. "
                     + "Use: todo <description>.");
@@ -50,8 +50,8 @@ final class TaskCreationParser {
      * @throws HertaException if the command format or date/time is invalid
      */
     Deadline parseDeadline(String input) throws HertaException {
-        String content = getCommandArguments(input, CommandType.DEADLINE);
-        String[] deadlineParts = content.split("\\s+" + DEADLINE_MARKER + "\\s+", 2);
+        String deadlineArguments = CommandType.DEADLINE.extractArguments(input);
+        String[] deadlineParts = deadlineArguments.split("\\s+" + DEADLINE_MARKER + "\\s+", 2);
         if (deadlineParts.length != 2) {
             throw new HertaException(DEADLINE_FORMAT_ERROR);
         }
@@ -89,8 +89,8 @@ final class TaskCreationParser {
      * @throws HertaException if the command format or any field is invalid
      */
     private EventParts parseEventParts(String input) throws HertaException {
-        String content = getCommandArguments(input, CommandType.EVENT);
-        String[] eventParts = content.split("\\s+" + EVENT_FROM_MARKER + "\\s+", 2);
+        String eventArguments = CommandType.EVENT.extractArguments(input);
+        String[] eventParts = eventArguments.split("\\s+" + EVENT_FROM_MARKER + "\\s+", 2);
         if (eventParts.length != 2) {
             throw new HertaException(EVENT_FORMAT_ERROR);
         }
@@ -138,20 +138,10 @@ final class TaskCreationParser {
     private LocalDateTime parseUserDateTime(String input, String errorMessage)
             throws HertaException {
         try {
-            return DateTimeParser.parseUserInput(input);
+            return DateTimeParser.parseUserDateTime(input);
         } catch (DateTimeParseException e) {
             throw new HertaException(errorMessage);
         }
     }
 
-    /**
-     * Returns the argument portion of a command after its recognized keyword.
-     *
-     * @param input the complete command input
-     * @param commandType the command type whose keyword prefixes the input
-     * @return the trimmed command arguments
-     */
-    private String getCommandArguments(String input, CommandType commandType) {
-        return input.substring(commandType.getKeyword().length()).trim();
-    }
 }
