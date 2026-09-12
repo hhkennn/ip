@@ -24,6 +24,18 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Code quality:
+
+All new and modified code in this project, including tests and support code,
+MUST follow the project skill
+[`seedu-code-quality`](.codex/skills/seedu-code-quality/SKILL.md), based on the
+[CS2103/T Code Quality chapter](https://nus-cs2103-ay2627-s1.github.io/website/se-book-adapted/chapters/codeQuality.html#code-quality).
+Load and apply that skill before editing or reviewing code. Treat its
+readability, naming, safe-construct, scope, duplication, abstraction-level, and
+comment rules as blocking requirements. A passing Checkstyle run is necessary
+but not sufficient; review the full affected classes and resolve or explicitly
+report every applicable violation before declaring the change complete.
+
 ## Java coding standard:
 
 All new and modified Java code in this project, including test code, MUST follow

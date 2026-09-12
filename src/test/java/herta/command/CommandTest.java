@@ -110,26 +110,42 @@ class CommandTest {
         Todo todo = new Todo("read book");
         TaskList tasks = new TaskList(List.of(todo));
 
+        assertMarkFailureRestoresStatus(failingStorage, tasks, todo);
+        assertUnmarkFailureRestoresStatus(failingStorage, tasks, todo);
+        assertDeleteFailurePreservesTask(failingStorage, tasks, todo);
+        assertAddFailurePreservesTaskList(failingStorage);
+        assertInvalidIndexReportsHelpfulMessage(failingStorage, tasks);
+    }
+
+    private void assertMarkFailureRestoresStatus(Storage failingStorage, TaskList tasks, Todo todo) {
         assertThrows(HertaException.class, () ->
                 new MarkCommand(0).execute(tasks, new Ui(), failingStorage));
         assertFalse(todo.isCompleted());
+    }
 
+    private void assertUnmarkFailureRestoresStatus(Storage failingStorage, TaskList tasks, Todo todo) {
         todo.markAsDone();
         assertThrows(HertaException.class, () ->
                 new UnmarkCommand(0).execute(tasks, new Ui(), failingStorage));
         assertTrue(todo.isCompleted());
+    }
 
+    private void assertDeleteFailurePreservesTask(Storage failingStorage, TaskList tasks, Todo todo) {
         assertThrows(HertaException.class, () ->
                 new DeleteCommand(0).execute(tasks, new Ui(), failingStorage));
         assertEquals(1, tasks.size());
         assertSame(todo, tasks.get(0));
+    }
 
+    private void assertAddFailurePreservesTaskList(Storage failingStorage) {
         TaskList invalidAddTasks = new TaskList();
         assertThrows(HertaException.class, () ->
                 new TodoCommand(new Todo("contains | separator"))
                         .execute(invalidAddTasks, new Ui(), failingStorage));
         assertEquals(0, invalidAddTasks.size());
+    }
 
+    private void assertInvalidIndexReportsHelpfulMessage(Storage failingStorage, TaskList tasks) {
         HertaException invalidIndexException = assertThrows(HertaException.class, () ->
                 new MarkCommand(1).execute(tasks, new Ui(), failingStorage));
         assertEquals("That task doesn't exist. Did you even check the list?",
@@ -146,36 +162,43 @@ class CommandTest {
                 LocalDateTime.of(2019, 10, 16, 1, 0));
         TaskList tasks = new TaskList(List.of(todo, deadline, event));
 
-        String listOutput = captureOutput(() ->
-                new ListCommand().execute(tasks, new Ui(), null));
-        assertTrue(listOutput.contains("1.[T][ ] buy milk"));
-        assertTrue(listOutput.contains("2.[D][ ] submit report"));
-        assertTrue(listOutput.contains("3.[E][ ] project meeting"));
+        assertListCommandDisplaysTasks(tasks);
+        assertFilterCommandDisplaysMatchingTasks(tasks);
+        assertFindCommandDisplaysMatchingTasks(tasks);
+        assertSortCommandDisplaysTasksInDateOrder(tasks, todo);
+    }
 
-        String filterOutput = captureOutput(() ->
-                new FilterCommand(LocalDate.of(2019, 10, 15))
-                        .execute(tasks, new Ui(), null));
-        assertTrue(filterOutput.contains(
-                "Here is what your schedule has for Oct 15 2019, if anything:"));
-        assertTrue(filterOutput.contains("2.[D][ ] submit report"));
-        assertTrue(filterOutput.contains("3.[E][ ] project meeting"));
-        assertFalse(filterOutput.contains("1.[T][ ] buy milk"));
+    private void assertListCommandDisplaysTasks(TaskList tasks) throws Exception {
+        String output = captureOutput(() -> new ListCommand().execute(tasks, new Ui(), null));
+        assertTrue(output.contains("1.[T][ ] buy milk"));
+        assertTrue(output.contains("2.[D][ ] submit report"));
+        assertTrue(output.contains("3.[E][ ] project meeting"));
+    }
 
-        String findOutput = captureOutput(() ->
-                new FindCommand("REPORT").execute(tasks, new Ui(), null));
-        assertTrue(findOutput.contains(
-                "Looking for something? How predictable. Here are the matches:"));
-        assertTrue(findOutput.contains("2.[D][ ] submit report"));
-        assertFalse(findOutput.contains("1.[T][ ] buy milk"));
-        assertFalse(findOutput.contains("3.[E][ ] project meeting"));
+    private void assertFilterCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
+        String output = captureOutput(() -> new FilterCommand(LocalDate.of(2019, 10, 15))
+                .execute(tasks, new Ui(), null));
+        assertTrue(output.contains("Here is what your schedule has for Oct 15 2019, if anything:"));
+        assertTrue(output.contains("2.[D][ ] submit report"));
+        assertTrue(output.contains("3.[E][ ] project meeting"));
+        assertFalse(output.contains("1.[T][ ] buy milk"));
+    }
 
-        String sortOutput = captureOutput(() ->
-                new SortCommand().execute(tasks, new Ui(), null));
-        assertTrue(sortOutput.contains("There. Your tasks are in date order."));
-        assertTrue(sortOutput.indexOf("3.[E][ ] project meeting")
-                < sortOutput.indexOf("2.[D][ ] submit report"));
-        assertTrue(sortOutput.indexOf("2.[D][ ] submit report")
-                < sortOutput.indexOf("1.[T][ ] buy milk"));
+    private void assertFindCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
+        String output = captureOutput(() -> new FindCommand("REPORT").execute(tasks, new Ui(), null));
+        assertTrue(output.contains("Looking for something? How predictable. Here are the matches:"));
+        assertTrue(output.contains("2.[D][ ] submit report"));
+        assertFalse(output.contains("1.[T][ ] buy milk"));
+        assertFalse(output.contains("3.[E][ ] project meeting"));
+    }
+
+    private void assertSortCommandDisplaysTasksInDateOrder(TaskList tasks, Todo todo) throws Exception {
+        String output = captureOutput(() -> new SortCommand().execute(tasks, new Ui(), null));
+        assertTrue(output.contains("There. Your tasks are in date order."));
+        assertTrue(output.indexOf("3.[E][ ] project meeting")
+                < output.indexOf("2.[D][ ] submit report"));
+        assertTrue(output.indexOf("2.[D][ ] submit report")
+                < output.indexOf("1.[T][ ] buy milk"));
         assertSame(todo, tasks.get(0));
     }
 

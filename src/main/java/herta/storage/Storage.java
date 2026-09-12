@@ -88,16 +88,16 @@ public class Storage {
      */
     public static void validateDistinctPaths(Path activeFile, Path archiveFile)
             throws HertaException {
-        Path normalizedActive = activeFile.toAbsolutePath().normalize();
-        Path normalizedArchive = archiveFile.toAbsolutePath().normalize();
-        if (normalizedActive.equals(normalizedArchive)) {
+        Path normalizedActivePath = activeFile.toAbsolutePath().normalize();
+        Path normalizedArchivePath = archiveFile.toAbsolutePath().normalize();
+        if (normalizedActivePath.equals(normalizedArchivePath)) {
             throw new HertaException(ARCHIVE_LOAD_PREFIX
                     + "active and archive paths must be different files.");
         }
 
         try {
-            if (Files.exists(normalizedActive) && Files.exists(normalizedArchive)
-                    && Files.isSameFile(normalizedActive, normalizedArchive)) {
+            if (Files.exists(normalizedActivePath) && Files.exists(normalizedArchivePath)
+                    && Files.isSameFile(normalizedActivePath, normalizedArchivePath)) {
                 throw new HertaException(ARCHIVE_LOAD_PREFIX
                         + "active and archive paths must be different files.");
             }
@@ -172,7 +172,7 @@ public class Storage {
     }
 
     /**
-     * Stages and commits two task files as one logical operation.
+     * Stages and replaces two task files as one logical operation.
      *
      * <p>Both collections are serialized and validated before either target file is changed.
      * If either commit fails, the original contents or absence of both files are restored.</p>
@@ -181,12 +181,10 @@ public class Storage {
      * @param activeTasks the resulting active collection
      * @param archivedTasks the resulting archive collection
      * @param failurePrefix the user-facing prefix for persistence failures
-     * @throws HertaException if validation, writing, committing, or rollback fails
+     * @throws HertaException if validation, writing, replacing, or rollback fails
      */
     public void saveBoth(Storage archiveStorage, TaskList activeTasks,
                          TaskList archivedTasks, String failurePrefix) throws HertaException {
-        Path temporaryActiveFile = null;
-        Path temporaryArchiveFile = null;
         FileSnapshot originalActiveFile = null;
         FileSnapshot originalArchiveFile = null;
         try {
@@ -194,28 +192,56 @@ public class Storage {
             List<String> archiveLines = archiveStorage.serializeTasks(archivedTasks);
             originalActiveFile = FileSnapshot.capture(dataFile);
             originalArchiveFile = FileSnapshot.capture(archiveStorage.dataFile);
+            writeAndReplaceBothFiles(archiveStorage, activeLines, archiveLines);
+        } catch (HertaException e) {
+            throw withFailurePrefix(failurePrefix, e.getMessage());
+        } catch (IOException | SecurityException e) {
+            String failureReason = e.getMessage();
+            try {
+                restoreOriginalFiles(originalActiveFile, originalArchiveFile);
+            } catch (IOException | SecurityException rollbackError) {
+                failureReason += "; rollback failed: " + rollbackError.getMessage();
+            }
+            throw withFailurePrefix(failurePrefix, failureReason);
+        }
+    }
 
+    /**
+     * Stages and replaces both serialized task files, cleaning up temporary files afterward.
+     *
+     * @param archiveStorage storage for the archive file
+     * @param activeLines serialized active tasks
+     * @param archiveLines serialized archived tasks
+     * @throws IOException if either file cannot be staged or replaced
+     */
+    private void writeAndReplaceBothFiles(Storage archiveStorage, List<String> activeLines,
+                                          List<String> archiveLines) throws IOException {
+        Path temporaryActiveFile = null;
+        Path temporaryArchiveFile = null;
+        try {
             temporaryActiveFile = writeTemporaryFile(activeLines);
             temporaryArchiveFile = archiveStorage.writeTemporaryFile(archiveLines);
             replaceDataFile(temporaryActiveFile);
             temporaryActiveFile = null;
             archiveStorage.replaceDataFile(temporaryArchiveFile);
             temporaryArchiveFile = null;
-        } catch (HertaException e) {
-            throw withFailurePrefix(failurePrefix, e.getMessage());
-        } catch (IOException | SecurityException e) {
-            String reason = e.getMessage();
-            try {
-                restoreFile(originalActiveFile);
-                restoreFile(originalArchiveFile);
-            } catch (IOException | SecurityException rollbackError) {
-                reason = reason + "; rollback failed: " + rollbackError.getMessage();
-            }
-            throw withFailurePrefix(failurePrefix, reason);
         } finally {
             deleteTemporaryFile(temporaryActiveFile);
             deleteTemporaryFile(temporaryArchiveFile);
         }
+    }
+
+    /**
+     * Restores both original files to their captured state.
+     *
+     * @param originalActiveFile the active file's captured state
+     * @param originalArchiveFile the archive file's captured state
+     * @throws IOException if either file cannot be restored
+     */
+    private void restoreOriginalFiles(FileSnapshot originalActiveFile,
+                                      FileSnapshot originalArchiveFile) throws IOException {
+        restoreFile(originalActiveFile);
+        restoreFile(originalArchiveFile);
     }
 
     /**
@@ -510,31 +536,71 @@ public class Storage {
         }
 
         String type = parts[TYPE_INDEX];
-        int expectedParts = switch (type) {
+        int expectedPartCount = getExpectedPartCount(type);
+        validatePartCount(parts, type, expectedPartCount);
+        validateStatus(parts[STATUS_INDEX]);
+        validateTaskFields(parts);
+        return COMPLETED_STATUS.equals(parts[STATUS_INDEX]);
+    }
+
+    /**
+     * Returns the expected number of fields for a serialized task type.
+     *
+     * @param type the serialized task type
+     * @return the expected field count
+     * @throws HertaException if the task type is unsupported
+     */
+    private int getExpectedPartCount(String type) throws HertaException {
+        return switch (type) {
             case TODO_TYPE -> TODO_PART_COUNT;
             case DEADLINE_TYPE -> DEADLINE_PART_COUNT;
             case EVENT_TYPE -> EVENT_PART_COUNT;
             default -> throw new HertaException("Invalid saved task: unknown task type '"
                     + type + "'.");
         };
+    }
 
-        if (parts.length != expectedParts) {
+    /**
+     * Checks that a serialized task contains the expected number of fields.
+     *
+     * @param parts the serialized task fields
+     * @param type the serialized task type
+     * @param expectedPartCount the expected field count
+     * @throws HertaException if the field count is invalid
+     */
+    private void validatePartCount(String[] parts, String type, int expectedPartCount)
+            throws HertaException {
+        if (parts.length != expectedPartCount) {
             throw new HertaException("Invalid saved task: type " + type
-                    + " requires " + expectedParts + " fields.");
+                    + " requires " + expectedPartCount + " fields.");
         }
+    }
 
-        String status = parts[STATUS_INDEX];
+    /**
+     * Checks that a serialized task has a supported completion status.
+     *
+     * @param status the serialized completion status
+     * @throws HertaException if the status is invalid
+     */
+    private void validateStatus(String status) throws HertaException {
         if (!INCOMPLETE_STATUS.equals(status) && !COMPLETED_STATUS.equals(status)) {
             throw new HertaException("Invalid saved task: completion status must be "
                     + INCOMPLETE_STATUS + " or " + COMPLETED_STATUS + ".");
         }
+    }
 
+    /**
+     * Checks that serialized task fields after the status are non-blank.
+     *
+     * @param parts the serialized task fields
+     * @throws HertaException if a task field is blank
+     */
+    private void validateTaskFields(String[] parts) throws HertaException {
         for (int i = DESCRIPTION_INDEX; i < parts.length; i++) {
             if (parts[i].isBlank()) {
                 throw new HertaException("Invalid saved task: task fields cannot be blank.");
             }
         }
-        return COMPLETED_STATUS.equals(status);
     }
 
     /**
