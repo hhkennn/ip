@@ -1,11 +1,7 @@
 package herta.parser;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 import herta.command.ArchiveCommand;
 import herta.command.ArchivedCommand;
@@ -30,36 +26,16 @@ import herta.task.Event;
 import herta.task.Todo;
 
 /**
- * Interprets user commands and converts their arguments into domain values.
+ * Interprets user commands and delegates specialized argument parsing.
  */
 public class Parser {
-    private static final String DEADLINE_MARKER = "/by";
-    private static final String DEADLINE_FORMAT_ERROR = "Did you even read the deadline format? "
-            + "Use: deadline <description> /by <date/time>.";
-    private static final String EVENT_FROM_MARKER = "/from";
-    private static final String EVENT_TO_MARKER = "/to";
-    private static final String EVENT_FORMAT_ERROR = "Did you even read the event format? "
-            + "Use: event <description> /from <start> /to <end>.";
-    private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
-            + "such as 2019-10-15 or 2/12/2019 1800.";
     private static final String FILTER_DATE_MARKER = "/on";
     private static final String DATE_SORT_COMMAND = "sort date";
     private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
             + "Use a positive number of days.";
-    private static final String ARCHIVE_USAGE = "Use: archive <number> [<number> ...], "
-            + "archive <start>-<end>, or archive all.";
-    private static final String ARCHIVE_SELECTION_ERROR = "That's not a valid task selection. "
-            + "Try: archive 1 3-5.";
-    private static final String ARCHIVE_DESCENDING_RANGE_ERROR = "That range makes no sense. "
-            + "Use an ascending range such as archive 2-5.";
-    private static final String ARCHIVE_ALL_ERROR = "Use archive all by itself, or select task numbers and ranges.";
-    private static final String RESTORE_USAGE = "Use: restore <archived task number>.";
-    private static final String RESTORE_NUMBER_ERROR = "That's not an archived task number. "
-            + "Try: restore 1.";
 
-    /** Holds the validated fields extracted from an event command. */
-    private record EventParts(String description, String fromInput, String toInput) {
-    }
+    private final TaskCreationParser taskCreationParser = new TaskCreationParser();
+    private final ArchiveCommandParser archiveCommandParser = new ArchiveCommandParser();
 
     /**
      * Identifies the command represented by the user's input.
@@ -131,12 +107,7 @@ public class Parser {
      * @throws HertaException if the todo description is empty
      */
     public Todo parseTodo(String input) throws HertaException {
-        String description = getCommandArguments(input, CommandType.TODO);
-        if (description.isEmpty()) {
-            throw new HertaException("A blank todo? Even I can't organise nothing. "
-                    + "Use: todo <description>.");
-        }
-        return new Todo(description);
+        return taskCreationParser.parseTodo(input);
     }
 
     /**
@@ -162,20 +133,7 @@ public class Parser {
      * @throws HertaException if the command format or date/time is invalid
      */
     public Deadline parseDeadline(String input) throws HertaException {
-        String content = getCommandArguments(input, CommandType.DEADLINE);
-        String[] deadlineParts = content.split("\\s+" + DEADLINE_MARKER + "\\s+", 2);
-        if (deadlineParts.length != 2) {
-            throw new HertaException(DEADLINE_FORMAT_ERROR);
-        }
-
-        String description = deadlineParts[0].trim();
-        String byInput = deadlineParts[1].trim();
-        if (description.isEmpty() || byInput.isEmpty()) {
-            throw new HertaException(DEADLINE_FORMAT_ERROR);
-        }
-
-        return new Deadline(description, parseUserDateTime(byInput,
-                "That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800."));
+        return taskCreationParser.parseDeadline(input);
     }
 
     /**
@@ -186,56 +144,7 @@ public class Parser {
      * @throws HertaException if the command format, date/time, or event range is invalid
      */
     public Event parseEvent(String input) throws HertaException {
-        EventParts eventParts = parseEventParts(input);
-        LocalDateTime from = parseUserDateTime(eventParts.fromInput(), EVENT_DATE_ERROR);
-        LocalDateTime to = parseUserDateTime(eventParts.toInput(), EVENT_DATE_ERROR);
-        return createEvent(eventParts.description(), from, to);
-    }
-
-    /**
-     * Extracts and validates the description and date/time inputs from an event command.
-     *
-     * @param input the complete event command
-     * @return the validated event fields
-     * @throws HertaException if the command format or any field is invalid
-     */
-    private EventParts parseEventParts(String input) throws HertaException {
-        String content = getCommandArguments(input, CommandType.EVENT);
-        String[] eventParts = content.split("\\s+" + EVENT_FROM_MARKER + "\\s+", 2);
-        if (eventParts.length != 2) {
-            throw new HertaException(EVENT_FORMAT_ERROR);
-        }
-
-        String[] timeParts = eventParts[1].split("\\s+" + EVENT_TO_MARKER + "\\s+", 2);
-        if (timeParts.length != 2) {
-            throw new HertaException(EVENT_FORMAT_ERROR);
-        }
-
-        String description = eventParts[0].trim();
-        String fromInput = timeParts[0].trim();
-        String toInput = timeParts[1].trim();
-        if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
-            throw new HertaException(EVENT_FORMAT_ERROR);
-        }
-        return new EventParts(description, fromInput, toInput);
-    }
-
-    /**
-     * Creates an event and translates invalid time ranges into a user-facing error.
-     *
-     * @param description the event description
-     * @param from the event start
-     * @param to the event end
-     * @return the event with the supplied details
-     * @throws HertaException if the end does not occur after the start
-     */
-    private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
-            throws HertaException {
-        try {
-            return new Event(description, from, to);
-        } catch (IllegalArgumentException e) {
-            throw new HertaException("Time moves forward. Make the event end after it starts.");
-        }
+        return taskCreationParser.parseEvent(input);
     }
 
     /**
@@ -319,136 +228,18 @@ public class Parser {
      * @throws HertaException if the selectors are malformed or out of integer range
      */
     public ArchiveSelection parseArchiveSelection(String input) throws HertaException {
-        String arguments = getCommandArguments(input, CommandType.ARCHIVE);
-        if (arguments.isEmpty()) {
-            throw new HertaException(ARCHIVE_USAGE);
-        }
-
-        String[] selectorInputs = arguments.split("\\s+");
-        if (containsAllSelector(selectorInputs)) {
-            return parseAllSelection(selectorInputs);
-        }
-        return new ArchiveSelection(parseArchiveRanges(selectorInputs), false);
-    }
-
-    /**
-     * Checks whether an archive selection contains the special {@code all} selector.
-     *
-     * @param selectorInputs the individual archive selectors
-     * @return {@code true} if one selector requests all completed tasks
-     */
-    private boolean containsAllSelector(String[] selectorInputs) {
-        for (String selectorInput : selectorInputs) {
-            if (selectorInput.equals("all")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Parses the special selection that archives all completed tasks.
-     *
-     * @param selectorInputs the individual archive selectors
-     * @return a selection for all completed tasks
-     * @throws HertaException if {@code all} is combined with another selector
-     */
-    private ArchiveSelection parseAllSelection(String[] selectorInputs) throws HertaException {
-        if (selectorInputs.length != 1) {
-            throw new HertaException(ARCHIVE_ALL_ERROR);
-        }
-        return new ArchiveSelection(List.of(), true);
-    }
-
-    /**
-     * Parses and validates numeric archive ranges.
-     *
-     * @param selectorInputs the individual numeric selectors
-     * @return validated archive ranges
-     * @throws HertaException if a selector is malformed or out of integer range
-     */
-    private List<ArchiveRange> parseArchiveRanges(String[] selectorInputs) throws HertaException {
-        List<String[]> rawRanges = splitArchiveRanges(selectorInputs);
-        validateAscendingRanges(rawRanges);
-        return convertArchiveRanges(rawRanges);
-    }
-
-    /**
-     * Splits numeric archive selectors into their endpoint strings.
-     *
-     * @param selectorInputs the individual numeric selectors
-     * @return the raw range endpoints
-     * @throws HertaException if a selector is malformed
-     */
-    private List<String[]> splitArchiveRanges(String[] selectorInputs) throws HertaException {
-        List<String[]> rawRanges = new ArrayList<>();
-        for (String selectorInput : selectorInputs) {
-            if (!selectorInput.matches("\\d+(?:-\\d+)?")) {
-                throw new HertaException(ARCHIVE_SELECTION_ERROR);
-            }
-            rawRanges.add(selectorInput.split("-", -1));
-        }
-        return rawRanges;
-    }
-
-    /**
-     * Rejects ranges whose end comes before their start.
-     *
-     * @param rawRanges the raw archive range endpoints
-     * @throws HertaException if a range is descending
-     */
-    private void validateAscendingRanges(List<String[]> rawRanges) throws HertaException {
-        for (String[] endpoints : rawRanges) {
-            if (endpoints.length == 2
-                    && new BigInteger(endpoints[0]).compareTo(new BigInteger(endpoints[1])) > 0) {
-                throw new HertaException(ARCHIVE_DESCENDING_RANGE_ERROR);
-            }
-        }
-    }
-
-    /**
-     * Converts raw archive range endpoints into validated integer ranges.
-     *
-     * @param rawRanges the raw archive range endpoints
-     * @return converted archive ranges
-     * @throws HertaException if an endpoint does not fit in an integer
-     */
-    private List<ArchiveRange> convertArchiveRanges(List<String[]> rawRanges) throws HertaException {
-        List<ArchiveRange> ranges = new ArrayList<>();
-        try {
-            for (String[] endpoints : rawRanges) {
-                BigInteger startValue = new BigInteger(endpoints[0]);
-                BigInteger endValue = endpoints.length == 1
-                        ? startValue : new BigInteger(endpoints[1]);
-                ranges.add(new ArchiveRange(startValue.intValueExact(), endValue.intValueExact()));
-            }
-        } catch (ArithmeticException e) {
-            throw new HertaException(ARCHIVE_SELECTION_ERROR);
-        }
-        return ranges;
+        return archiveCommandParser.parseArchiveSelection(input);
     }
 
     /**
      * Parses the single archive task number from a restore command.
      *
      * @param input the complete restore command
-     * @return the selected archive task number, converted to a zero-based index
-     * @throws HertaException if the argument is missing or not a non-negative integer
+     * @return the selected archive task number as a zero-based index
+     * @throws HertaException if the argument is invalid
      */
     public int parseRestoreTaskNumber(String input) throws HertaException {
-        String arguments = getCommandArguments(input, CommandType.RESTORE);
-        if (arguments.isEmpty()) {
-            throw new HertaException(RESTORE_USAGE);
-        }
-        if (!arguments.matches("\\d+")) {
-            throw new HertaException(RESTORE_NUMBER_ERROR);
-        }
-
-        try {
-            return new BigInteger(arguments).intValueExact() - 1;
-        } catch (ArithmeticException e) {
-            throw new HertaException(RESTORE_NUMBER_ERROR);
-        }
+        return archiveCommandParser.parseRestoreTaskNumber(input);
     }
 
     /**
@@ -460,23 +251,5 @@ public class Parser {
      */
     private String getCommandArguments(String input, CommandType commandType) {
         return input.substring(commandType.getKeyword().length()).trim();
-    }
-
-    /**
-     * Parses a user-provided date/time and converts parsing failures into a
-     * command-specific explanation.
-     *
-     * @param input the date/time text
-     * @param errorMessage the explanation to use when parsing fails
-     * @return the parsed date/time
-     * @throws HertaException if the date/time is invalid
-     */
-    private LocalDateTime parseUserDateTime(String input, String errorMessage)
-            throws HertaException {
-        try {
-            return DateTimeParser.parseUserInput(input);
-        } catch (DateTimeParseException e) {
-            throw new HertaException(errorMessage);
-        }
     }
 }
