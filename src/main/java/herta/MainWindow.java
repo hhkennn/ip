@@ -1,5 +1,7 @@
 package herta;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -45,6 +47,10 @@ public class MainWindow extends AnchorPane {
     private Button sendButton;
 
     private Herta herta;
+    /** Stores commands submitted through the GUI for arrow-key navigation. */
+    private final List<String> commandHistory = new ArrayList<>();
+    private int commandHistoryIndex;
+    private String commandDraft = "";
     private int zoomLevel = DEFAULT_ZOOM_LEVEL;
     private final Image hertaImage = new Image(
             Objects.requireNonNull(MainWindow.class.getResourceAsStream(HERTA_IMAGE_RESOURCE)));
@@ -60,6 +66,7 @@ public class MainWindow extends AnchorPane {
         scrollPane.addEventFilter(ScrollEvent.SCROLL, this::handleZoomScroll);
         Parent windowRoot = Objects.requireNonNull(scrollPane.getParent());
         windowRoot.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyboardZoom);
+        userInput.setOnKeyPressed(this::handleCommandHistory);
         dialogContainer.getChildren().add(
                 DialogBox.getHertaDialog(
                         "Oh, you're here. I'm Herta.\nWell? What do you want?",
@@ -96,6 +103,7 @@ public class MainWindow extends AnchorPane {
             return;
         }
         String userText = userInput.getText();
+        recordCommand(userText);
         HertaResponse hertaResponse = herta.getResponse(userText);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(userText),
@@ -112,6 +120,70 @@ public class MainWindow extends AnchorPane {
             exitDelay.setOnFinished(event -> Platform.exit());
             exitDelay.play();
         }
+    }
+
+    /** Handles navigation through previously submitted commands in the input field. */
+    private void handleCommandHistory(KeyEvent event) {
+        if (event.isControlDown() || event.isAltDown() || event.isMetaDown()) {
+            return;
+        }
+
+        if (event.getCode() == KeyCode.UP) {
+            navigateToPreviousCommand();
+            event.consume();
+        } else if (event.getCode() == KeyCode.DOWN) {
+            navigateToNextCommand();
+            event.consume();
+        }
+    }
+
+    /** Shows the previous command in the input field, if one exists. */
+    private void navigateToPreviousCommand() {
+        if (commandHistory.isEmpty()) {
+            return;
+        }
+
+        if (commandHistoryIndex == commandHistory.size()) {
+            commandDraft = userInput.getText();
+        }
+        commandHistoryIndex = Math.max(0, commandHistoryIndex - 1);
+        showCommand(commandHistory.get(commandHistoryIndex));
+    }
+
+    /** Shows the next command or restores the draft after the newest command. */
+    private void navigateToNextCommand() {
+        if (commandHistoryIndex >= commandHistory.size()) {
+            return;
+        }
+
+        commandHistoryIndex++;
+        if (commandHistoryIndex == commandHistory.size()) {
+            showCommand(commandDraft);
+        } else {
+            showCommand(commandHistory.get(commandHistoryIndex));
+        }
+    }
+
+    /** Displays a history entry while placing the caret at the end of the text. */
+    private void showCommand(String command) {
+        userInput.setText(command);
+        userInput.positionCaret(command.length());
+    }
+
+    /** Records a non-blank command unless it duplicates the latest history entry. */
+    private void recordCommand(String command) {
+        if (!command.isBlank()
+                && (commandHistory.isEmpty()
+                || !command.equals(commandHistory.get(commandHistory.size() - 1)))) {
+            commandHistory.add(command);
+        }
+        resetCommandHistoryNavigation();
+    }
+
+    /** Resets history navigation to the position after the newest command. */
+    private void resetCommandHistoryNavigation() {
+        commandHistoryIndex = commandHistory.size();
+        commandDraft = "";
     }
 
     /** Adjusts the chat text size when the user holds Ctrl while scrolling. */

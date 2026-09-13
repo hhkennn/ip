@@ -9,9 +9,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 
 /**
@@ -38,12 +42,27 @@ public class DialogBox extends HBox {
         }
 
         dialog.setText(text);
+        configureCopySupport();
         displayPicture.setImage(image);
 
         if (image == null) {
             displayPicture.setVisible(false);
             displayPicture.setManaged(false);
         }
+    }
+
+    /** Adds whole-message copy support without changing the existing bubble renderer. */
+    private void configureCopySupport() {
+        MenuItem copyMenuItem = new MenuItem("Copy");
+        copyMenuItem.setOnAction(event -> copyMessageToClipboard());
+        dialog.setContextMenu(new ContextMenu(copyMenuItem));
+    }
+
+    /** Copies the message text to the system clipboard. */
+    private void copyMessageToClipboard() {
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(dialog.getText());
+        Clipboard.getSystemClipboard().setContent(clipboardContent);
     }
 
     /**
