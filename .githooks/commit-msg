@@ -3,6 +3,7 @@
 set -eu
 
 commit_message_file=${1:?Commit message file is required}
+merge_head_path=$(git rev-parse --git-path MERGE_HEAD)
 subject=
 second_line=
 body_present=no
@@ -49,7 +50,9 @@ if [ "$body_present" = "yes" ] && [ -n "$second_line" ]; then
     exit 1
 fi
 
-if [ "$body_present" != "yes" ]; then
+# A merge subject already records the integration being performed, so a body
+# is optional unless the merge needs to document conflict-resolution details.
+if [ "$body_present" != "yes" ] && [ ! -f "$merge_head_path" ]; then
     staged_files=$(git diff --cached --name-only)
     staged_stats=$(git diff --cached --numstat)
     staged_file_count=0
