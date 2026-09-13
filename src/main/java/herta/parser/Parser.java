@@ -32,8 +32,26 @@ import herta.task.Todo;
  */
 public class Parser {
     private static final String FILTER_DATE_MARKER = "/on";
+    private static final String FILTER_USAGE = "filter /on <date>";
+    private static final String MISSING_FIND_KEYWORD_ERROR =
+            "Find something specific. Use: find <keyword>.";
+    private static final String DUPLICATE_FILTER_MARKER_ERROR =
+            "One %s marker is enough. Try: %s.";
+    private static final String MISSING_FILTER_MARKER_ERROR =
+            "Your filter needs %s. Try: %s.";
+    private static final String MISSING_FILTER_DATE_ERROR =
+            "You gave me %s without a date. Try: %s.";
+    private static final String INVALID_FILTER_DATE_ERROR =
+            "That date won't do. Try 2019-10-15 or 15/10/2019.";
     private static final String DATE_SORT_COMMAND = "sort date";
-    private static final String UPCOMING_RANGE_ERROR = "That day count is not useful. "
+    private static final String UNSUPPORTED_SORT_OPTION_ERROR =
+            "That sorting option is not supported. Try: %s.";
+    private static final String INVALID_TASK_NUMBER_ERROR =
+            "That's not a task number. Try: %s 1.";
+    private static final String LOWERCASE_COMMAND_ERROR = "Lowercase only. Try: %s.";
+    private static final String NO_ARGUMENT_COMMAND_ERROR =
+            "Just use: %s. Nothing else is required.";
+    private static final String INVALID_UPCOMING_DAYS_ERROR = "That day count is not useful. "
             + "Use: upcoming <days>, with a positive number in range.";
     private static final int MAX_NUMBER_LENGTH = 64;
     private static final int MAX_UPCOMING_DAYS = 4_000_000;
@@ -148,7 +166,7 @@ public class Parser {
     public String parseFindKeyword(String input) throws HertaException {
         String keyword = CommandType.FIND.extractArguments(input);
         if (keyword.isEmpty()) {
-            throw new HertaException("Find something specific. Use: find <keyword>.");
+            throw new HertaException(MISSING_FIND_KEYWORD_ERROR);
         }
         return keyword;
     }
@@ -187,24 +205,24 @@ public class Parser {
         String arguments = CommandType.FILTER.extractArguments(input);
         int markerCount = countMarker(arguments, FILTER_DATE_MARKER);
         if (markerCount > 1) {
-            throw new HertaException("One " + FILTER_DATE_MARKER
-                    + " marker is enough. Try: filter /on <date>.");
+            throw new HertaException(DUPLICATE_FILTER_MARKER_ERROR.formatted(
+                    FILTER_DATE_MARKER, FILTER_USAGE));
         }
         String[] filterParts = arguments.split("[ \\t]+", 2);
         if (markerCount == 0 || filterParts.length == 0
                 || !filterParts[0].equals(FILTER_DATE_MARKER)) {
-            throw new HertaException("Your filter needs " + FILTER_DATE_MARKER
-                    + ". Try: filter /on <date>.");
+            throw new HertaException(MISSING_FILTER_MARKER_ERROR.formatted(
+                    FILTER_DATE_MARKER, FILTER_USAGE));
         }
         if (filterParts.length == 1 || filterParts[1].isBlank()) {
-            throw new HertaException("You gave me " + FILTER_DATE_MARKER
-                    + " without a date. Try: filter /on <date>.");
+            throw new HertaException(MISSING_FILTER_DATE_ERROR.formatted(
+                    FILTER_DATE_MARKER, FILTER_USAGE));
         }
 
         try {
             return DateTimeParser.parseUserDate(filterParts[1]);
         } catch (DateTimeParseException e) {
-            throw new HertaException("That date won't do. Try 2019-10-15 or 15/10/2019.");
+            throw new HertaException(INVALID_FILTER_DATE_ERROR);
         }
     }
 
@@ -219,15 +237,15 @@ public class Parser {
         String daysInput = CommandType.UPCOMING.extractArguments(input);
         final int days;
         if (!daysInput.matches("[0-9]+") || daysInput.length() > MAX_NUMBER_LENGTH) {
-            throw new HertaException(UPCOMING_RANGE_ERROR);
+            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
         }
         try {
             days = Integer.parseInt(daysInput);
         } catch (NumberFormatException e) {
-            throw new HertaException(UPCOMING_RANGE_ERROR);
+            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
         }
         if (days <= 0 || days > MAX_UPCOMING_DAYS) {
-            throw new HertaException(UPCOMING_RANGE_ERROR);
+            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
         }
         return days;
     }
@@ -240,8 +258,7 @@ public class Parser {
      */
     public void validateSortCommand(String input) throws HertaException {
         if (!CommandType.SORT.extractArguments(input).equals("date")) {
-            throw new HertaException("That sorting option is not supported. Try: "
-                    + DATE_SORT_COMMAND + ".");
+            throw new HertaException(UNSUPPORTED_SORT_OPTION_ERROR.formatted(DATE_SORT_COMMAND));
         }
     }
 
@@ -255,21 +272,20 @@ public class Parser {
      */
     public int parseTaskIndex(String input, String commandKeyword) throws HertaException {
         if (input == null || commandKeyword == null) {
-            throw new HertaException("That's not a task number. Try: "
-                    + commandKeyword + " 1.");
+            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
         }
         String normalizedInput = input.trim();
         if (!hasTaskNumberPrefix(normalizedInput, commandKeyword)) {
-            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
+            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
         }
         String taskNumber = normalizedInput.substring(commandKeyword.length()).trim();
         if (!isPositiveDecimal(taskNumber)) {
-            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
+            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
         }
         try {
             return new BigInteger(taskNumber).intValueExact() - 1;
         } catch (ArithmeticException e) {
-            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
+            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
         }
     }
 
@@ -294,19 +310,25 @@ public class Parser {
             return;
         }
         String normalizedInput = input.trim();
-        String firstToken = normalizedInput.split("[ \\t]+", 2)[0];
+        String commandToken = normalizedInput.split("[ \\t]+", 2)[0];
         for (CommandType supportedCommand : CommandType.values()) {
-            String keyword = supportedCommand.getKeyword();
-            if (!keyword.isEmpty() && firstToken.equalsIgnoreCase(keyword)
-                    && !firstToken.equals(keyword)) {
-                throw new HertaException("Lowercase only. Try: " + keyword + ".");
+            String supportedKeyword = supportedCommand.getKeyword();
+            if (isIncorrectlyCasedCommand(commandToken, supportedKeyword)) {
+                throw new HertaException(LOWERCASE_COMMAND_ERROR.formatted(supportedKeyword));
             }
         }
-        for (String keyword : new String[] {"list", "bye"}) {
-            if (hasTrailingArguments(normalizedInput, keyword)) {
-                throw new HertaException(getNoArgumentError(keyword));
+        for (String noArgumentKeyword : new String[] {"list", "bye"}) {
+            if (hasTrailingArguments(normalizedInput, noArgumentKeyword)) {
+                throw new HertaException(getNoArgumentError(noArgumentKeyword));
             }
         }
+    }
+
+    /** Returns whether a supported command uses an incorrect letter case. */
+    private boolean isIncorrectlyCasedCommand(String commandToken, String supportedKeyword) {
+        return !supportedKeyword.isEmpty()
+                && commandToken.equalsIgnoreCase(supportedKeyword)
+                && !commandToken.equals(supportedKeyword);
     }
 
     /** Identifies trailing text after a no-argument command using supported separators. */
@@ -318,7 +340,12 @@ public class Parser {
 
     /** Returns usage guidance for a command that does not accept arguments. */
     private String getNoArgumentError(String keyword) {
-        return "Just use: " + keyword + ". Nothing else is required.";
+        return NO_ARGUMENT_COMMAND_ERROR.formatted(keyword);
+    }
+
+    /** Returns usage guidance for an invalid task number. */
+    private String getInvalidTaskNumberError(String commandKeyword) {
+        return INVALID_TASK_NUMBER_ERROR.formatted(commandKeyword);
     }
 
     /** Checks a bounded, positive decimal number before constructing a BigInteger. */

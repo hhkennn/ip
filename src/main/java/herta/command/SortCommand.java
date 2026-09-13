@@ -13,6 +13,7 @@ import herta.ui.UiOutput;
  * Represents the command that displays tasks in chronological order.
  */
 public class SortCommand extends Command {
+    private static final String SORT_CONFIRMATION_MESSAGE = "There. Your tasks are in date order.";
     /** Sort value that places tasks without a date after dated tasks. */
     private static final LocalDateTime UNSCHEDULED_TASK_SORT_TIME = LocalDateTime.MAX;
 
@@ -32,7 +33,7 @@ public class SortCommand extends Command {
             throw new IllegalStateException("Sorting produced an incomplete task view.");
         }
 
-        ui.showMessage("There. Your tasks are in date order.");
+        ui.showMessage(SORT_CONFIRMATION_MESSAGE);
         for (int index : sortedIndices) {
             ui.showTask(index + 1, tasks.get(index));
         }

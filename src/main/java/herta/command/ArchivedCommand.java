@@ -10,6 +10,9 @@ import herta.ui.UiOutput;
  * Represents the command that displays archived tasks.
  */
 public class ArchivedCommand extends Command {
+    private static final String EMPTY_ARCHIVE_MESSAGE =
+            "The archive has nothing to show. Complete a task before archiving it.";
+    private static final String ARCHIVE_HEADING = "The archive, as requested:";
 
     /**
      * Displays archived tasks in archive-file order with independent numbering.
@@ -21,10 +24,10 @@ public class ArchivedCommand extends Command {
     public void execute(TaskRepository repository, UiOutput ui) {
         TaskList archivedTasks = repository.getArchivedTasks();
         if (archivedTasks.size() == 0) {
-            ui.showMessage("The archive has nothing to show. Complete a task before archiving it.");
+            ui.showMessage(EMPTY_ARCHIVE_MESSAGE);
             return;
         }
-        ui.showMessage("The archive, as requested:");
+        ui.showMessage(ARCHIVE_HEADING);
         for (int index = 0; index < archivedTasks.size(); index++) {
             ui.showTask(index + 1, archivedTasks.get(index));
         }

@@ -11,6 +11,10 @@ import herta.ui.UiOutput;
  * Represents the command that displays deadlines and events occurring on a date.
  */
 public class FilterCommand extends QueryCommand {
+    private static final String FILTER_HEADING =
+            "Here's what's scheduled for %s. Try not to miss it:";
+    private static final String FILTER_EMPTY_MESSAGE =
+            "No tasks on %s. A remarkably empty date.";
     private final LocalDate date;
 
     /**
@@ -33,7 +37,7 @@ public class FilterCommand extends QueryCommand {
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         String displayDate = DateTimeParser.formatDateForDisplay(date);
         showMatchingTasks(tasks, task -> task.occursOn(date),
-                "Here's what's scheduled for " + displayDate + ". Try not to miss it:",
-                "No tasks on " + displayDate + ". A remarkably empty date.", ui);
+                FILTER_HEADING.formatted(displayDate),
+                FILTER_EMPTY_MESSAGE.formatted(displayDate), ui);
     }
 }

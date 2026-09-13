@@ -12,6 +12,7 @@ import herta.ui.UiOutput;
  * Base class for commands that append a task to the task list.
  */
 public abstract class AddCommand extends Command {
+    private static final String ADD_CONFIRMATION_MESSAGE = "There. I've added it:";
     private final Task task;
 
     /**
@@ -37,7 +38,7 @@ public abstract class AddCommand extends Command {
         updatedTasks.add(task);
         storage.save(updatedTasks);
         tasks.add(task);
-        ui.showMessage("There. I've added it:");
+        ui.showMessage(ADD_CONFIRMATION_MESSAGE);
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
     }

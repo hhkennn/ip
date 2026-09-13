@@ -6,6 +6,14 @@ import herta.task.Task;
  * Provides output operations used by Herta commands.
  */
 public interface UiOutput {
+    /** Message template used when reporting the number of active tasks. */
+    String TASK_COUNT_MESSAGE = "That makes %d active %s. Try to keep up.";
+    /** Message shown when the user ends the session. */
+    String GOODBYE_MESSAGE = "Leaving already? Goodbye.";
+    /** Format used for an unnumbered task display. */
+    String INDENTED_TASK_FORMAT = "  %s";
+    /** Format used for a numbered task display. */
+    String NUMBERED_TASK_FORMAT = "%d.%s";
 
     /**
      * Displays a message to the user.
@@ -20,7 +28,7 @@ public interface UiOutput {
      * @param task the task to display
      */
     default void showTask(Task task) {
-        showMessage("  " + task);
+        showMessage(INDENTED_TASK_FORMAT.formatted(task));
     }
 
     /**
@@ -30,7 +38,7 @@ public interface UiOutput {
      * @param task the task to display
      */
     default void showTask(int taskNumber, Task task) {
-        showMessage(taskNumber + "." + task);
+        showMessage(NUMBERED_TASK_FORMAT.formatted(taskNumber, task));
     }
 
     /**
@@ -40,8 +48,7 @@ public interface UiOutput {
      */
     default void showTaskCount(int taskCount) {
         String taskNoun = taskCount == 1 ? "task" : "tasks";
-        showMessage("That makes " + taskCount + " active " + taskNoun
-                + ". Try to keep up.");
+        showMessage(TASK_COUNT_MESSAGE.formatted(taskCount, taskNoun));
     }
 
     /**
