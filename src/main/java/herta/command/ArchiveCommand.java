@@ -95,9 +95,9 @@ public class ArchiveCommand extends Command {
      */
     private void showNoTasksMessage(TaskList activeTasks, UiOutput ui) {
         if (activeTasks.size() == 0) {
-            ui.showMessage("Nothing to archive. The active task list is already empty.");
+            ui.showMessage("No active tasks. There is nothing here to archive.");
         } else {
-            ui.showMessage("Nothing to archive. There are no completed active tasks.");
+            ui.showMessage("Nothing is ready for archiving. Complete a task first.");
         }
     }
 
@@ -116,7 +116,7 @@ public class ArchiveCommand extends Command {
         for (int index : selectedIndices) {
             if (!activeTasks.get(index).isCompleted()) {
                 throw new HertaException(
-                        "Only completed tasks can be archived. Mark the task complete first.");
+                        "That task is still unfinished. Complete it before archiving.");
             }
         }
     }
@@ -159,8 +159,8 @@ public class ArchiveCommand extends Command {
         for (Task task : result.archivedTasksForDisplay()) {
             ui.showTask(task);
         }
-        ui.showMessage("That leaves " + result.activeTasks().size() + " active "
-                + getTaskNoun(result.activeTasks().size()) + ". Try to keep up.");
+        ui.showMessage("The active list is down to " + result.activeTasks().size() + " "
+                + getTaskNoun(result.activeTasks().size()) + ". Much tidier.");
     }
 
     /**
@@ -179,7 +179,8 @@ public class ArchiveCommand extends Command {
 
         for (ArchiveRange range : selection.getRanges()) {
             if (range.start() <= 0 || range.end() > activeTasks.size()) {
-                throw new HertaException("That task doesn't exist. Did you even check the list?");
+                throw new HertaException(
+                        "That number points to nothing on the active list. Check again.");
             }
         }
         for (ArchiveRange range : selection.getRanges()) {

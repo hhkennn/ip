@@ -32,7 +32,7 @@ public class MarkCommand extends TaskStatusCommand {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         Task task = updateTaskStatus(tasks, storage, true);
-        ui.showMessage("There. It's marked complete:");
+        ui.showMessage("Done. It's marked complete:");
         ui.showTask(task);
     }
 }

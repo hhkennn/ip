@@ -31,6 +31,7 @@ import herta.command.UpcomingCommand;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
+import herta.task.TaskDescriptionValidator;
 import herta.task.Todo;
 
 /**
@@ -80,7 +81,7 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.parseTodo("todo   "));
 
-        assertEquals("A blank todo? Even I can't organise nothing. Use: todo <description>.",
+        assertEquals("You forgot the todo description. Try: todo <description>.",
                 exception.getMessage());
     }
 
@@ -94,7 +95,7 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.parseFindKeyword("find   "));
 
-        assertEquals("A blank search? Use: find <keyword>.", exception.getMessage());
+        assertEquals("Find something specific. Use: find <keyword>.", exception.getMessage());
     }
 
     @Test
@@ -112,9 +113,9 @@ class ParserTest {
         HertaException invalidDate = assertThrows(HertaException.class, () ->
                 parser.parseDeadline("deadline submit report /by 31/02/2019 1800"));
 
-        assertEquals("Did you even read the deadline format? Use: deadline <description> /by <date/time>.",
+        assertEquals("That deadline format won't work. Use: deadline <description> /by <date/time>.",
                 missingDelimiter.getMessage());
-        assertEquals("That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800.",
+        assertEquals("I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.",
                 invalidDate.getMessage());
     }
 
@@ -126,8 +127,10 @@ class ParserTest {
                 parser.parseEvent("event meeting /from 2019-10-15 /from 2019-10-16 "
                         + "/to 2019-10-17"));
 
-        assertEquals("Parameter /by specified more than once.", deadlineException.getMessage());
-        assertEquals("Parameter /from specified more than once.", eventException.getMessage());
+        assertEquals("One /by is enough. Use: deadline <description> /by <date/time>.",
+                deadlineException.getMessage());
+        assertEquals("One /from is enough. Use: event <description> /from <start> /to <end>.",
+                eventException.getMessage());
     }
 
     @Test
@@ -146,8 +149,21 @@ class ParserTest {
         HertaException controlException = assertThrows(HertaException.class, () ->
                 parser.parseTodo("todo contains\u0000control"));
 
-        assertTrue(delimiterException.getMessage().contains("Task descriptions cannot contain"));
-        assertTrue(controlException.getMessage().contains("Task descriptions cannot contain"));
+        assertEquals("Keep the description on one line and leave out the storage delimiter and control characters.",
+                delimiterException.getMessage());
+        assertEquals("Keep the description on one line and leave out the storage delimiter and control characters.",
+                controlException.getMessage());
+    }
+
+    @Test
+    void parseTodo_overlongDescription_returnsCommandGuidance() {
+        String description = "a".repeat(TaskDescriptionValidator.MAX_DESCRIPTION_LENGTH + 1);
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                parser.parseTodo("todo " + description));
+
+        assertEquals("Even a task description has limits. Keep it under 1000 characters.",
+                exception.getMessage());
     }
 
     @Test
@@ -155,8 +171,8 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.parseDeadline("deadline old /by 0000-01-01"));
 
-        assertEquals("That is not a date. Use a real one, such as "
-                + "2019-10-15 or 2/12/2019 1800.", exception.getMessage());
+        assertEquals("I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.",
+                exception.getMessage());
     }
 
     @Test
@@ -182,7 +198,7 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () -> parser.parseEvent(
                 "event meeting /from someday /to 2019-10-16"));
 
-        assertEquals("Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.",
+        assertEquals("Those dates won't do. Use valid dates, such as 2019-10-15 or 2/12/2019 1800.",
                 exception.getMessage());
     }
 
@@ -199,7 +215,7 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.parseFilterDate("filter 2019-10-15"));
 
-        assertEquals("You forgot the /on. Use: filter /on <date>.", exception.getMessage());
+        assertEquals("Your filter needs /on. Try: filter /on <date>.", exception.getMessage());
     }
 
     @Test
@@ -225,7 +241,7 @@ class ParserTest {
         for (String input : new String[] {"upcoming 0", "upcoming -1", "upcoming many"}) {
             HertaException exception = assertThrows(HertaException.class, () ->
                     parser.parseUpcomingDays(input));
-            assertEquals("That range makes no sense. Use a positive number of days.",
+            assertEquals("That day count is not useful. Use: upcoming <days>, with a positive number in range.",
                     exception.getMessage());
         }
     }
@@ -258,17 +274,17 @@ class ParserTest {
 
     @Test
     void parseArchiveSelection_invalidInput_usesSpecificSelectionErrors() {
-        assertEquals("Use: archive <number> [<number> ...], archive <start>-<end>, or archive all.",
+        assertEquals("You gave me nothing to archive. Try: archive 1 or archive all.",
                 assertArchiveError("archive").getMessage());
-        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+        assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
                 assertArchiveError("archive -1").getMessage());
-        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+        assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
                 assertArchiveError("archive 1 - 3").getMessage());
-        assertEquals("That range makes no sense. Use an ascending range such as archive 2-5.",
+        assertEquals("The range runs the wrong way. Try: archive 2-5.",
                 assertArchiveError("archive 5-2").getMessage());
-        assertEquals("That's not a valid task selection. Try: archive 1 3-5.",
+        assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
                 assertArchiveError("archive 999999999999999999").getMessage());
-        assertEquals("Use archive all by itself, or select task numbers and ranges.",
+        assertEquals("Pick one: archive all, or archive 1 3-5. Mixing them is unnecessary.",
                 assertArchiveError("archive all 1").getMessage());
     }
 
@@ -280,8 +296,8 @@ class ParserTest {
                 "restore +1", "restore 999999999999999999")) {
             HertaException exception = assertRestoreError(input);
             String expected = input.equals("restore")
-                    ? "Use: restore <archived task number>."
-                    : "That's not an archived task number. Try: restore 1.";
+                    ? "Tell me which archived task to restore. Try: restore 1."
+                    : "That archived task number won't do. Try: restore 1.";
             assertEquals(expected, exception.getMessage());
         }
     }
@@ -292,7 +308,7 @@ class ParserTest {
 
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.validateSortCommand("sort time"));
-        assertEquals("That is not a sorting option. Use: sort date.", exception.getMessage());
+        assertEquals("That sorting option is not supported. Try: sort date.", exception.getMessage());
     }
 
     private HertaException assertArchiveError(String input) {

@@ -32,7 +32,7 @@ public class UnmarkCommand extends TaskStatusCommand {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         Task task = updateTaskStatus(tasks, storage, false);
-        ui.showMessage("As you wish. It's incomplete again:");
+        ui.showMessage("Fine. It's incomplete again:");
         ui.showTask(task);
     }
 }

@@ -40,7 +40,7 @@ public interface UiOutput {
      */
     default void showTaskCount(int taskCount) {
         String taskNoun = taskCount == 1 ? "task" : "tasks";
-        showMessage("That makes " + taskCount + " " + taskNoun
+        showMessage("That makes " + taskCount + " active " + taskNoun
                 + ". Try to keep up.");
     }
 

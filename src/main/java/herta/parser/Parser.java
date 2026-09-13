@@ -33,9 +33,8 @@ import herta.task.Todo;
 public class Parser {
     private static final String FILTER_DATE_MARKER = "/on";
     private static final String DATE_SORT_COMMAND = "sort date";
-    private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
-            + "Use a positive number of days.";
-    private static final String NO_ARGUMENT_ERROR_PREFIX = "Use: ";
+    private static final String UPCOMING_RANGE_ERROR = "That day count is not useful. "
+            + "Use: upcoming <days>, with a positive number in range.";
     private static final int MAX_NUMBER_LENGTH = 64;
     private static final int MAX_UPCOMING_DAYS = 4_000_000;
 
@@ -149,7 +148,7 @@ public class Parser {
     public String parseFindKeyword(String input) throws HertaException {
         String keyword = CommandType.FIND.extractArguments(input);
         if (keyword.isEmpty()) {
-            throw new HertaException("A blank search? Use: find <keyword>.");
+            throw new HertaException("Find something specific. Use: find <keyword>.");
         }
         return keyword;
     }
@@ -188,18 +187,18 @@ public class Parser {
         String arguments = CommandType.FILTER.extractArguments(input);
         int markerCount = countMarker(arguments, FILTER_DATE_MARKER);
         if (markerCount > 1) {
-            throw new HertaException("Parameter " + FILTER_DATE_MARKER
-                    + " specified more than once.");
+            throw new HertaException("One " + FILTER_DATE_MARKER
+                    + " marker is enough. Try: filter /on <date>.");
         }
         String[] filterParts = arguments.split("[ \\t]+", 2);
         if (markerCount == 0 || filterParts.length == 0
                 || !filterParts[0].equals(FILTER_DATE_MARKER)) {
-            throw new HertaException("You forgot the " + FILTER_DATE_MARKER
-                    + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
+            throw new HertaException("Your filter needs " + FILTER_DATE_MARKER
+                    + ". Try: filter /on <date>.");
         }
         if (filterParts.length == 1 || filterParts[1].isBlank()) {
-            throw new HertaException("You forgot the date after " + FILTER_DATE_MARKER
-                    + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
+            throw new HertaException("You gave me " + FILTER_DATE_MARKER
+                    + " without a date. Try: filter /on <date>.");
         }
 
         try {
@@ -241,7 +240,7 @@ public class Parser {
      */
     public void validateSortCommand(String input) throws HertaException {
         if (!CommandType.SORT.extractArguments(input).equals("date")) {
-            throw new HertaException("That is not a sorting option. Use: "
+            throw new HertaException("That sorting option is not supported. Try: "
                     + DATE_SORT_COMMAND + ".");
         }
     }
@@ -284,7 +283,7 @@ public class Parser {
     /** Rejects trailing input for commands whose grammar has no arguments. */
     private void validateNoArguments(String input, CommandType commandType) throws HertaException {
         if (!commandType.extractArguments(input).isEmpty()) {
-            throw new HertaException(NO_ARGUMENT_ERROR_PREFIX + commandType.getKeyword() + ".");
+            throw new HertaException(getNoArgumentError(commandType.getKeyword()));
         }
     }
 
@@ -300,12 +299,12 @@ public class Parser {
             String keyword = supportedCommand.getKeyword();
             if (!keyword.isEmpty() && firstToken.equalsIgnoreCase(keyword)
                     && !firstToken.equals(keyword)) {
-                throw new HertaException("Commands are lowercase. Try: " + keyword + ".");
+                throw new HertaException("Lowercase only. Try: " + keyword + ".");
             }
         }
         for (String keyword : new String[] {"list", "bye"}) {
             if (hasTrailingArguments(normalizedInput, keyword)) {
-                throw new HertaException(NO_ARGUMENT_ERROR_PREFIX + keyword + ".");
+                throw new HertaException(getNoArgumentError(keyword));
             }
         }
     }
@@ -315,6 +314,11 @@ public class Parser {
         return input.startsWith(keyword)
                 && input.length() > keyword.length()
                 && CommandTokenizer.isHorizontalWhitespace(input.charAt(keyword.length()));
+    }
+
+    /** Returns usage guidance for a command that does not accept arguments. */
+    private String getNoArgumentError(String keyword) {
+        return "Just use: " + keyword + ". Nothing else is required.";
     }
 
     /** Checks a bounded, positive decimal number before constructing a BigInteger. */

@@ -36,7 +36,7 @@ public class DeleteCommand extends TaskIndexCommand {
         updatedTasks.remove(taskIndex);
         storage.save(updatedTasks);
         tasks.remove(taskIndex);
-        ui.showMessage("There. It's gone:");
+        ui.showMessage("Gone. I've removed it:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
     }

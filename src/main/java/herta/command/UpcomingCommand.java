@@ -44,12 +44,12 @@ public class UpcomingCommand extends QueryCommand {
             until = now.plusDays(days);
         } catch (DateTimeException e) {
             throw new UsageGuidanceException(
-                    "You want me to look that far ahead? Use a smaller number of days.");
+                    "That day count is not useful. Use: upcoming <days>, with a positive number in range.");
         }
 
         showMatchingTasks(tasks,
                 task -> !task.isCompleted() && task.isUpcoming(now, until),
-                "Your next " + days + " days. Try not to fall behind:",
+                "The next " + days + " days, arranged for you:",
                 "Nothing upcoming. Enjoy the silence while it lasts.",
                 ui);
     }

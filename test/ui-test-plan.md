@@ -97,19 +97,19 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] completed archive task
      2.[T][ ] incomplete archive task
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've restored it:
        [T][X] completed archive task
-     That makes 1 active task. Try to keep up.
+     That makes 1 active task. Back where it belongs.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've restored it:
        [T][ ] incomplete archive task
-     That makes 2 active tasks. Try to keep up.
+     That makes 2 active tasks. Back where it belongs.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -117,7 +117,7 @@ Your command?      ____________________________________________________________
      2.[T][ ] incomplete archive task
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     No archived tasks.
+     The archive has nothing to show. Complete a task before archiving it.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -159,46 +159,46 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] first
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] second
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] third
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Only completed tasks can be archived. Mark the task complete first.
+     That task is still unfinished. Complete it before archiving.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] first
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 1 completed task:
        [T][X] first
-     That leaves 2 active tasks. Try to keep up.
+     The active list is down to 2 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] second
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] third
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 2 completed tasks:
        [T][X] second
        [T][X] third
-     That leaves 0 active tasks. Try to keep up.
+     The active list is down to 0 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] first
      2.[T][X] second
      3.[T][X] third
@@ -237,27 +237,27 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Nothing to archive. The active task list is already empty.
+     No active tasks. There is nothing here to archive.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] pending
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Nothing to archive. There are no completed active tasks.
+     Nothing is ready for archiving. Complete a task first.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] pending
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 1 completed task:
        [T][X] pending
-     That leaves 0 active tasks. Try to keep up.
+     The active list is down to 0 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] pending
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -298,19 +298,19 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] active
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] active
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 1 completed task:
        [T][X] active
-     That leaves 0 active tasks. Try to keep up.
+     The active list is down to 0 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] active
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -319,10 +319,10 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've restored it:
        [T][X] active
-     That makes 1 active task. Try to keep up.
+     That makes 1 active task. Back where it belongs.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     No archived tasks.
+     The archive has nothing to show. Complete a task before archiving it.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -364,28 +364,28 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] read book
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 1 completed task:
        [T][X] read book
-     That leaves 0 active tasks. Try to keep up.
+     The active list is down to 0 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][ ] read book
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] read book
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -435,55 +435,55 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] pending
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: archive <number> [<number> ...], archive <start>-<end>, or archive all.
+     You gave me nothing to archive. Try: archive 1 or archive all.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not a valid task selection. Try: archive 1 3-5.
+     That selection won't do. Use task numbers or ranges, such as archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not a valid task selection. Try: archive 1 3-5.
+     That selection won't do. Use task numbers or ranges, such as archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not a valid task selection. Try: archive 1 3-5.
+     That selection won't do. Use task numbers or ranges, such as archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not a valid task selection. Try: archive 1 3-5.
+     That selection won't do. Use task numbers or ranges, such as archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That range makes no sense. Use an ascending range such as archive 2-5.
+     The range runs the wrong way. Try: archive 2-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not a valid task selection. Try: archive 1 3-5.
+     That selection won't do. Use task numbers or ranges, such as archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use archive all by itself, or select task numbers and ranges.
+     Pick one: archive all, or archive 1 3-5. Mixing them is unnecessary.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: archived.
+     Just use: archived. Nothing else is required.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: restore <archived task number>.
+     Tell me which archived task to restore. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not an archived task number. Try: restore 1.
+     That archived task number won't do. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not an archived task number. Try: restore 1.
+     That archived task number won't do. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not an archived task number. Try: restore 1.
+     That archived task number won't do. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not an archived task number. Try: restore 1.
+     That archived task number won't do. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That's not an archived task number. Try: restore 1.
+     That archived task number won't do. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That archived task doesn't exist. Did you even check the archived list?
+     That number points to nothing in the archive. Check again.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -521,28 +521,28 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] call June
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] return book
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Looking for something? How predictable. Here are the matches:
+     Found them. Here are the matches:
      1.[T][ ] read book
      3.[T][ ] return book
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     I found nothing. Perhaps the task was only in your imagination.
+     Nothing matched. Try a more useful keyword.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A blank search? Use: find <keyword>.
+     Find something specific. Use: find <keyword>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -613,17 +613,17 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] return book
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's gone:
+     Gone. I've removed it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -633,7 +633,7 @@ Your command?      ____________________________________________________________
      That's not a task number. Try: delete 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     No active task has that number. Check the list and try again.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That's not a task number. Try: delete 1.
@@ -683,10 +683,10 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] core
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Nothing? Were you expecting me to read your mind?
+     Nothing? Use a command. Try: list, find <keyword>, or todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -700,7 +700,7 @@ Your command?      ____________________________________________________________
      1.[T][ ] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -715,7 +715,7 @@ Your command?      ____________________________________________________________
      1.[T][X] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     As you wish. It's incomplete again:
+     Fine. It's incomplete again:
        [T][ ] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -764,49 +764,49 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] stable
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] report (by: Dec 02 2019, 6:00 PM)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -844,7 +844,7 @@ todo before eof
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] before eof
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -891,10 +891,10 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] alpha
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A blank todo? Even I can't organise nothing. Use: todo <description>.
+     You forgot the todo description. Try: todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -903,10 +903,10 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] report (by: Oct 15 2019)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
+     That deadline format won't work. Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -916,10 +916,10 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     You forgot the /to marker. Use: event <description> /from <start> /to <end>.
+     An event needs an end marker: /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -928,11 +928,11 @@ Your command?      ____________________________________________________________
      3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] alpha
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     No active task has that number. Check the list and try again.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -941,7 +941,7 @@ Your command?      ____________________________________________________________
      3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     As you wish. It's incomplete again:
+     Fine. It's incomplete again:
        [T][ ] alpha
      ____________________________________________________________
 Your command?      ____________________________________________________________
@@ -994,10 +994,10 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] spaced description
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A blank todo? Even I can't organise nothing. Use: todo <description>.
+     You forgot the todo description. Try: todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1006,18 +1006,18 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] submit report (by: Oct 15 2019)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A deadline needs a value after /by. Use: deadline <description> /by <date/time>.
+     A deadline needs a time. Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     An event needs a value after /to. Use: event <description> /from <start> /to <end>.
+     An event cannot end nowhere. Add: /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1026,11 +1026,11 @@ Your command?      ____________________________________________________________
      3.[E][ ] meeting (from: Oct 15 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A blank todo? Even I can't organise nothing. Use: todo <description>.
+     You forgot the todo description. Try: todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1081,36 +1081,36 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     A blank todo? Even I can't organise nothing. Use: todo <description>.
+     You forgot the todo description. Try: todo <description>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That command is invalid. Were you just guessing?
-     Try todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
+     That command isn't in my vocabulary.
+     Use: todo, deadline, event, list, find, filter, upcoming, sort, mark, unmark, delete, archive, archived, restore, and bye.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
+     That deadline format won't work. Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     You forgot the /to marker. Use: event <description> /from <start> /to <end>.
+     An event needs an end marker: /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
+     That deadline format won't work. Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That is not a date. Use a real one, such as 2019-10-15 or 2/12/2019 1800.
+     I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Those dates won't do. Use something valid, such as 2019-10-15 or 2/12/2019 1800.
+     Those dates won't do. Use valid dates, such as 2019-10-15 or 2/12/2019 1800.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Time moves forward. Make the event end after it starts.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     You forgot the /from marker. Use: event <description> /from <start> /to <end>.
+     An event needs a start marker: /from <start>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That's not a task number. Try: mark 1.
@@ -1161,7 +1161,7 @@ The three input lines intentionally have two leading spaces.
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] read book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1201,17 +1201,17 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] borrow book
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] return book (by: Dec 02 2019, 6:00 PM)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1257,34 +1257,34 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] save todo
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] save deadline (by: Oct 15 2019)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] save event (from: Oct 15 2019 to: Oct 16 2019)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] save todo
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     As you wish. It's incomplete again:
+     Fine. It's incomplete again:
        [T][ ] save todo
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] save todo
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's gone:
+     Gone. I've removed it:
        [D][ ] save deadline (by: Oct 15 2019)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1320,7 +1320,7 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Task descriptions cannot contain `|`, line breaks, or control characters.
+     Keep the description on one line and leave out the storage delimiter and control characters.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1361,13 +1361,13 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] leading input
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: list.
+     Just use: list. Nothing else is required.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Use: bye.
+     Just use: bye. Nothing else is required.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1417,39 +1417,39 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] buy groceries
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] submit report (by: Oct 15 2019)
-     That makes 2 tasks. Try to keep up.
+     That makes 2 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
-     That makes 3 tasks. Try to keep up.
+     That makes 3 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [D][ ] future report (by: Dec 31 9999)
-     That makes 4 tasks. Try to keep up.
+     That makes 4 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
        [E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
-     That makes 5 tasks. Try to keep up.
+     That makes 5 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here is what your schedule has for Oct 15 2019, if anything:
+     Here's what's scheduled for Oct 15 2019. Try not to miss it:
      2.[D][ ] submit report (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here is what your schedule has for Jan 01 2020, if anything:
-     Nothing scheduled. A remarkably empty date.
+     Here's what's scheduled for Jan 01 2020. Try not to miss it:
+     No tasks on Jan 01 2020. A remarkably empty date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Your next 4000000 days. Try not to fall behind:
+     The next 4000000 days, arranged for you:
      4.[D][ ] future report (by: Dec 31 9999)
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
      ____________________________________________________________
@@ -1470,7 +1470,7 @@ Your command?      ____________________________________________________________
      5.[E][ ] future meeting (from: Dec 30 9999 to: Dec 31 9999)
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here is what your schedule has for Oct 15 2019, if anything:
+     Here's what's scheduled for Oct 15 2019. Try not to miss it:
      2.[D][ ] submit report (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Oct 14 2019 to: Oct 16 2019)
      ____________________________________________________________
@@ -1478,13 +1478,13 @@ Your command?      ____________________________________________________________
      That date won't do. Try 2019-10-15 or 15/10/2019.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     You forgot the /on. Use: filter /on <date>.
+     Your filter needs /on. Try: filter /on <date>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That range makes no sense. Use a positive number of days.
+     That day count is not useful. Use: upcoming <days>, with a positive number in range.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That is not a sorting option. Use: sort date.
+     That sorting option is not supported. Try: sort date.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

@@ -21,10 +21,10 @@ public class ArchivedCommand extends Command {
     public void execute(TaskRepository repository, UiOutput ui) {
         TaskList archivedTasks = repository.getArchivedTasks();
         if (archivedTasks.size() == 0) {
-            ui.showMessage("No archived tasks.");
+            ui.showMessage("The archive has nothing to show. Complete a task before archiving it.");
             return;
         }
-        ui.showMessage("Here are the tasks you've archived:");
+        ui.showMessage("The archive, as requested:");
         for (int index = 0; index < archivedTasks.size(); index++) {
             ui.showTask(index + 1, archivedTasks.get(index));
         }

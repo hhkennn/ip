@@ -44,17 +44,18 @@ public final class CommandTokenizer {
     /** Validates raw command size and characters before any parser work occurs. */
     private static void validateInput(String input) throws HertaException {
         if (input == null) {
-            throw new HertaException("A command cannot be null. Try entering a Herta command.");
+            throw new HertaException(
+                    "Nothing usable came through. Enter a command, such as list or todo <description>.");
         }
         if (input.length() > MAX_COMMAND_LENGTH) {
-            throw new HertaException("That command is too long. Keep it under "
+            throw new HertaException("That is excessive. Keep the command under "
                     + MAX_COMMAND_LENGTH + " characters.");
         }
         for (int i = 0; i < input.length(); i++) {
             char character = input.charAt(i);
             if (isUnsupportedCharacter(character)) {
-                throw new HertaException(
-                        "Use ordinary spaces and one command per line; lookalike whitespace is unsupported.");
+                throw new HertaException("That command contains unsupported spacing or control "
+                        + "characters. Use ordinary spaces and one line.");
             }
         }
     }

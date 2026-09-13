@@ -32,10 +32,11 @@ public class UnknownCommand extends Command {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         if (isEmptyInput) {
-            throw new HertaException("Nothing? Were you expecting me to read your mind?");
+            throw new HertaException("Nothing? Use a command. Try: list, find <keyword>, or "
+                    + "todo <description>.");
         }
-        throw new UsageGuidanceException("That command is invalid. Were you just guessing?\n"
-                + "Try todo, deadline, event, list, find, filter, upcoming, sort, "
+        throw new UsageGuidanceException("That command isn't in my vocabulary.\n"
+                + "Use: todo, deadline, event, list, find, filter, upcoming, sort, "
                 + "mark, unmark, delete, archive, archived, restore, and bye.");
     }
 }

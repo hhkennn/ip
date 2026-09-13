@@ -30,7 +30,8 @@ public abstract class TaskIndexCommand extends Command {
      */
     protected int getTaskIndex(TaskList tasks) throws HertaException {
         if (taskIndex < 0 || taskIndex >= tasks.size()) {
-            throw new HertaException("That task doesn't exist. Did you even check the list?");
+            throw new HertaException(
+                    "No active task has that number. Check the list and try again.");
         }
 
         return taskIndex;

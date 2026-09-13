@@ -33,7 +33,7 @@ public class FilterCommand extends QueryCommand {
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         String displayDate = DateTimeParser.formatDateForDisplay(date);
         showMatchingTasks(tasks, task -> task.occursOn(date),
-                "Here is what your schedule has for " + displayDate + ", if anything:",
-                "Nothing scheduled. A remarkably empty date.", ui);
+                "Here's what's scheduled for " + displayDate + ". Try not to miss it:",
+                "No tasks on " + displayDate + ". A remarkably empty date.", ui);
     }
 }

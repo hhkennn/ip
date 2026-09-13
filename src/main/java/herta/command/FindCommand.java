@@ -37,8 +37,8 @@ public class FindCommand extends QueryCommand {
         showMatchingTasksWithoutEmptyHeading(tasks,
                 task -> task.getDescription().toLowerCase(Locale.ROOT)
                         .contains(normalizedKeyword),
-                "Looking for something? How predictable. Here are the matches:",
-                "I found nothing. Perhaps the task was only in your imagination.",
+                "Found them. Here are the matches:",
+                "Nothing matched. Try a more useful keyword.",
                 ui);
     }
 }

@@ -38,7 +38,7 @@ public class RestoreCommand extends Command {
         TaskList archivedTasks = repository.getArchivedTasks();
         if (archiveIndex < 0 || archiveIndex >= archivedTasks.size()) {
             throw new HertaException(
-                    "That archived task doesn't exist. Did you even check the archived list?");
+                    "That number points to nothing in the archive. Check again.");
         }
 
         Task task = archivedTasks.get(archiveIndex);
@@ -53,7 +53,7 @@ public class RestoreCommand extends Command {
         ui.showMessage("There. I've restored it:");
         ui.showTask(task);
         ui.showMessage("That makes " + updatedActiveTasks.size() + " active "
-                + getTaskNoun(updatedActiveTasks.size()) + ". Try to keep up.");
+                + getTaskNoun(updatedActiveTasks.size()) + ". Back where it belongs.");
     }
 
     /**

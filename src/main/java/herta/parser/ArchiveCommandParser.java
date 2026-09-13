@@ -10,15 +10,17 @@ import herta.exception.HertaException;
  * Parses archive and restore task selections.
  */
 final class ArchiveCommandParser {
-    private static final String ARCHIVE_USAGE = "Use: archive <number> [<number> ...], "
-            + "archive <start>-<end>, or archive all.";
-    private static final String ARCHIVE_SELECTION_ERROR = "That's not a valid task selection. "
-            + "Try: archive 1 3-5.";
-    private static final String ARCHIVE_DESCENDING_RANGE_ERROR = "That range makes no sense. "
-            + "Use an ascending range such as archive 2-5.";
-    private static final String ARCHIVE_ALL_ERROR = "Use archive all by itself, or select task numbers and ranges.";
-    private static final String RESTORE_USAGE = "Use: restore <archived task number>.";
-    private static final String RESTORE_NUMBER_ERROR = "That's not an archived task number. "
+    private static final String ARCHIVE_USAGE = "You gave me nothing to archive. "
+            + "Try: archive 1 or archive all.";
+    private static final String ARCHIVE_SELECTION_ERROR = "That selection won't do. "
+            + "Use task numbers or ranges, such as archive 1 3-5.";
+    private static final String ARCHIVE_DESCENDING_RANGE_ERROR = "The range runs the wrong way. "
+            + "Try: archive 2-5.";
+    private static final String ARCHIVE_ALL_ERROR = "Pick one: archive all, or archive 1 3-5. "
+            + "Mixing them is unnecessary.";
+    private static final String RESTORE_USAGE = "Tell me which archived task to restore. "
+            + "Try: restore 1.";
+    private static final String RESTORE_NUMBER_ERROR = "That archived task number won't do. "
             + "Try: restore 1.";
     private static final int MAX_NUMBER_LENGTH = 64;
 
