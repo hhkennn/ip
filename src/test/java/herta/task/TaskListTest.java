@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,23 @@ class TaskListTest {
         assertEquals(todo, tasks.get(0));
         assertEquals(todo, tasks.remove(0));
         assertEquals(0, tasks.size());
+    }
+
+    @Test
+    void add_duplicateTaskWithEquivalentWhitespace_rejectsDuplicate() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                tasks.add(new Todo("  read   book  ")));
+
+        assertEquals("Duplicate tasks are not allowed.", exception.getMessage());
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    void constructor_nullTask_rejectsItImmediately() {
+        assertThrows(NullPointerException.class, () ->
+                new TaskList(Collections.singletonList(null)));
     }
 
     @Test

@@ -24,6 +24,22 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
 
+## Task data policy
+
+Herta requires task identities to be globally unique across the active and
+archived lists. A task's identity includes its subtype, its description after
+surrounding and repeated ordinary spaces are normalized, and all of its date or
+time fields. Completion status is not part of the identity, and Unicode text is
+not compatibility-normalized. This prevents an archived task from being
+silently re-added or archived a second time.
+
+Deadline and event dates must fall between `0001-01-01` and `9999-12-31`.
+Past deadlines and events are valid historical task data. Repeated spaces or
+tabs between date and time components are accepted and treated as one space.
+An adjacent lock file protects cooperating Herta instances during a save;
+manual edits made after the final snapshot check cannot be made perfectly
+race-free by a local file-based application.
+
 ## Git commit checks
 
 Enable the repository's local commit-message hook once after cloning:

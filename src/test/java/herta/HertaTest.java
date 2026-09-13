@@ -2,6 +2,7 @@ package herta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -30,6 +31,80 @@ class HertaTest {
         assertTrue(output.contains("There. I've added it:"));
         assertTrue(output.contains("Leaving already? Goodbye."));
         assertEquals("T | 0 | read book", Files.readString(dataFile).trim());
+    }
+
+    @Test
+    void getResponse_leadingWhitespaceIsNormalizedBeforeParsingAndSaving() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("leading-space.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse response = herta.getResponse("  todo read book");
+
+        assertTrue(response.getMessage().contains("[T][ ] read book"));
+        assertEquals("T | 0 | read book", Files.readString(dataFile).trim());
+    }
+
+    @Test
+    void getResponse_invalidNullAndControlInputReturnsSafeResponses() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("safe-input.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse nullResponse = herta.getResponse(null);
+        HertaResponse controlResponse = herta.getResponse("todo bad\u0000text");
+        HertaResponse nextResponse = herta.getResponse("todo still works");
+
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, nullResponse.getResponseCategory());
+        assertNotNull(nullResponse.getMessage());
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, controlResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ADD, nextResponse.getResponseCategory());
+        assertEquals("T | 0 | still works", Files.readString(dataFile).trim());
+    }
+
+    @Test
+    void getResponse_extraArgumentsForNoArgumentCommandsReturnsUsageGuidance() throws Exception {
+        Herta herta = new Herta(temporaryDirectory.resolve("usage.txt").toString());
+
+        HertaResponse listResponse = herta.getResponse("list anything");
+        HertaResponse byeResponse = herta.getResponse("bye anything");
+
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, listResponse.getResponseCategory());
+        assertEquals("Use: list.", listResponse.getMessage());
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, byeResponse.getResponseCategory());
+        assertEquals("Use: bye.", byeResponse.getMessage());
+    }
+
+    @Test
+    void getResponse_leadingWhitespaceWorksForEveryCommandType() throws Exception {
+        Herta herta = new Herta(temporaryDirectory.resolve("all-commands.txt").toString());
+
+        assertEquals(ResponseCategory.ADD, herta.getResponse("  todo first").getResponseCategory());
+        assertEquals(ResponseCategory.ADD, herta.getResponse(
+                "  deadline second /by 9999-12-31").getResponseCategory());
+        assertEquals(ResponseCategory.ADD, herta.getResponse(
+                "  event third /from 9999-12-30 /to 9999-12-31").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse("  list").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse("  find first").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse(
+                "  filter /on 9999-12-31").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse("  upcoming 1").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse("  sort date").getResponseCategory());
+        assertEquals(ResponseCategory.MARK, herta.getResponse("  mark 1").getResponseCategory());
+        assertEquals(ResponseCategory.UNMARK, herta.getResponse("  unmark 1").getResponseCategory());
+        assertEquals(ResponseCategory.MARK, herta.getResponse("  mark 1").getResponseCategory());
+        assertEquals(ResponseCategory.ARCHIVE, herta.getResponse("  archive 1").getResponseCategory());
+        assertEquals(ResponseCategory.QUERY, herta.getResponse("  archived").getResponseCategory());
+        assertEquals(ResponseCategory.RESTORE, herta.getResponse("  restore 1").getResponseCategory());
+        assertEquals(ResponseCategory.EXIT, herta.getResponse("  bye").getResponseCategory());
+    }
+
+    @Test
+    void startup_invalidConfiguredPathDisablesCommandsWithoutThrowing() {
+        Herta herta = new Herta("bad\u0000path");
+
+        assertFalse(herta.isReady());
+        assertTrue(herta.getLoadingError().contains("configured data path"));
+        assertEquals(ResponseCategory.ERROR, herta.getResponse("todo should not save")
+                .getResponseCategory());
     }
 
     @Test
@@ -118,7 +193,7 @@ class HertaTest {
         Herta herta = new Herta(dataFile.toString());
 
         assertFalse(herta.isReady());
-        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks: "));
+        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks at line "));
         HertaResponse response = herta.getResponse("list");
         assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
         assertEquals(herta.getLoadingError(), response.getMessage());

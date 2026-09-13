@@ -1,6 +1,7 @@
 package herta.parser;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents the validated selectors supplied to an archive command.
@@ -16,7 +17,8 @@ public final class ArchiveSelection {
      * @param isAllSelected whether the selection targets every completed active task
      */
     public ArchiveSelection(List<ArchiveRange> ranges, boolean isAllSelected) {
-        this.ranges = List.copyOf(ranges);
+        this.ranges = List.copyOf(Objects.requireNonNull(ranges,
+                "Archive selection ranges cannot be null."));
         this.isAllSelected = isAllSelected;
     }
 

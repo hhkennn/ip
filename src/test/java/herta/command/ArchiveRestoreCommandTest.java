@@ -80,6 +80,21 @@ class ArchiveRestoreCommandTest {
     }
 
     @Test
+    void addCommand_duplicateArchivedTask_isRejectedByGlobalPolicy() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("global-duplicate").resolve("tasks.txt");
+        Herta herta = new Herta(activeFile.toString());
+
+        herta.getResponse("todo read book");
+        herta.getResponse("mark 1");
+        herta.getResponse("archive 1");
+        HertaResponse response = herta.getResponse("todo  read   book ");
+
+        assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
+        assertEquals("That task is already in the archived task list.", response.getMessage());
+        assertEquals(List.of(), Files.readAllLines(activeFile));
+    }
+
+    @Test
     void archiveAll_skipsIncompleteTasksAndReportsNoOpCases() throws Exception {
         Path activeFile = temporaryDirectory.resolve("tasks.txt");
         Herta herta = new Herta(activeFile.toString());

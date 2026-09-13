@@ -381,7 +381,7 @@ Your command?      ____________________________________________________________
      Use: archive <number> [<number> ...], archive <start>-<end>, or archive all.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     That's not a valid task selection. Try: archive 1 3-5.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That's not a valid task selection. Try: archive 1 3-5.
@@ -420,7 +420,7 @@ Your command?      ____________________________________________________________
      That's not an archived task number. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That archived task doesn't exist. Did you even check the archived list?
+     That's not an archived task number. Try: restore 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That archived task doesn't exist. Did you even check the archived list?
@@ -570,7 +570,7 @@ Your command?      ____________________________________________________________
      1.[T][ ] return book
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     That's not a task number. Try: delete 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That task doesn't exist. Did you even check the list?
@@ -633,7 +633,7 @@ Your command?      ____________________________________________________________
      1.[T][ ] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     That's not a task number. Try: mark 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -648,7 +648,7 @@ Your command?      ____________________________________________________________
      1.[T][X] core
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     That task doesn't exist. Did you even check the list?
+     That's not a task number. Try: unmark 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -859,7 +859,7 @@ Your command?      ____________________________________________________________
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the event format? Use: event <description> /from <start> /to <end>.
+     You forgot the /to marker. Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -949,7 +949,7 @@ Your command?      ____________________________________________________________
      That makes 2 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the deadline format? Use: deadline <description> /by <date/time>.
+     A deadline needs a value after /by. Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
@@ -957,7 +957,7 @@ Your command?      ____________________________________________________________
      That makes 3 tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the event format? Use: event <description> /from <start> /to <end>.
+     An event needs a value after /to. Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
@@ -1035,7 +1035,7 @@ Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the event format? Use: event <description> /from <start> /to <end>.
+     You forgot the /to marker. Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Did you even read the deadline format? Use: deadline <description> /by <date/time>.
@@ -1050,7 +1050,7 @@ Your command?      ____________________________________________________________
      Time moves forward. Make the event end after it starts.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Did you even read the event format? Use: event <description> /from <start> /to <end>.
+     You forgot the /from marker. Use: event <description> /from <start> /to <end>.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      That's not a task number. Try: mark 1.
@@ -1120,7 +1120,7 @@ Your command?      ____________________________________________________________
 
 ```text
 todo borrow book
-deadline return book /by 2/12/2019 1800
+deadline return book /by 2/12/2019  1800
 event project meeting /from 2/12/2019 1800 /to 3/12/2019 1800
 list
 bye
@@ -1260,10 +1260,58 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Failed to save tasks: Invalid saved task: type T requires 3 fields.
+     Task descriptions cannot contain `|`, line breaks, or control characters.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Normalize GUI-style whitespace and reject extra arguments
+
+- Aim: Verify that leading/repeated command whitespace, including horizontal tabs,
+  is normalized before parsing, while no-argument commands reject extra arguments
+  with precise usage guidance.
+
+### Inputs
+
+```text
+  todo leading input
+  list	anything
+  bye	anything
+  list
+  bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] leading input
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: list.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Use: bye.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][ ] leading input
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

@@ -20,6 +20,9 @@ public class RestoreCommand extends Command {
      * @param archiveIndex the zero-based index of the archived task
      */
     public RestoreCommand(int archiveIndex) {
+        if (archiveIndex < 0) {
+            throw new IllegalArgumentException("An archive index cannot be negative.");
+        }
         this.archiveIndex = archiveIndex;
     }
 
@@ -42,7 +45,11 @@ public class RestoreCommand extends Command {
         TaskList updatedActiveTasks = new TaskList(repository.getActiveTasks().asUnmodifiableList());
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         updatedArchivedTasks.remove(archiveIndex);
-        updatedActiveTasks.add(task);
+        try {
+            updatedActiveTasks.add(task);
+        } catch (IllegalArgumentException e) {
+            throw new HertaException("Cannot restore a duplicate task into the active list.");
+        }
 
         repository.saveActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks,
                 RESTORE_FAILURE_PREFIX);

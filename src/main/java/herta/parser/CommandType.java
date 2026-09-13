@@ -44,14 +44,23 @@ public enum CommandType {
      * @return the corresponding command type, or {@link #UNKNOWN}
      */
     public static CommandType fromInput(String input) {
+        if (input == null) {
+            return UNKNOWN;
+        }
         String trimmedInput = input.trim();
         return Arrays.stream(values())
                 .filter(command -> command != UNKNOWN)
                 .filter(command -> trimmedInput.equals(command.keyword)
-                        || (command.canAcceptArguments
-                        && trimmedInput.startsWith(command.keyword + " ")))
+                        || (command.canAcceptArguments && hasArgumentSeparator(trimmedInput, command)))
                 .findFirst()
                 .orElse(UNKNOWN);
+    }
+
+    /** Checks for a supported separator without accepting command lookalikes. */
+    private static boolean hasArgumentSeparator(String input, CommandType command) {
+        return input.startsWith(command.keyword)
+                && input.length() > command.keyword.length()
+                && CommandTokenizer.isHorizontalWhitespace(input.charAt(command.keyword.length()));
     }
 
     /**
@@ -70,6 +79,7 @@ public enum CommandType {
      * @return the trimmed command arguments
      */
     String extractArguments(String input) {
-        return input.substring(keyword.length()).trim();
+        String trimmedInput = input.trim();
+        return trimmedInput.substring(keyword.length()).trim();
     }
 }

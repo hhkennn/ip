@@ -24,6 +24,7 @@ public class Deadline extends Task {
     public Deadline(String description, LocalDateTime by) {
         super(description);
         this.by = Objects.requireNonNull(by, "Deadline date/time cannot be null.");
+        DateTimeParser.validateSupportedDateTime(this.by);
     }
 
     /**
@@ -60,6 +61,7 @@ public class Deadline extends Task {
      */
     @Override
     public boolean occursOn(LocalDate date) {
+        Objects.requireNonNull(date, "The date to filter cannot be null.");
         return by.toLocalDate().equals(date);
     }
 

@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import herta.exception.HertaException;
+import herta.task.Task;
 import herta.task.TaskList;
 
 /**
@@ -29,6 +30,17 @@ public final class TaskRepository {
         this.archiveStorage = Objects.requireNonNull(archiveStorage);
         this.activeTasks = Objects.requireNonNull(activeTasks);
         this.archivedTasks = Objects.requireNonNull(archivedTasks);
+        validateGlobalUniqueness(activeTasks, archivedTasks);
+    }
+
+    /** Enforces the documented global uniqueness policy across both collections. */
+    private static void validateGlobalUniqueness(TaskList activeTasks, TaskList archivedTasks) {
+        for (Task activeTask : activeTasks) {
+            if (archivedTasks.containsDuplicate(activeTask)) {
+                throw new IllegalArgumentException(
+                        "Active and archived task lists cannot contain duplicates.");
+            }
+        }
     }
 
     /**
@@ -43,10 +55,15 @@ public final class TaskRepository {
         Path archivePath = Storage.resolveArchivePath(activeFilePath);
         Storage archiveStorage = new Storage(archivePath.toString());
         Storage.validateDistinctPaths(activeStorage.getDataFile(), archiveStorage.getDataFile());
+        StorageTransactionJournal.recoverPendingTransaction(activeStorage.getDataFile(), archivePath);
 
         TaskList activeTasks = activeStorage.load();
         TaskList archivedTasks = archiveStorage.loadArchived();
-        return new TaskRepository(activeStorage, archiveStorage, activeTasks, archivedTasks);
+        try {
+            return new TaskRepository(activeStorage, archiveStorage, activeTasks, archivedTasks);
+        } catch (IllegalArgumentException e) {
+            throw new HertaException("Failed to load archived tasks: " + e.getMessage());
+        }
     }
 
     /**
@@ -63,8 +80,12 @@ public final class TaskRepository {
         Path archivePath = Storage.resolveArchivePath(activeStorage.getDataFile().toString());
         Storage archiveStorage = new Storage(archivePath.toString());
         Storage.validateDistinctPaths(activeStorage.getDataFile(), archiveStorage.getDataFile());
-        return new TaskRepository(activeStorage, archiveStorage, activeTasks,
-                archiveStorage.loadArchived());
+        TaskList archivedTasks = archiveStorage.loadArchived();
+        try {
+            return new TaskRepository(activeStorage, archiveStorage, activeTasks, archivedTasks);
+        } catch (IllegalArgumentException e) {
+            throw new HertaException("Failed to load archived tasks: " + e.getMessage());
+        }
     }
 
     /**
@@ -92,6 +113,17 @@ public final class TaskRepository {
      */
     public Storage getActiveStorage() {
         return activeStorage;
+    }
+
+    /** Resets persistence status before a command begins. */
+    public void resetPersistenceState() {
+        activeStorage.resetPersistenceState();
+        archiveStorage.resetPersistenceState();
+    }
+
+    /** Returns the active storage's latest persistence outcome. */
+    public PersistenceState getPersistenceState() {
+        return activeStorage.getLastPersistenceState();
     }
 
     /**

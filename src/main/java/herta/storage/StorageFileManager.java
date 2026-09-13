@@ -1,19 +1,31 @@
 package herta.storage;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PushbackReader;
+import java.nio.channels.FileChannel;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import herta.task.TaskList;
 
 /**
  * Manages strict file reads and replace-style writes for one storage file.
@@ -21,6 +33,23 @@ import java.util.List;
  * <p>The manager also captures and restores file state for multi-file rollback.</p>
  */
 final class StorageFileManager {
+    static final long MAX_STORAGE_FILE_BYTES = 5_000_000L;
+    private static final int MAX_RECORD_LENGTH = 4_096;
+    private static final int MAX_TEMPORARY_FILE_ATTEMPTS = 100;
+    private static final int LINE_SEPARATOR_BYTE_COUNT = System.lineSeparator()
+            .getBytes(StandardCharsets.UTF_8).length;
+    private static final Logger LOGGER = Logger.getLogger(StorageFileManager.class.getName());
+    private static final AtomicLong TEMPORARY_FILE_COUNTER = new AtomicLong();
+
+    /** Describes the safely observable state of the configured path. */
+    enum PathStatus {
+        MISSING,
+        REGULAR_FILE,
+        DIRECTORY,
+        INACCESSIBLE,
+        OTHER
+    }
+
     private final Path dataFile;
 
     /**
@@ -32,22 +61,23 @@ final class StorageFileManager {
         this.dataFile = dataFile;
     }
 
-    /**
-     * Checks whether this storage file is absent.
-     *
-     * @return {@code true} if the file does not exist
-     */
-    boolean isMissing() {
-        return Files.notExists(dataFile);
-    }
-
-    /**
-     * Checks whether this storage path is a regular file.
-     *
-     * @return {@code true} if the path is a regular file
-     */
-    boolean isRegularFile() {
-        return Files.isRegularFile(dataFile);
+    /** Returns the path state without relying on ambiguous convenience predicates. */
+    PathStatus getPathStatus() {
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(dataFile,
+                    BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (attributes.isDirectory()) {
+                return PathStatus.DIRECTORY;
+            }
+            if (attributes.isRegularFile()) {
+                return PathStatus.REGULAR_FILE;
+            }
+            return PathStatus.OTHER;
+        } catch (NoSuchFileException e) {
+            return PathStatus.MISSING;
+        } catch (IOException | SecurityException e) {
+            return PathStatus.INACCESSIBLE;
+        }
     }
 
     /**
@@ -57,35 +87,57 @@ final class StorageFileManager {
      * @throws IOException if the file cannot be read or is not valid UTF-8
      */
     List<String> readLines() throws IOException {
+        ensureReadableRegularFile();
         CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
                 .onUnmappableCharacter(CodingErrorAction.REPORT);
         List<String> lines = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(Files.newInputStream(dataFile), decoder))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
+        try (var input = Files.newInputStream(dataFile);
+             var reader = new PushbackReader(new InputStreamReader(input, decoder), 1)) {
+            readBoundedLines(reader, lines);
         }
         return lines;
     }
 
-    /**
-     * Writes lines through a temporary file and replaces the data file.
-     *
-     * @param lines the records to write
-     * @throws IOException if the data file cannot be replaced
-     */
-    void writeLines(List<String> lines) throws IOException {
-        Path temporaryFile = null;
-        try {
-            temporaryFile = writeTemporaryFile(lines);
-            replaceDataFile(temporaryFile);
-            temporaryFile = null;
-        } finally {
-            deleteTemporaryFile(temporaryFile);
+    /** Reads records without allowing an overlong line to accumulate in memory. */
+    private void readBoundedLines(PushbackReader reader, List<String> lines) throws IOException {
+        StringBuilder currentLine = new StringBuilder();
+        int character;
+        while ((character = reader.read()) != -1) {
+            if (character == '\n' || character == '\r') {
+                addReadLine(lines, currentLine);
+                currentLine.setLength(0);
+                skipLineFeedAfterCarriageReturn(reader, character);
+                continue;
+            }
+            currentLine.append((char) character);
+            if (currentLine.length() > MAX_RECORD_LENGTH) {
+                throw new IOException("storage record exceeds the size limit");
+            }
+        }
+        if (!currentLine.isEmpty()) {
+            addReadLine(lines, currentLine);
+        }
+    }
+
+    /** Consumes the second character of a CRLF separator without hiding the next record. */
+    private void skipLineFeedAfterCarriageReturn(PushbackReader reader, int character)
+            throws IOException {
+        if (character != '\r') {
+            return;
+        }
+        int nextCharacter = reader.read();
+        if (nextCharacter != '\n' && nextCharacter != -1) {
+            reader.unread(nextCharacter);
+        }
+    }
+
+    /** Adds one bounded line while enforcing the shared task-count limit. */
+    private void addReadLine(List<String> lines, StringBuilder currentLine) throws IOException {
+        lines.add(currentLine.toString());
+        if (lines.size() > TaskList.MAXIMUM_TASK_COUNT) {
+            throw new IOException("storage file contains too many records");
         }
     }
 
@@ -98,15 +150,32 @@ final class StorageFileManager {
      */
     Path writeTemporaryFile(List<String> lines) throws IOException {
         Path dataDirectory = prepareDataDirectory();
+        ensureSerializedSize(lines);
         Path temporaryFile = null;
         try {
-            temporaryFile = Files.createTempFile(dataDirectory, ".herta-", ".tmp");
+            temporaryFile = createOwnedTemporaryFile(dataDirectory, ".herta-", ".tmp");
             Files.write(temporaryFile, lines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            forceFile(temporaryFile);
             return temporaryFile;
         } catch (IOException | SecurityException e) {
             deleteTemporaryFile(temporaryFile);
             throw e;
+        }
+    }
+
+    /** Rejects an oversized replacement before creating a temporary data file. */
+    private void ensureSerializedSize(List<String> lines) throws IOException {
+        long serializedBytes = 0;
+        for (String line : lines) {
+            if (line == null) {
+                throw new IOException("storage file contains a null record");
+            }
+            serializedBytes += line.getBytes(StandardCharsets.UTF_8).length
+                    + LINE_SEPARATOR_BYTE_COUNT;
+            if (serializedBytes > MAX_STORAGE_FILE_BYTES) {
+                throw new IOException("storage file exceeds the size limit");
+            }
         }
     }
 
@@ -122,8 +191,12 @@ final class StorageFileManager {
             dataDirectory = Path.of(".");
         }
         Files.createDirectories(dataDirectory);
-        if (Files.exists(dataFile) && !Files.isRegularFile(dataFile)) {
+        PathStatus pathStatus = getPathStatus();
+        if (pathStatus == PathStatus.DIRECTORY || pathStatus == PathStatus.OTHER) {
             throw new IOException("data path is not a regular file");
+        }
+        if (pathStatus == PathStatus.INACCESSIBLE) {
+            throw new AccessDeniedException(dataFile.toString());
         }
         return dataDirectory;
     }
@@ -153,8 +226,9 @@ final class StorageFileManager {
         if (temporaryFile != null) {
             try {
                 Files.deleteIfExists(temporaryFile);
-            } catch (IOException | SecurityException ignored) {
-                // The original data file is still preserved if cleanup fails.
+            } catch (IOException | SecurityException e) {
+                LOGGER.log(Level.WARNING, "Unable to clean up Herta temporary file: "
+                        + temporaryFile, e);
             }
         }
     }
@@ -166,9 +240,23 @@ final class StorageFileManager {
      * @throws IOException if the existing file cannot be read
      */
     FileSnapshot captureSnapshot() throws IOException {
-        boolean wasPresent = Files.exists(dataFile);
-        byte[] contents = wasPresent ? Files.readAllBytes(dataFile) : new byte[0];
-        return new FileSnapshot(dataFile, wasPresent, contents);
+        PathStatus pathStatus = getPathStatus();
+        if (pathStatus == PathStatus.MISSING) {
+            return new FileSnapshot(dataFile, false, new byte[0]);
+        }
+        if (pathStatus != PathStatus.REGULAR_FILE) {
+            throw new IOException("data path is not a readable regular file");
+        }
+        ensureFileSizeWithinLimit();
+        byte[] contents = Files.readAllBytes(dataFile);
+        return new FileSnapshot(dataFile, true, contents);
+    }
+
+    /** Compares the current file bytes with a snapshot captured before a command. */
+    boolean hasSameContents(FileSnapshot snapshot) throws IOException {
+        FileSnapshot currentSnapshot = captureSnapshot();
+        return snapshot.wasPresent() == currentSnapshot.wasPresent()
+                && Arrays.equals(snapshot.contents(), currentSnapshot.contents());
     }
 
     /**
@@ -187,9 +275,68 @@ final class StorageFileManager {
         }
         Files.write(snapshot.path(), snapshot.contents(), StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+        forceFile(snapshot.path());
+    }
+
+    /** Ensures the configured path can be read before opening a decoder. */
+    private void ensureReadableRegularFile() throws IOException {
+        PathStatus pathStatus = getPathStatus();
+        if (pathStatus == PathStatus.MISSING) {
+            throw new NoSuchFileException(dataFile.toString());
+        }
+        if (pathStatus == PathStatus.DIRECTORY || pathStatus == PathStatus.OTHER) {
+            throw new IOException("data path is not a regular file");
+        }
+        if (pathStatus == PathStatus.INACCESSIBLE) {
+            throw new AccessDeniedException(dataFile.toString());
+        }
+        ensureFileSizeWithinLimit();
+    }
+
+    /** Rejects an oversized file before readAllBytes or line accumulation allocates memory. */
+    private void ensureFileSizeWithinLimit() throws IOException {
+        long fileSize = Files.size(dataFile);
+        if (fileSize > MAX_STORAGE_FILE_BYTES) {
+            throw new IOException("storage file exceeds the size limit");
+        }
+    }
+
+    /** Forces staged bytes to disk before they become eligible for replacement. */
+    private void forceFile(Path file) throws IOException {
+        try (FileChannel channel = FileChannel.open(file, StandardOpenOption.WRITE)) {
+            channel.force(true);
+        }
+    }
+
+    /** Creates an owned temporary file without invoking the blocking secure-random provider. */
+    static Path createOwnedTemporaryFile(Path directory, String prefix, String suffix)
+            throws IOException {
+        for (int attempt = 0; attempt < MAX_TEMPORARY_FILE_ATTEMPTS; attempt++) {
+            long counter = TEMPORARY_FILE_COUNTER.incrementAndGet();
+            String fileName = prefix + Long.toUnsignedString(System.nanoTime())
+                    + "-" + counter + suffix;
+            Path candidate = directory.resolve(fileName);
+            try {
+                return Files.createFile(candidate);
+            } catch (FileAlreadyExistsException e) {
+                // A collision is harmless; try the next monotonic candidate.
+            }
+        }
+        throw new IOException("unable to allocate a Herta temporary file");
     }
 
     /** Captures the state needed to restore one file after a failed multi-file save. */
     record FileSnapshot(Path path, boolean wasPresent, byte[] contents) {
+        FileSnapshot(Path path, boolean wasPresent, byte[] contents) {
+            this.path = Objects.requireNonNull(path, "A file snapshot needs a path.");
+            this.wasPresent = wasPresent;
+            this.contents = Objects.requireNonNull(contents,
+                    "A file snapshot needs file contents.").clone();
+        }
+
+        @Override
+        public byte[] contents() {
+            return contents.clone();
+        }
     }
 }

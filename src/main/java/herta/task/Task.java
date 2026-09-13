@@ -2,6 +2,7 @@ package herta.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -20,6 +21,7 @@ public abstract class Task {
     private static final String COMPLETED_STATUS_ICON = "X";
 
     private final String description;
+    private final String normalizedDescription;
     private boolean isCompleted;
 
     /**
@@ -28,9 +30,10 @@ public abstract class Task {
      * @param description the task description.
      */
     public Task(String description) {
-        assert description != null && !description.isBlank()
-                : "A task must have a non-blank description.";
-        this.description = description;
+        this.description = Objects.requireNonNull(description,
+                "A task description cannot be null.");
+        TaskDescriptionValidator.validate(description);
+        normalizedDescription = TaskDescriptionValidator.normalizeValidated(description);
         this.isCompleted = false;
     }
 
@@ -97,11 +100,44 @@ public abstract class Task {
      * @return {@code true} if the task is scheduled within the window
      */
     public boolean isUpcoming(LocalDateTime now, LocalDateTime until) {
-        assert now != null && until != null : "An upcoming window needs two endpoints.";
-        assert !until.isBefore(now) : "An upcoming window must end at or after it starts.";
+        Objects.requireNonNull(now, "An upcoming window needs a start.");
+        Objects.requireNonNull(until, "An upcoming window needs an end.");
+        if (until.isBefore(now)) {
+            throw new IllegalArgumentException(
+                    "An upcoming window must end at or after it starts.");
+        }
         return getScheduledDateTime()
                 .map(dateTime -> !dateTime.isBefore(now) && dateTime.isBefore(until))
                 .orElse(false);
+    }
+
+    /**
+     * Indicates whether another task has the same duplicate identity.
+     * Completion status is intentionally excluded from this comparison.
+     *
+     * @param other the task to compare with
+     * @return {@code true} if both tasks have the same type, description, and schedule
+     */
+    public boolean isDuplicateOf(Task other) {
+        return other != null && getIdentity().equals(other.getIdentity());
+    }
+
+    /** Returns the immutable identity used for duplicate detection. */
+    public TaskIdentity getIdentity() {
+        if (this instanceof Deadline thisDeadline) {
+            return new TaskIdentity(getTaskType(), normalizedDescription,
+                    thisDeadline.getBy(), null);
+        }
+        if (this instanceof Event thisEvent) {
+            return new TaskIdentity(getTaskType(), normalizedDescription,
+                    thisEvent.getFrom(), thisEvent.getTo());
+        }
+        return new TaskIdentity(getTaskType(), normalizedDescription, null, null);
+    }
+
+    /** Returns the concrete runtime type used by the duplicate identity. */
+    private Class<? extends Task> getTaskType() {
+        return getClass().asSubclass(Task.class);
     }
 
     /**

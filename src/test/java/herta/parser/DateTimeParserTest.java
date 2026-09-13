@@ -36,6 +36,13 @@ class DateTimeParserTest {
     }
 
     @Test
+    void parseUserDateTime_repeatedHorizontalWhitespace_returnsExpectedDateTime() {
+        LocalDateTime expected = LocalDateTime.of(2019, 12, 2, 18, 0);
+
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2/12/2019\t  1800"));
+    }
+
+    @Test
     void parseUserDateTime_invalidInput_throwsDateTimeParseException() {
         String[] invalidInputs = {
             "31/02/2019 1800",

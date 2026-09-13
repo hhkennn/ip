@@ -133,7 +133,7 @@ class CommandTest {
     private void assertAddFailurePreservesTaskList(Storage failingStorage) {
         TaskList invalidAddTasks = new TaskList();
         assertThrows(HertaException.class, () ->
-                new TodoCommand(new Todo("contains | separator"))
+                new TodoCommand(new Todo("valid task"))
                         .execute(invalidAddTasks, new Ui(), failingStorage));
         assertEquals(0, invalidAddTasks.size());
     }

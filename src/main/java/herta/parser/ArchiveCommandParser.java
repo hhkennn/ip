@@ -20,6 +20,7 @@ final class ArchiveCommandParser {
     private static final String RESTORE_USAGE = "Use: restore <archived task number>.";
     private static final String RESTORE_NUMBER_ERROR = "That's not an archived task number. "
             + "Try: restore 1.";
+    private static final int MAX_NUMBER_LENGTH = 64;
 
     /**
      * Parses the selectors from an archive command.
@@ -93,12 +94,27 @@ final class ArchiveCommandParser {
     private List<String[]> splitArchiveRanges(String[] selectorInputs) throws HertaException {
         List<String[]> rawRanges = new ArrayList<>();
         for (String selectorInput : selectorInputs) {
-            if (!selectorInput.matches("\\d+(?:-\\d+)?")) {
+            if (!selectorInput.matches("[0-9]+(?:-[0-9]+)?")
+                    || selectorInput.length() > MAX_NUMBER_LENGTH) {
                 throw new HertaException(ARCHIVE_SELECTION_ERROR);
             }
-            rawRanges.add(selectorInput.split("-", -1));
+            String[] endpoints = selectorInput.split("-", -1);
+            if (containsZeroEndpoint(endpoints)) {
+                throw new HertaException(ARCHIVE_SELECTION_ERROR);
+            }
+            rawRanges.add(endpoints);
         }
         return rawRanges;
+    }
+
+    /** Rejects zero because task numbers are one-based and strictly positive. */
+    private boolean containsZeroEndpoint(String[] endpoints) {
+        for (String endpoint : endpoints) {
+            if (new BigInteger(endpoint).signum() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -150,12 +166,16 @@ final class ArchiveCommandParser {
         if (arguments.isEmpty()) {
             throw new HertaException(RESTORE_USAGE);
         }
-        if (!arguments.matches("\\d+")) {
+        if (!arguments.matches("[0-9]+") || arguments.length() > MAX_NUMBER_LENGTH) {
             throw new HertaException(RESTORE_NUMBER_ERROR);
         }
 
         try {
-            return new BigInteger(arguments).intValueExact() - 1;
+            BigInteger archiveNumber = new BigInteger(arguments);
+            if (archiveNumber.signum() <= 0) {
+                throw new HertaException(RESTORE_NUMBER_ERROR);
+            }
+            return archiveNumber.intValueExact() - 1;
         } catch (ArithmeticException e) {
             throw new HertaException(RESTORE_NUMBER_ERROR);
         }

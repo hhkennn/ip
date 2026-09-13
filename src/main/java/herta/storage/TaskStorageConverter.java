@@ -1,12 +1,17 @@
 package herta.storage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
 import herta.task.Task;
+import herta.task.TaskIdentity;
 import herta.task.TaskList;
 import herta.task.Todo;
 
@@ -44,14 +49,21 @@ final class TaskStorageConverter {
         }
 
         List<String> lines = new ArrayList<>();
+        Set<TaskIdentity> serializedIdentities = new HashSet<>();
         for (Task task : tasks) {
             lines.add(serializeTask(task));
+            if (!serializedIdentities.add(task.getIdentity())) {
+                throw new HertaException("Failed to save tasks: duplicate tasks are not allowed.");
+            }
+            if (serializedIdentities.size() > TaskList.MAXIMUM_TASK_COUNT) {
+                throw new HertaException("Failed to save tasks: too many tasks.");
+            }
         }
         return lines;
     }
 
     /**
-     * Reconstructs all tasks from the non-blank lines in the data file.
+     * Reconstructs all tasks from the lines in the data file.
      *
      * @param lines the lines read from the data file
      * @param recordPrefix the prefix for malformed-record failures
@@ -60,12 +72,26 @@ final class TaskStorageConverter {
      */
     TaskList parseStorageLines(List<String> lines, String recordPrefix) throws HertaException {
         TaskList tasks = new TaskList();
+        Map<TaskIdentity, Integer> sourceLines = new HashMap<>();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.isBlank()) {
-                continue;
+                throw new HertaException(recordPrefix + "at line " + (i + 1)
+                        + ": blank records are not supported.");
             }
-            tasks.add(parseStorageLine(line, i + 1, recordPrefix));
+            Task task = parseStorageLine(line, i + 1, recordPrefix);
+            Integer duplicateLine = sourceLines.get(task.getIdentity());
+            if (duplicateLine != null) {
+                throw new HertaException(recordPrefix + "at line " + (i + 1)
+                        + ": duplicate task conflicts with line " + duplicateLine + ".");
+            }
+            try {
+                tasks.add(task);
+            } catch (IllegalArgumentException e) {
+                throw new HertaException(recordPrefix + "at line " + (i + 1)
+                        + ": " + e.getMessage());
+            }
+            sourceLines.put(task.getIdentity(), i + 1);
         }
         return tasks;
     }
@@ -107,7 +133,9 @@ final class TaskStorageConverter {
     private void validateSerializedTask(String storageString) throws HertaException {
         try {
             Task parsedTask = parseStoredTask(storageString);
-            assert parsedTask != null : "A validated storage record must produce a task.";
+            if (parsedTask == null) {
+                throw new HertaException("Invalid saved task: no task was reconstructed.");
+            }
         } catch (HertaException e) {
             throw new HertaException("Failed to save tasks: " + e.getMessage());
         }
@@ -126,7 +154,9 @@ final class TaskStorageConverter {
             throws HertaException {
         try {
             Task task = parseStoredTask(line);
-            assert task != null : "A valid storage line must produce a task.";
+            if (task == null) {
+                throw new HertaException("Invalid saved task: no task was reconstructed.");
+            }
             return task;
         } catch (HertaException e) {
             throw new HertaException(recordPrefix + "at line "
