@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import herta.exception.HertaException;
-import herta.task.Task;
 import herta.task.TaskList;
 
 /**
@@ -30,17 +29,6 @@ public final class TaskRepository {
         this.archiveStorage = Objects.requireNonNull(archiveStorage);
         this.activeTasks = Objects.requireNonNull(activeTasks);
         this.archivedTasks = Objects.requireNonNull(archivedTasks);
-        validateGlobalUniqueness(activeTasks, archivedTasks);
-    }
-
-    /** Enforces the documented global uniqueness policy across both collections. */
-    private static void validateGlobalUniqueness(TaskList activeTasks, TaskList archivedTasks) {
-        for (Task activeTask : activeTasks) {
-            if (archivedTasks.containsDuplicate(activeTask)) {
-                throw new IllegalArgumentException(
-                        "Active and archived task lists cannot contain duplicates.");
-            }
-        }
     }
 
     /**

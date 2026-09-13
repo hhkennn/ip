@@ -80,18 +80,26 @@ class ArchiveRestoreCommandTest {
     }
 
     @Test
-    void addCommand_duplicateArchivedTask_isRejectedByGlobalPolicy() throws Exception {
+    void duplicateTasks_areAllowedInEveryList() throws Exception {
         Path activeFile = temporaryDirectory.resolve("global-duplicate").resolve("tasks.txt");
         Herta herta = new Herta(activeFile.toString());
 
         herta.getResponse("todo read book");
+        HertaResponse duplicateActiveResponse = herta.getResponse("todo read book");
         herta.getResponse("mark 1");
         herta.getResponse("archive 1");
-        HertaResponse response = herta.getResponse("todo  read   book ");
+        herta.getResponse("mark 1");
+        HertaResponse duplicateArchiveResponse = herta.getResponse("archive 1");
+        HertaResponse firstRestoreResponse = herta.getResponse("restore 1");
+        HertaResponse duplicateRestoreResponse = herta.getResponse("restore 1");
 
-        assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
-        assertEquals("That task is already in the archived task list.", response.getMessage());
-        assertEquals(List.of(), Files.readAllLines(activeFile));
+        assertEquals(ResponseCategory.ADD, duplicateActiveResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ARCHIVE, duplicateArchiveResponse.getResponseCategory());
+        assertEquals(ResponseCategory.RESTORE, firstRestoreResponse.getResponseCategory());
+        assertEquals(ResponseCategory.RESTORE, duplicateRestoreResponse.getResponseCategory());
+        assertEquals(List.of("T | 1 | read book", "T | 1 | read book"),
+                Files.readAllLines(activeFile));
+        assertEquals(List.of(), Files.readAllLines(activeFile.resolveSibling("archive.txt")));
     }
 
     @Test

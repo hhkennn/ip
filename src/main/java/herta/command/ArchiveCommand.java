@@ -137,11 +137,7 @@ public class ArchiveCommand extends Command {
         for (int index = 0; index < activeTasks.size(); index++) {
             Task task = activeTasks.get(index);
             if (selectedIndices.contains(index)) {
-                try {
-                    updatedArchivedTasks.add(task);
-                } catch (IllegalArgumentException e) {
-                    throw new HertaException("Cannot archive a duplicate task.");
-                }
+                updatedArchivedTasks.add(task);
                 archivedTasksForDisplay.add(task);
             } else {
                 updatedActiveTasks.add(task);

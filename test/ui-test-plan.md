@@ -32,7 +32,7 @@ that plan supplies a persisted data fixture before startup.
 | Start and exit | `bye` | End of input | Fresh process per case |
 | List tasks | Populated list | Empty list | State checked after errors |
 | Find tasks | Matching keyword in descriptions | Empty keyword or no matches | Original task numbering and order are preserved |
-| Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization and date formatting |
+| Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization, date formatting, and reuse of archived task descriptions |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
 | Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to the test's temporary `data/herta.txt` |
@@ -327,6 +327,66 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1.[T][X] active
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Re-add a task after archiving
+
+- Aim: Verify that an archived task does not prevent a new active task with the same identity from being added, while both records remain in their respective lists.
+
+### Inputs
+
+```text
+todo read book
+mark 1
+archive 1
+todo read book
+list
+archived
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] read book
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. It's marked complete:
+       [T][X] read book
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've archived 1 completed task:
+       [T][X] read book
+     That leaves 0 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] read book
+     That makes 1 task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1.[T][ ] read book
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Here are the tasks you've archived:
+     1.[T][X] read book
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

@@ -45,11 +45,7 @@ public class RestoreCommand extends Command {
         TaskList updatedActiveTasks = new TaskList(repository.getActiveTasks().asUnmodifiableList());
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         updatedArchivedTasks.remove(archiveIndex);
-        try {
-            updatedActiveTasks.add(task);
-        } catch (IllegalArgumentException e) {
-            throw new HertaException("Cannot restore a duplicate task into the active list.");
-        }
+        updatedActiveTasks.add(task);
 
         repository.saveActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks,
                 RESTORE_FAILURE_PREFIX);

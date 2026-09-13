@@ -102,15 +102,16 @@ class StorageTest {
     }
 
     @Test
-    void load_duplicateRecords_reportsBothLineNumbers() throws Exception {
+    void load_duplicateRecords_preservesEachRecord() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duplicates.txt");
         Files.writeString(dataFile, "T | 0 | read book\nT | 1 |  read   book \n");
 
-        HertaException exception = assertThrows(HertaException.class, () ->
-                new Storage(dataFile.toString()).load());
+        TaskList tasks = new Storage(dataFile.toString()).load();
 
-        assertEquals("Failed to load tasks at line 2: duplicate task conflicts with line 1.",
-                exception.getMessage());
+        assertEquals(2, tasks.size());
+        assertEquals("read book", tasks.get(0).getDescription());
+        assertEquals("read   book", tasks.get(1).getDescription());
+        assertTrue(tasks.get(1).isCompleted());
     }
 
     @Test
@@ -193,17 +194,18 @@ class StorageTest {
     }
 
     @Test
-    void startup_activeAndArchivedDuplicate_rejectsGlobalDuplicatePolicy() throws Exception {
+    void startup_activeAndArchivedDuplicate_allowsHistoricalDuplicate() throws Exception {
         Path activeFile = temporaryDirectory.resolve("duplicate-active.txt");
         Path archiveFile = activeFile.resolveSibling("archive.txt");
         Files.writeString(activeFile, "T | 0 | read book\n");
-        Files.writeString(archiveFile, "T | 1 |  read   book \n");
+        Files.writeString(archiveFile, "T | 1 | read book\n");
 
-        HertaException exception = assertThrows(HertaException.class, () ->
-                TaskRepository.load(activeFile.toString()));
+        TaskRepository repository = TaskRepository.load(activeFile.toString());
 
-        assertEquals("Failed to load archived tasks: Active and archived task lists cannot contain "
-                + "duplicates.", exception.getMessage());
+        assertEquals(1, repository.getActiveTasks().size());
+        assertEquals(1, repository.getArchivedTasks().size());
+        assertEquals("read book", repository.getActiveTasks().get(0).getDescription());
+        assertEquals("read book", repository.getArchivedTasks().get(0).getDescription());
     }
 
     @Test

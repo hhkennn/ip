@@ -33,14 +33,14 @@ class TaskListTest {
     }
 
     @Test
-    void add_duplicateTaskWithEquivalentWhitespace_rejectsDuplicate() {
+    void add_duplicateTaskWithEquivalentWhitespace_allowsDuplicate() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                tasks.add(new Todo("  read   book  ")));
+        tasks.add(new Todo("  read   book  "));
 
-        assertEquals("Duplicate tasks are not allowed.", exception.getMessage());
-        assertEquals(1, tasks.size());
+        assertEquals(2, tasks.size());
+        assertEquals("read book", tasks.get(0).getDescription());
+        assertEquals("  read   book  ", tasks.get(1).getDescription());
     }
 
     @Test
