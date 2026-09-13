@@ -102,6 +102,79 @@ class StorageTest {
     }
 
     @Test
+    void load_duplicateRecords_reportsBothLineNumbers() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duplicates.txt");
+        Files.writeString(dataFile, "T | 0 | read book\nT | 1 |  read   book \n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                new Storage(dataFile.toString()).load());
+
+        assertEquals("Failed to load tasks at line 2: duplicate task conflicts with line 1.",
+                exception.getMessage());
+    }
+
+    @Test
+    void load_blankRecord_reportsLineNumberInsteadOfSkippingIt() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("blank-record.txt");
+        Files.writeString(dataFile, "T | 0 | first\n\nT | 0 | second\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                new Storage(dataFile.toString()).load());
+
+        assertEquals("Failed to load tasks at line 2: blank records are not supported.",
+                exception.getMessage());
+    }
+
+    @Test
+    void load_controlCharacterInTaskDescription_reportsInvalidField() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("control-character.txt");
+        Files.writeString(dataFile, "T | 0 | bad\u0000text\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                new Storage(dataFile.toString()).load());
+
+        assertEquals("Failed to load tasks at line 1: Task descriptions cannot contain `|`, "
+                + "line breaks, or control characters.", exception.getMessage());
+    }
+
+    @Test
+    void save_afterExternalEdit_abortsWithoutOverwritingTheEditedFile() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("external-edit.txt");
+        Storage storage = new Storage(dataFile.toString());
+        storage.save(new TaskList(List.of(new Todo("original"))));
+        storage.load();
+        Files.writeString(dataFile, "T | 0 | edited outside Herta\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                storage.save(new TaskList(List.of(new Todo("new")))));
+
+        assertTrue(exception.getMessage().contains("changed outside Herta"));
+        assertEquals("T | 0 | edited outside Herta\n", Files.readString(dataFile));
+    }
+
+    @Test
+    void startup_recoversPreparedArchiveTransactionFromBackups() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("recover-active.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Files.writeString(activeFile, "T | 0 | original active\n");
+        Files.writeString(archiveFile, "T | 0 | original archive\n");
+        StorageFileManager fileManager = new StorageFileManager(activeFile);
+        StorageFileManager archiveManager = new StorageFileManager(archiveFile);
+
+        StorageTransactionJournal.prepare(activeFile, archiveFile, fileManager.captureSnapshot(),
+                archiveManager.captureSnapshot());
+        Files.writeString(activeFile, "T | 0 | incomplete active\n");
+        Files.writeString(archiveFile, "T | 0 | incomplete archive\n");
+
+        TaskList recoveredTasks = TaskRepository.load(activeFile.toString()).getActiveTasks();
+
+        assertEquals("original active", recoveredTasks.get(0).getDescription());
+        assertEquals("original archive", new Storage(archiveFile.toString()).loadArchived()
+                .get(0).getDescription());
+        assertTrue(Files.notExists(activeFile.resolveSibling(".herta-transaction")));
+    }
+
+    @Test
     void save_taskWithStorageDelimiter_rejectsInvalidRecord() {
         Path dataFile = temporaryDirectory.resolve("invalid.txt");
         TaskList tasks = new TaskList(List.of(new Todo("contains | separator")));

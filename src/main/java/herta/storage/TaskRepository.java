@@ -43,6 +43,7 @@ public final class TaskRepository {
         Path archivePath = Storage.resolveArchivePath(activeFilePath);
         Storage archiveStorage = new Storage(archivePath.toString());
         Storage.validateDistinctPaths(activeStorage.getDataFile(), archiveStorage.getDataFile());
+        StorageTransactionJournal.recoverPendingTransaction(activeStorage.getDataFile(), archivePath);
 
         TaskList activeTasks = activeStorage.load();
         TaskList archivedTasks = archiveStorage.loadArchived();

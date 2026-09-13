@@ -2,6 +2,8 @@ package herta;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +24,7 @@ import javafx.scene.layout.HBox;
  * Displays a message with an optional Herta avatar.
  */
 public class DialogBox extends HBox {
+    private static final Logger LOGGER = Logger.getLogger(DialogBox.class.getName());
     private static final double MAX_MESSAGE_WIDTH_RATIO = 0.85;
     private static final double DIALOG_BOX_HORIZONTAL_INSETS = 10.0;
     private static final double LABEL_HORIZONTAL_INSETS = 12.0;
@@ -33,12 +36,17 @@ public class DialogBox extends HBox {
 
     private DialogBox(String text, Image image) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("/view/DialogBox.fxml"));
+            var dialogResource = MainWindow.class.getResource("/view/DialogBox.fxml");
+            if (dialogResource == null) {
+                throw new IllegalStateException("Application files are incomplete; reinstall Herta.");
+            }
+            FXMLLoader fxmlLoader = new FXMLLoader(dialogResource);
             fxmlLoader.setController(this);
             fxmlLoader.setRoot(this);
             fxmlLoader.load();
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load the dialog box.", e);
+        } catch (IOException | RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unable to load the dialog box.", e);
+            throw new IllegalStateException("Application files are incomplete; reinstall Herta.", e);
         }
 
         dialog.setText(text);
@@ -60,9 +68,14 @@ public class DialogBox extends HBox {
 
     /** Copies the message text to the system clipboard. */
     private void copyMessageToClipboard() {
-        ClipboardContent clipboardContent = new ClipboardContent();
-        clipboardContent.putString(dialog.getText());
-        Clipboard.getSystemClipboard().setContent(clipboardContent);
+        try {
+            ClipboardContent clipboardContent = new ClipboardContent();
+            clipboardContent.putString(dialog.getText());
+            Clipboard.getSystemClipboard().setContent(clipboardContent);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Clipboard access failed.", e);
+            dialog.setText(dialog.getText() + "\n(Copy unavailable.)");
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package herta.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -28,9 +29,11 @@ public abstract class Task {
      * @param description the task description.
      */
     public Task(String description) {
-        assert description != null && !description.isBlank()
-                : "A task must have a non-blank description.";
-        this.description = description;
+        this.description = Objects.requireNonNull(description,
+                "A task description cannot be null.");
+        if (description.isBlank()) {
+            throw new IllegalArgumentException("A task description cannot be blank.");
+        }
         this.isCompleted = false;
     }
 
@@ -97,11 +100,43 @@ public abstract class Task {
      * @return {@code true} if the task is scheduled within the window
      */
     public boolean isUpcoming(LocalDateTime now, LocalDateTime until) {
-        assert now != null && until != null : "An upcoming window needs two endpoints.";
-        assert !until.isBefore(now) : "An upcoming window must end at or after it starts.";
+        Objects.requireNonNull(now, "An upcoming window needs a start.");
+        Objects.requireNonNull(until, "An upcoming window needs an end.");
+        if (until.isBefore(now)) {
+            throw new IllegalArgumentException(
+                    "An upcoming window must end at or after it starts.");
+        }
         return getScheduledDateTime()
                 .map(dateTime -> !dateTime.isBefore(now) && dateTime.isBefore(until))
                 .orElse(false);
+    }
+
+    /**
+     * Indicates whether another task has the same duplicate identity.
+     * Completion status is intentionally excluded from this comparison.
+     *
+     * @param other the task to compare with
+     * @return {@code true} if both tasks have the same type, description, and schedule
+     */
+    public boolean isDuplicateOf(Task other) {
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        boolean hasSameDescription = TaskDescriptionValidator.normalizeForDuplicate(description)
+                .equals(TaskDescriptionValidator.normalizeForDuplicate(other.description));
+        return hasSameDescription && hasSameTemporalFields(other);
+    }
+
+    /** Compares the temporal fields that distinguish concrete task subtypes. */
+    private boolean hasSameTemporalFields(Task other) {
+        if (this instanceof Deadline thisDeadline && other instanceof Deadline otherDeadline) {
+            return thisDeadline.getBy().equals(otherDeadline.getBy());
+        }
+        if (this instanceof Event thisEvent && other instanceof Event otherEvent) {
+            return thisEvent.getFrom().equals(otherEvent.getFrom())
+                    && thisEvent.getTo().equals(otherEvent.getTo());
+        }
+        return getScheduledDateTime().equals(other.getScheduledDateTime());
     }
 
     /**

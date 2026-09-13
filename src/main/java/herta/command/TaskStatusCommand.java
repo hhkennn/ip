@@ -38,14 +38,10 @@ public abstract class TaskStatusCommand extends TaskIndexCommand {
             tasks.unmarkTask(taskIndex);
         }
         Task task = tasks.get(taskIndex);
-        assert task.isCompleted() == shouldBeCompleted
-                : "The task status must match the requested status before saving.";
         try {
             storage.save(tasks);
-        } catch (HertaException e) {
+        } catch (HertaException | RuntimeException e) {
             tasks.restoreStatus(taskIndex, wasCompleted);
-            assert tasks.get(taskIndex).isCompleted() == wasCompleted
-                    : "A failed status update must restore the previous status.";
             throw e;
         }
         return task;

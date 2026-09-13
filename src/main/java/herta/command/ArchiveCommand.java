@@ -2,6 +2,7 @@ package herta.command;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -32,7 +33,7 @@ public class ArchiveCommand extends Command {
      * @param selection the task numbers or ranges to archive
      */
     public ArchiveCommand(ArchiveSelection selection) {
-        this.selection = selection;
+        this.selection = Objects.requireNonNull(selection, "An archive selection is required.");
     }
 
     /**
@@ -81,8 +82,9 @@ public class ArchiveCommand extends Command {
      * @return {@code true} when the selection should stop without archiving
      */
     private boolean isNoOpArchiveSelection(TaskList activeTasks, Set<Integer> selectedIndices) {
-        return selection.isAllSelected()
-                && (activeTasks.size() == 0 || selectedIndices.isEmpty());
+        boolean hasNoActiveTasks = activeTasks.size() == 0;
+        boolean hasNoSelectedTasks = selectedIndices.isEmpty();
+        return selection.isAllSelected() && (hasNoActiveTasks || hasNoSelectedTasks);
     }
 
     /**
@@ -128,14 +130,18 @@ public class ArchiveCommand extends Command {
      * @return the collections and tasks to display after archiving
      */
     private ArchiveResult archiveSelectedTasks(TaskList activeTasks, TaskList archivedTasks,
-                                               Set<Integer> selectedIndices) {
+                                               Set<Integer> selectedIndices) throws HertaException {
         TaskList updatedActiveTasks = new TaskList();
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         List<Task> archivedTasksForDisplay = new ArrayList<>();
         for (int index = 0; index < activeTasks.size(); index++) {
             Task task = activeTasks.get(index);
             if (selectedIndices.contains(index)) {
-                updatedArchivedTasks.add(task);
+                try {
+                    updatedArchivedTasks.add(task);
+                } catch (IllegalArgumentException e) {
+                    throw new HertaException("Cannot archive a duplicate task.");
+                }
                 archivedTasksForDisplay.add(task);
             } else {
                 updatedActiveTasks.add(task);

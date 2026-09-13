@@ -32,6 +32,17 @@ class TaskListTest {
     }
 
     @Test
+    void add_duplicateTaskWithEquivalentWhitespace_rejectsDuplicate() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                tasks.add(new Todo("  read   book  ")));
+
+        assertEquals("Duplicate tasks are not allowed.", exception.getMessage());
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
     void replaceWith_copiesReplacementContents() {
         TaskList tasks = new TaskList(List.of(new Todo("old")));
         TaskList replacement = new TaskList(List.of(new Todo("new")));

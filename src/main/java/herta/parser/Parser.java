@@ -1,5 +1,6 @@
 package herta.parser;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
@@ -33,6 +34,9 @@ public class Parser {
     private static final String DATE_SORT_COMMAND = "sort date";
     private static final String UPCOMING_RANGE_ERROR = "That range makes no sense. "
             + "Use a positive number of days.";
+    private static final String NO_ARGUMENT_ERROR_PREFIX = "Use: ";
+    private static final int MAX_NUMBER_LENGTH = 64;
+    private static final int MAX_UPCOMING_DAYS = 4_000_000;
 
     private final TaskCreationParser taskCreationParser = new TaskCreationParser();
     private final ArchiveCommandParser archiveCommandParser = new ArchiveCommandParser();
@@ -69,11 +73,18 @@ public class Parser {
      * @throws HertaException if command-specific parsing fails
      */
     public Command parse(String input, CommandType commandType) throws HertaException {
-        assert input != null && commandType != null
-                : "Command parsing requires input and an identified command type.";
+        if (input == null || commandType == null) {
+            throw new HertaException("Command parsing requires input and a command type.");
+        }
+        validateUnknownNoArgumentCommand(input, commandType);
+        return createCommand(input, commandType);
+    }
+
+    /** Creates a command after its type and command-specific arguments are validated. */
+    private Command createCommand(String input, CommandType commandType) throws HertaException {
         return switch (commandType) {
-            case BYE -> new ExitCommand();
-            case LIST -> new ListCommand();
+            case BYE -> createExitCommand(input, commandType);
+            case LIST -> createListCommand(input, commandType);
             case FIND -> new FindCommand(parseFindKeyword(input));
             case TODO -> new TodoCommand(parseTodo(input));
             case DEADLINE -> new DeadlineCommand(parseDeadline(input));
@@ -82,21 +93,38 @@ public class Parser {
             case MARK -> new MarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case UNMARK -> new UnmarkCommand(parseTaskIndex(input, commandType.getKeyword()));
             case ARCHIVE -> new ArchiveCommand(parseArchiveSelection(input));
-            case ARCHIVED -> {
-                if (!commandType.extractArguments(input).isEmpty()) {
-                    throw new HertaException("Use: archived.");
-                }
-                yield new ArchivedCommand();
-            }
+            case ARCHIVED -> createArchivedCommand(input, commandType);
             case RESTORE -> new RestoreCommand(parseRestoreTaskNumber(input));
             case FILTER -> new FilterCommand(parseFilterDate(input));
             case UPCOMING -> new UpcomingCommand(parseUpcomingDays(input));
-            case SORT -> {
-                validateSortCommand(input);
-                yield new SortCommand();
-            }
+            case SORT -> createSortCommand(input);
             default -> new UnknownCommand(input);
         };
+    }
+
+    /** Creates the exit command after rejecting unexpected arguments. */
+    private Command createExitCommand(String input, CommandType commandType) throws HertaException {
+        validateNoArguments(input, commandType);
+        return new ExitCommand();
+    }
+
+    /** Creates the list command after rejecting unexpected arguments. */
+    private Command createListCommand(String input, CommandType commandType) throws HertaException {
+        validateNoArguments(input, commandType);
+        return new ListCommand();
+    }
+
+    /** Creates the archive-view command after rejecting unexpected arguments. */
+    private Command createArchivedCommand(String input, CommandType commandType)
+            throws HertaException {
+        validateNoArguments(input, commandType);
+        return new ArchivedCommand();
+    }
+
+    /** Creates the sort command after validating its sorting option. */
+    private Command createSortCommand(String input) throws HertaException {
+        validateSortCommand(input);
+        return new SortCommand();
     }
 
     /**
@@ -155,9 +183,20 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
-        String[] filterParts = CommandType.FILTER.extractArguments(input).split("\\s+", 2);
-        if (filterParts.length != 2 || !filterParts[0].equals(FILTER_DATE_MARKER)) {
+        String arguments = CommandType.FILTER.extractArguments(input);
+        int markerCount = countMarker(arguments, FILTER_DATE_MARKER);
+        if (markerCount > 1) {
+            throw new HertaException("Parameter " + FILTER_DATE_MARKER
+                    + " specified more than once.");
+        }
+        String[] filterParts = arguments.split("[ \\t]+", 2);
+        if (markerCount == 0 || filterParts.length == 0
+                || !filterParts[0].equals(FILTER_DATE_MARKER)) {
             throw new HertaException("You forgot the " + FILTER_DATE_MARKER
+                    + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
+        }
+        if (filterParts.length == 1 || filterParts[1].isBlank()) {
+            throw new HertaException("You forgot the date after " + FILTER_DATE_MARKER
                     + ". Use: filter " + FILTER_DATE_MARKER + " <date>.");
         }
 
@@ -178,15 +217,17 @@ public class Parser {
     public int parseUpcomingDays(String input) throws HertaException {
         String daysInput = CommandType.UPCOMING.extractArguments(input);
         final int days;
+        if (!daysInput.matches("[0-9]+") || daysInput.length() > MAX_NUMBER_LENGTH) {
+            throw new HertaException(UPCOMING_RANGE_ERROR);
+        }
         try {
             days = Integer.parseInt(daysInput);
         } catch (NumberFormatException e) {
             throw new HertaException(UPCOMING_RANGE_ERROR);
         }
-        if (days <= 0) {
+        if (days <= 0 || days > MAX_UPCOMING_DAYS) {
             throw new HertaException(UPCOMING_RANGE_ERROR);
         }
-        assert days > 0 : "A parsed upcoming range must be positive.";
         return days;
     }
 
@@ -197,7 +238,7 @@ public class Parser {
      * @throws HertaException if the command does not request date sorting
      */
     public void validateSortCommand(String input) throws HertaException {
-        if (!input.equals(DATE_SORT_COMMAND)) {
+        if (!CommandType.SORT.extractArguments(input).equals("date")) {
             throw new HertaException("That is not a sorting option. Use: "
                     + DATE_SORT_COMMAND + ".");
         }
@@ -212,12 +253,100 @@ public class Parser {
      * @throws HertaException if the task number is not numeric
      */
     public int parseTaskIndex(String input, String commandKeyword) throws HertaException {
-        String taskNumber = input.substring(commandKeyword.length()).trim();
-        try {
-            return Integer.parseInt(taskNumber) - 1;
-        } catch (NumberFormatException e) {
+        if (input == null || commandKeyword == null) {
+            throw new HertaException("That's not a task number. Try: "
+                    + commandKeyword + " 1.");
+        }
+        String normalizedInput = input.trim();
+        if (!hasTaskNumberPrefix(normalizedInput, commandKeyword)) {
             throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
         }
+        String taskNumber = normalizedInput.substring(commandKeyword.length()).trim();
+        if (!isPositiveDecimal(taskNumber)) {
+            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
+        }
+        try {
+            return new BigInteger(taskNumber).intValueExact() - 1;
+        } catch (ArithmeticException e) {
+            throw new HertaException("That's not a task number. Try: " + commandKeyword + " 1.");
+        }
+    }
+
+    /** Checks that a task number follows its command keyword with a supported separator. */
+    private boolean hasTaskNumberPrefix(String input, String commandKeyword) {
+        return input.startsWith(commandKeyword)
+                && input.length() > commandKeyword.length()
+                && CommandTokenizer.isHorizontalWhitespace(input.charAt(commandKeyword.length()));
+    }
+
+    /** Rejects trailing input for commands whose grammar has no arguments. */
+    private void validateNoArguments(String input, CommandType commandType) throws HertaException {
+        if (!commandType.extractArguments(input).isEmpty()) {
+            throw new HertaException(NO_ARGUMENT_ERROR_PREFIX + commandType.getKeyword() + ".");
+        }
+    }
+
+    /** Gives no-argument commands a usage error even when their extra text prevents recognition. */
+    private void validateUnknownNoArgumentCommand(String input, CommandType commandType)
+            throws HertaException {
+        if (commandType != CommandType.UNKNOWN) {
+            return;
+        }
+        String normalizedInput = input.trim();
+        String firstToken = normalizedInput.split("[ \\t]+", 2)[0];
+        for (CommandType supportedCommand : CommandType.values()) {
+            String keyword = supportedCommand.getKeyword();
+            if (!keyword.isEmpty() && firstToken.equalsIgnoreCase(keyword)
+                    && !firstToken.equals(keyword)) {
+                throw new HertaException("Commands are lowercase. Try: " + keyword + ".");
+            }
+        }
+        for (String keyword : new String[] {"list", "bye"}) {
+            if (hasTrailingArguments(normalizedInput, keyword)) {
+                throw new HertaException(NO_ARGUMENT_ERROR_PREFIX + keyword + ".");
+            }
+        }
+    }
+
+    /** Identifies trailing text after a no-argument command using supported separators. */
+    private boolean hasTrailingArguments(String input, String keyword) {
+        return input.startsWith(keyword)
+                && input.length() > keyword.length()
+                && CommandTokenizer.isHorizontalWhitespace(input.charAt(keyword.length()));
+    }
+
+    /** Checks a bounded, positive decimal number before constructing a BigInteger. */
+    private boolean isPositiveDecimal(String input) {
+        if (!input.matches("[0-9]+") || input.length() > MAX_NUMBER_LENGTH) {
+            return false;
+        }
+        try {
+            return new BigInteger(input).signum() > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /** Counts a marker only when it is a complete token. */
+    private int countMarker(String input, String marker) {
+        int count = 0;
+        int searchStart = 0;
+        while (searchStart < input.length()) {
+            int markerIndex = input.indexOf(marker, searchStart);
+            if (markerIndex < 0) {
+                break;
+            }
+            int markerEnd = markerIndex + marker.length();
+            boolean hasValidLeftBoundary = markerIndex == 0
+                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerIndex - 1));
+            boolean hasValidRightBoundary = markerEnd == input.length()
+                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerEnd));
+            if (hasValidLeftBoundary && hasValidRightBoundary) {
+                count++;
+            }
+            searchStart = markerIndex + 1;
+        }
+        return count;
     }
 
     /**

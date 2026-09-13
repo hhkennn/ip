@@ -18,8 +18,10 @@ public class FindCommand extends QueryCommand {
      * @param keyword the text to find in task descriptions
      */
     public FindCommand(String keyword) {
-        assert keyword != null && !keyword.isBlank()
-                : "A find command must contain a non-blank keyword.";
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException(
+                    "A find command must contain a non-blank keyword.");
+        }
         normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
     }
 

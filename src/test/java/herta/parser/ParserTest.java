@@ -119,6 +119,47 @@ class ParserTest {
     }
 
     @Test
+    void parseTaskCreation_duplicateMarkersAreReportedDirectly() {
+        HertaException deadlineException = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline report /by 2019-10-15 /by 2019-10-16"));
+        HertaException eventException = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /from 2019-10-15 /from 2019-10-16 "
+                        + "/to 2019-10-17"));
+
+        assertEquals("Parameter /by specified more than once.", deadlineException.getMessage());
+        assertEquals("Parameter /from specified more than once.", eventException.getMessage());
+    }
+
+    @Test
+    void parseTaskNumbers_rejectZeroSignedDecimalAndMultipleValues() {
+        for (String input : new String[] {"mark 0", "mark -1", "mark +1", "mark 1.0", "mark 1 2"}) {
+            HertaException exception = assertThrows(HertaException.class, () ->
+                    parser.parseTaskIndex(input, "mark"));
+            assertEquals("That's not a task number. Try: mark 1.", exception.getMessage());
+        }
+    }
+
+    @Test
+    void parseTodo_invalidStorageCharactersAreRejectedBeforeTaskCreation() {
+        HertaException delimiterException = assertThrows(HertaException.class, () ->
+                parser.parseTodo("todo contains | separator"));
+        HertaException controlException = assertThrows(HertaException.class, () ->
+                parser.parseTodo("todo contains\u0000control"));
+
+        assertTrue(delimiterException.getMessage().contains("Task descriptions cannot contain"));
+        assertTrue(controlException.getMessage().contains("Task descriptions cannot contain"));
+    }
+
+    @Test
+    void parseDates_outsideBusinessRangeAreRejected() {
+        HertaException exception = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline old /by 0000-01-01"));
+
+        assertEquals("That is not a date. Use a real one, such as "
+                + "2019-10-15 or 2/12/2019 1800.", exception.getMessage());
+    }
+
+    @Test
     void parseEvent_validInput_returnsEventWithParsedRange() throws HertaException {
         Event event = parser.parseEvent(
                 "event project meeting /from 2019-10-15 /to 2019-10-16");

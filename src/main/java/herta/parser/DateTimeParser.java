@@ -15,9 +15,13 @@ import java.util.Locale;
  * <p>User input may use either the slash format from the command example or
  * the ISO-like format from the minimal requirement. Stored values always use
  * Java's ISO local date/time format so that they can be parsed reliably when
- * Herta starts again.</p>
+ * Herta starts again. Herta accepts dates from {@code 0001-01-01} through
+ * {@code 9999-12-31}; past dates remain valid historical task data.</p>
  */
 public final class DateTimeParser {
+    private static final LocalDate MINIMUM_SUPPORTED_DATE = LocalDate.of(1, 1, 1);
+    private static final LocalDate MAXIMUM_SUPPORTED_DATE = LocalDate.of(9_999, 12, 31);
+
     private static final List<DateTimeFormatter> USER_DATE_TIME_FORMATS = List.of(
             strictFormatter("d/M/uuuu HHmm"),
             strictFormatter("uuuu-MM-dd HHmm"),
@@ -49,14 +53,15 @@ public final class DateTimeParser {
 
         for (DateTimeFormatter formatter : USER_DATE_TIME_FORMATS) {
             try {
-                return LocalDateTime.parse(normalizedInput, formatter);
+                return validateSupportedDateTime(LocalDateTime.parse(normalizedInput, formatter),
+                        normalizedInput);
             } catch (DateTimeParseException ignored) {
                 // Try the next supported date/time format.
             }
         }
 
         LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
-        return date.atStartOfDay();
+        return validateSupportedDateTime(date.atStartOfDay(), normalizedInput);
     }
 
     /**
@@ -70,9 +75,11 @@ public final class DateTimeParser {
         String normalizedInput = input.trim();
 
         try {
-            return LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
+            return validateSupportedDate(LocalDate.parse(normalizedInput, ISO_DATE_FORMAT),
+                    normalizedInput);
         } catch (DateTimeParseException e) {
-            return LocalDate.parse(normalizedInput, SLASH_DATE_FORMAT);
+            return validateSupportedDate(LocalDate.parse(normalizedInput, SLASH_DATE_FORMAT),
+                    normalizedInput);
         }
     }
 
@@ -86,10 +93,46 @@ public final class DateTimeParser {
     public static LocalDateTime parseStoredDateTime(String input) {
         String normalizedInput = input.trim();
         try {
-            return LocalDateTime.parse(normalizedInput, STORAGE_FORMAT);
+            return validateSupportedDateTime(LocalDateTime.parse(normalizedInput, STORAGE_FORMAT),
+                    normalizedInput);
         } catch (DateTimeParseException e) {
-            return LocalDate.parse(normalizedInput, ISO_DATE_FORMAT).atStartOfDay();
+            LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
+            return validateSupportedDateTime(date.atStartOfDay(), normalizedInput);
         }
+    }
+
+    /**
+     * Validates a domain date/time against Herta's documented business range.
+     * Dates before year 1 or after year 9999 are rejected to keep date arithmetic safe.
+     *
+     * @param dateTime the date/time to validate
+     * @throws IllegalArgumentException if the date is outside the supported range
+     */
+    public static void validateSupportedDateTime(LocalDateTime dateTime) {
+        if (dateTime == null || isOutsideSupportedRange(dateTime.toLocalDate())) {
+            throw new IllegalArgumentException("Dates must be between 0001-01-01 and 9999-12-31.");
+        }
+    }
+
+    /** Creates a parse failure for a syntactically valid but unsupported date. */
+    private static LocalDateTime validateSupportedDateTime(LocalDateTime dateTime, String input) {
+        if (isOutsideSupportedRange(dateTime.toLocalDate())) {
+            throw new DateTimeParseException("Date is outside Herta's supported range.", input, 0);
+        }
+        return dateTime;
+    }
+
+    /** Creates a parse failure for a syntactically valid but unsupported date. */
+    private static LocalDate validateSupportedDate(LocalDate date, String input) {
+        if (isOutsideSupportedRange(date)) {
+            throw new DateTimeParseException("Date is outside Herta's supported range.", input, 0);
+        }
+        return date;
+    }
+
+    /** Indicates whether a date lies outside the documented business range. */
+    private static boolean isOutsideSupportedRange(LocalDate date) {
+        return date.isBefore(MINIMUM_SUPPORTED_DATE) || date.isAfter(MAXIMUM_SUPPORTED_DATE);
     }
 
     /**

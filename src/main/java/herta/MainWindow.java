@@ -31,6 +31,8 @@ public class MainWindow extends AnchorPane {
     private static final int DEFAULT_ZOOM_LEVEL = 0;
     private static final int MINIMUM_ZOOM_LEVEL = -2;
     private static final int MAXIMUM_ZOOM_LEVEL = 4;
+    private static final int MAXIMUM_HISTORY_ENTRIES = 200;
+    private static final int MAXIMUM_DIALOGS = 500;
     private static final double ZOOM_STEP = 0.1;
     private static final double DIALOG_BASE_FONT_SIZE = 16.0;
     private static final double AVATAR_BASE_SIZE = 64.0;
@@ -52,8 +54,7 @@ public class MainWindow extends AnchorPane {
     private int commandHistoryIndex;
     private String commandDraft = "";
     private int zoomLevel = DEFAULT_ZOOM_LEVEL;
-    private final Image hertaImage = new Image(
-            Objects.requireNonNull(MainWindow.class.getResourceAsStream(HERTA_IMAGE_RESOURCE)));
+    private final Image hertaImage = loadHertaImage();
 
     /**
      * Binds the scroll position to the dialog container and displays Herta's opening messages.
@@ -109,6 +110,7 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getUserDialog(userText),
                 DialogBox.getHertaDialog(
                         hertaResponse.getMessage(), hertaImage, hertaResponse.getResponseCategory()));
+        trimDialogHistory();
         applyZoom();
         userInput.clear();
 
@@ -172,10 +174,15 @@ public class MainWindow extends AnchorPane {
 
     /** Records a non-blank command unless it duplicates the latest history entry. */
     private void recordCommand(String command) {
-        if (!command.isBlank()
-                && (commandHistory.isEmpty()
-                || !command.equals(commandHistory.get(commandHistory.size() - 1)))) {
+        boolean isBlankCommand = command.isBlank();
+        boolean hasPreviousCommand = !commandHistory.isEmpty();
+        boolean isDuplicateCommand = hasPreviousCommand
+                && command.equals(commandHistory.get(commandHistory.size() - 1));
+        if (!isBlankCommand && !isDuplicateCommand) {
             commandHistory.add(command);
+            if (commandHistory.size() > MAXIMUM_HISTORY_ENTRIES) {
+                commandHistory.remove(0);
+            }
         }
         resetCommandHistoryNavigation();
     }
@@ -184,6 +191,23 @@ public class MainWindow extends AnchorPane {
     private void resetCommandHistoryNavigation() {
         commandHistoryIndex = commandHistory.size();
         commandDraft = "";
+    }
+
+    /** Keeps long GUI sessions bounded while retaining the newest conversation bubbles. */
+    private void trimDialogHistory() {
+        int excessDialogCount = dialogContainer.getChildren().size() - MAXIMUM_DIALOGS;
+        if (excessDialogCount > 0) {
+            dialogContainer.getChildren().remove(0, excessDialogCount);
+        }
+    }
+
+    /** Loads the avatar after checking the resource explicitly for a stable startup error. */
+    private static Image loadHertaImage() {
+        var imageStream = MainWindow.class.getResourceAsStream(HERTA_IMAGE_RESOURCE);
+        if (imageStream == null) {
+            throw new IllegalStateException("Application files are incomplete; reinstall Herta.");
+        }
+        return new Image(imageStream);
     }
 
     /** Adjusts the chat text size when the user holds Ctrl while scrolling. */

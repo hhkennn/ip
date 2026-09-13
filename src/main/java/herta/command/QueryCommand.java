@@ -44,8 +44,9 @@ public abstract class QueryCommand extends Command {
             ui.showMessage(heading);
         }
         for (int index : matchingIndices) {
-            assert index >= 0 && index < tasks.size()
-                    : "A matching task index must refer to the current task list.";
+            if (index < 0 || index >= tasks.size()) {
+                throw new IllegalStateException("Query produced an invalid task index.");
+            }
             ui.showTask(index + 1, tasks.get(index));
         }
         if (matchingIndices.isEmpty()) {

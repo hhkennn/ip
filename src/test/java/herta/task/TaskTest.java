@@ -2,6 +2,7 @@ package herta.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -13,6 +14,12 @@ import org.junit.jupiter.api.Test;
  * Tests the common completion, scheduling, and formatting behavior of a base task.
  */
 class TaskTest {
+
+    @Test
+    void task_nullOrBlankDescription_rejectsInputWithoutAssertions() {
+        assertThrows(NullPointerException.class, () -> new TestTask(null));
+        assertThrows(IllegalArgumentException.class, () -> new TestTask("   "));
+    }
 
     @Test
     void taskStatusAndFormatting_changeAfterCompletion() {

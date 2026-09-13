@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
+import herta.task.TaskDescriptionValidator;
 import herta.task.Todo;
 
 /**
@@ -39,6 +40,7 @@ final class TaskCreationParser {
             throw new HertaException("A blank todo? Even I can't organise nothing. "
                     + "Use: todo <description>.");
         }
+        validateDescription(description);
         return new Todo(description);
     }
 
@@ -51,16 +53,26 @@ final class TaskCreationParser {
      */
     Deadline parseDeadline(String input) throws HertaException {
         String deadlineArguments = CommandType.DEADLINE.extractArguments(input);
-        String[] deadlineParts = deadlineArguments.split("\\s+" + DEADLINE_MARKER + "\\s+", 2);
-        if (deadlineParts.length != 2) {
+        int markerCount = countMarker(deadlineArguments, DEADLINE_MARKER);
+        if (markerCount == 0) {
             throw new HertaException(DEADLINE_FORMAT_ERROR);
+        }
+        if (markerCount > 1) {
+            throw duplicateParameterError(DEADLINE_MARKER);
         }
 
-        String description = deadlineParts[0].trim();
-        String byInput = deadlineParts[1].trim();
-        if (description.isEmpty() || byInput.isEmpty()) {
-            throw new HertaException(DEADLINE_FORMAT_ERROR);
+        int markerIndex = findMarker(deadlineArguments, DEADLINE_MARKER);
+        String description = deadlineArguments.substring(0, markerIndex).trim();
+        String byInput = deadlineArguments.substring(markerIndex + DEADLINE_MARKER.length()).trim();
+        if (description.isEmpty()) {
+            throw new HertaException("A deadline needs a description. Use: deadline <description> "
+                    + "/by <date/time>.");
         }
+        if (byInput.isEmpty()) {
+            throw new HertaException("A deadline needs a value after /by. Use: deadline "
+                    + "<description> /by <date/time>.");
+        }
+        validateDescription(description);
 
         String errorMessage = "That is not a date. Use a real one, such as "
                 + "2019-10-15 or 2/12/2019 1800.";
@@ -90,22 +102,55 @@ final class TaskCreationParser {
      */
     private EventParts parseEventParts(String input) throws HertaException {
         String eventArguments = CommandType.EVENT.extractArguments(input);
-        String[] eventParts = eventArguments.split("\\s+" + EVENT_FROM_MARKER + "\\s+", 2);
-        if (eventParts.length != 2) {
+        validateEventMarkers(eventArguments);
+        return extractEventParts(eventArguments);
+    }
+
+    /** Validates event marker presence and uniqueness before extracting any fields. */
+    private void validateEventMarkers(String eventArguments) throws HertaException {
+        int fromCount = countMarker(eventArguments, EVENT_FROM_MARKER);
+        int toCount = countMarker(eventArguments, EVENT_TO_MARKER);
+        if (fromCount > 1) {
+            throw duplicateParameterError(EVENT_FROM_MARKER);
+        }
+        if (toCount > 1) {
+            throw duplicateParameterError(EVENT_TO_MARKER);
+        }
+        if (fromCount == 0) {
+            throw new HertaException("You forgot the /from marker. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+        if (toCount == 0) {
+            throw new HertaException("You forgot the /to marker. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+    }
+
+    /** Extracts the event description and both date/time values from validated arguments. */
+    private EventParts extractEventParts(String eventArguments) throws HertaException {
+        int fromIndex = findMarker(eventArguments, EVENT_FROM_MARKER);
+        String description = eventArguments.substring(0, fromIndex).trim();
+        String remainder = eventArguments.substring(fromIndex + EVENT_FROM_MARKER.length());
+        int toIndex = findMarker(remainder, EVENT_TO_MARKER);
+        if (toIndex < 0) {
             throw new HertaException(EVENT_FORMAT_ERROR);
         }
 
-        String[] timeParts = eventParts[1].split("\\s+" + EVENT_TO_MARKER + "\\s+", 2);
-        if (timeParts.length != 2) {
-            throw new HertaException(EVENT_FORMAT_ERROR);
+        String fromInput = remainder.substring(0, toIndex).trim();
+        String toInput = remainder.substring(toIndex + EVENT_TO_MARKER.length()).trim();
+        if (description.isEmpty()) {
+            throw new HertaException("An event needs a description. Use: event <description> "
+                    + "/from <start> /to <end>.");
         }
-
-        String description = eventParts[0].trim();
-        String fromInput = timeParts[0].trim();
-        String toInput = timeParts[1].trim();
-        if (description.isEmpty() || fromInput.isEmpty() || toInput.isEmpty()) {
-            throw new HertaException(EVENT_FORMAT_ERROR);
+        if (fromInput.isEmpty()) {
+            throw new HertaException("An event needs a value after /from. Use: event "
+                    + "<description> /from <start> /to <end>.");
         }
+        if (toInput.isEmpty()) {
+            throw new HertaException("An event needs a value after /to. Use: event "
+                    + "<description> /from <start> /to <end>.");
+        }
+        validateDescription(description);
         return new EventParts(description, fromInput, toInput);
     }
 
@@ -142,6 +187,57 @@ final class TaskCreationParser {
         } catch (DateTimeParseException e) {
             throw new HertaException(errorMessage);
         }
+    }
+
+    /** Validates a task description and turns domain validation into usage guidance. */
+    private void validateDescription(String description) throws HertaException {
+        try {
+            TaskDescriptionValidator.validate(description);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new HertaException(e.getMessage());
+        }
+    }
+
+    /** Counts marker tokens rather than marker-like text embedded in a word. */
+    private int countMarker(String input, String marker) {
+        int markerCount = 0;
+        int searchStart = 0;
+        while (searchStart < input.length()) {
+            int markerIndex = findMarker(input, marker, searchStart);
+            if (markerIndex < 0) {
+                return markerCount;
+            }
+            markerCount++;
+            searchStart = markerIndex + marker.length();
+        }
+        return markerCount;
+    }
+
+    /** Finds the first marker token after the supplied character offset. */
+    private int findMarker(String input, String marker) {
+        return findMarker(input, marker, 0);
+    }
+
+    /** Finds a marker token whose surrounding characters are separators or boundaries. */
+    private int findMarker(String input, String marker, int searchStart) {
+        int markerIndex = input.indexOf(marker, searchStart);
+        while (markerIndex >= 0) {
+            int markerEnd = markerIndex + marker.length();
+            boolean hasValidLeftBoundary = markerIndex == 0
+                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerIndex - 1));
+            boolean hasValidRightBoundary = markerEnd == input.length()
+                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerEnd));
+            if (hasValidLeftBoundary && hasValidRightBoundary) {
+                return markerIndex;
+            }
+            markerIndex = input.indexOf(marker, markerIndex + 1);
+        }
+        return -1;
+    }
+
+    /** Returns the stable message used for repeated command parameters. */
+    private HertaException duplicateParameterError(String marker) {
+        return new HertaException("Parameter " + marker + " specified more than once.");
     }
 
 }

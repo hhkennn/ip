@@ -1,5 +1,7 @@
 package herta.command;
 
+import java.util.Objects;
+
 import herta.exception.HertaException;
 import herta.storage.Storage;
 import herta.task.Task;
@@ -18,7 +20,7 @@ public abstract class AddCommand extends Command {
      * @param task the task to append when the command executes
      */
     protected AddCommand(Task task) {
-        this.task = task;
+        this.task = Objects.requireNonNull(task, "An add command must contain a task.");
     }
 
     /**
@@ -31,15 +33,13 @@ public abstract class AddCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        assert task != null : "An add command must contain a task.";
+        if (tasks.containsDuplicate(task)) {
+            throw new HertaException("That task is already in the active task list.");
+        }
         TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
         updatedTasks.add(task);
-        assert updatedTasks.size() == tasks.size() + 1
-                : "The staged list must contain exactly one added task.";
         storage.save(updatedTasks);
         tasks.add(task);
-        assert tasks.size() == updatedTasks.size()
-                : "The live list must match the successfully saved list.";
         ui.showMessage("There. I've added it:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());

@@ -27,6 +27,8 @@ public class Event extends Task {
         super(description);
         this.from = Objects.requireNonNull(from, "Event start date/time cannot be null.");
         this.to = Objects.requireNonNull(to, "Event end date/time cannot be null.");
+        DateTimeParser.validateSupportedDateTime(this.from);
+        DateTimeParser.validateSupportedDateTime(this.to);
         validateTimeRange(from, to);
     }
 
@@ -79,9 +81,13 @@ public class Event extends Task {
      */
     @Override
     public boolean occursOn(LocalDate date) {
+        Objects.requireNonNull(date, "The date to filter cannot be null.");
         LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime startOfNextDay = date.plusDays(1).atStartOfDay();
-        return from.isBefore(startOfNextDay) && to.isAfter(startOfDay);
+        LocalDateTime startOfNextDay = date.equals(LocalDate.MAX)
+                ? LocalDateTime.MAX : date.plusDays(1).atStartOfDay();
+        boolean startsBeforeNextDay = from.isBefore(startOfNextDay);
+        boolean endsAfterStartOfDay = to.isAfter(startOfDay);
+        return startsBeforeNextDay && endsAfterStartOfDay;
     }
 
     /**
@@ -133,6 +139,5 @@ public class Event extends Task {
             throw new IllegalArgumentException("Event end must be after its start.");
         }
 
-        assert from.isBefore(to) : "Validated events must have a positive duration.";
     }
 }

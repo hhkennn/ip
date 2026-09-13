@@ -1,5 +1,6 @@
 package herta.ui;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -15,7 +16,7 @@ public class Ui implements UiOutput {
      * Creates a UI that reads commands from standard input.
      */
     public Ui() {
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(System.in, StandardCharsets.UTF_8);
     }
 
     /**
