@@ -1,6 +1,7 @@
 package herta.command;
 
 import herta.exception.HertaException;
+import herta.exception.UsageGuidanceException;
 import herta.storage.Storage;
 import herta.task.TaskList;
 import herta.ui.UiOutput;
@@ -33,7 +34,7 @@ public class UnknownCommand extends Command {
         if (isEmptyInput) {
             throw new HertaException("Nothing? Were you expecting me to read your mind?");
         }
-        throw new HertaException("That command is invalid. Were you just guessing?\n"
+        throw new UsageGuidanceException("That command is invalid. Were you just guessing?\n"
                 + "Try todo, deadline, event, list, find, filter, upcoming, sort, "
                 + "mark, unmark, delete, archive, archived, restore, and bye.");
     }

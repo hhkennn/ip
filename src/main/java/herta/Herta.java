@@ -2,6 +2,7 @@ package herta;
 
 import herta.command.Command;
 import herta.exception.HertaException;
+import herta.exception.UsageGuidanceException;
 import herta.parser.CommandType;
 import herta.parser.Parser;
 import herta.storage.Storage;
@@ -105,10 +106,20 @@ public class Herta {
             return ResponseCategory.ERROR;
         }
         CommandType commandType = parser.parseCommandType(input);
+        Command command;
         try {
-            Command command = parser.parse(input, commandType);
+            command = parser.parse(input, commandType);
+        } catch (HertaException e) {
+            output.showMessage(e.getMessage());
+            return ResponseCategory.USAGE_GUIDANCE;
+        }
+
+        try {
             command.execute(repository, output);
             return ResponseCategory.fromCommandType(commandType);
+        } catch (UsageGuidanceException e) {
+            output.showMessage(e.getMessage());
+            return ResponseCategory.USAGE_GUIDANCE;
         } catch (HertaException e) {
             output.showMessage(e.getMessage());
             return ResponseCategory.ERROR;

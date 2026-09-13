@@ -4,6 +4,7 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 
 import herta.exception.HertaException;
+import herta.exception.UsageGuidanceException;
 import herta.storage.Storage;
 import herta.task.TaskList;
 import herta.ui.UiOutput;
@@ -39,7 +40,8 @@ public class UpcomingCommand extends QueryCommand {
         try {
             until = now.plusDays(days);
         } catch (DateTimeException e) {
-            throw new HertaException("You want me to look that far ahead? Use a smaller number of days.");
+            throw new UsageGuidanceException(
+                    "You want me to look that far ahead? Use a smaller number of days.");
         }
 
         showMatchingTasks(tasks,

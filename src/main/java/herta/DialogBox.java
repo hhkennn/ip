@@ -9,15 +9,23 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 
 /**
  * Displays a message with an optional Herta avatar.
  */
 public class DialogBox extends HBox {
+    private static final double MAX_MESSAGE_WIDTH_RATIO = 0.85;
+    private static final double DIALOG_BOX_HORIZONTAL_INSETS = 10.0;
+    private static final double LABEL_HORIZONTAL_INSETS = 12.0;
+
     @FXML
     private Label dialog;
     @FXML
@@ -34,12 +42,27 @@ public class DialogBox extends HBox {
         }
 
         dialog.setText(text);
+        configureCopySupport();
         displayPicture.setImage(image);
 
         if (image == null) {
             displayPicture.setVisible(false);
             displayPicture.setManaged(false);
         }
+    }
+
+    /** Adds whole-message copy support without changing the existing bubble renderer. */
+    private void configureCopySupport() {
+        MenuItem copyMenuItem = new MenuItem("Copy");
+        copyMenuItem.setOnAction(event -> copyMessageToClipboard());
+        dialog.setContextMenu(new ContextMenu(copyMenuItem));
+    }
+
+    /** Copies the message text to the system clipboard. */
+    private void copyMessageToClipboard() {
+        ClipboardContent clipboardContent = new ClipboardContent();
+        clipboardContent.putString(dialog.getText());
+        Clipboard.getSystemClipboard().setContent(clipboardContent);
     }
 
     /**
@@ -89,6 +112,28 @@ public class DialogBox extends HBox {
         return dialogBox;
     }
 
+    /** Applies a font-size style to the message while preserving its semantic style. */
+    void setFontSizeStyle(String fontSizeStyle) {
+        dialog.setStyle(fontSizeStyle);
+    }
+
+    /** Resizes the avatar while preserving its aspect ratio. */
+    void setAvatarSize(double size) {
+        displayPicture.setFitHeight(size);
+        displayPicture.setFitWidth(size);
+    }
+
+    /** Limits the message width while preserving enough room for the avatar. */
+    void setMessageMaxWidth(double availableWidth) {
+        double maximumMessageWidth = availableWidth * MAX_MESSAGE_WIDTH_RATIO;
+        if (displayPicture.isManaged()) {
+            double availableReplyWidth = availableWidth - displayPicture.getFitWidth()
+                    - DIALOG_BOX_HORIZONTAL_INSETS - LABEL_HORIZONTAL_INSETS;
+            maximumMessageWidth = Math.min(maximumMessageWidth, availableReplyWidth);
+        }
+        dialog.setMaxWidth(Math.max(0, maximumMessageWidth));
+    }
+
     /**
      * Applies a semantic style to Herta's response label when a category is supplied.
      * A missing category leaves the default styling unchanged.
@@ -109,6 +154,7 @@ public class DialogBox extends HBox {
             case RESTORE -> "restore-label";
             case QUERY -> "query-label";
             case EXIT -> "exit-label";
+            case USAGE_GUIDANCE -> "usage-guidance-label";
             case ERROR -> "error-label";
             default -> throw new IllegalStateException(
                     "Unsupported response category: " + responseCategory);

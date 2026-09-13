@@ -59,7 +59,7 @@ class HertaTest {
         assertTrue(goodbyeResponse.getMessage().contains("Leaving already? Goodbye."));
         assertEquals(ResponseCategory.ADD, addResponse.getResponseCategory());
         assertEquals(ResponseCategory.QUERY, listResponse.getResponseCategory());
-        assertEquals(ResponseCategory.ERROR, invalidResponse.getResponseCategory());
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, invalidResponse.getResponseCategory());
         assertEquals(ResponseCategory.EXIT, goodbyeResponse.getResponseCategory());
         assertFalse(addResponse.isExitRequested());
         assertFalse(invalidResponse.isExitRequested());
@@ -84,6 +84,19 @@ class HertaTest {
         assertEquals(ResponseCategory.DELETE, deleteResponse.getResponseCategory());
         assertEquals(ResponseCategory.ERROR, executionFailureResponse.getResponseCategory());
         assertFalse(executionFailureResponse.isExitRequested());
+    }
+
+    @Test
+    void getResponse_distinguishesUsageGuidanceFromExecutionErrors() {
+        Path dataFile = temporaryDirectory.resolve("herta.txt");
+        Herta herta = new Herta(dataFile.toString());
+
+        HertaResponse malformedCommandResponse = herta.getResponse("mark nope");
+        HertaResponse missingTaskResponse = herta.getResponse("mark 999");
+
+        assertEquals(ResponseCategory.USAGE_GUIDANCE,
+                malformedCommandResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ERROR, missingTaskResponse.getResponseCategory());
     }
 
     @Test
