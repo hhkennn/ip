@@ -21,6 +21,9 @@ _temp/
 # Runtime task data
 data/herta.txt
 data/archive.txt
+data/.herta-lock
+data/.herta-transaction
+data/.herta-*.bak
 data/.herta-*.tmp
 
 /text-ui-test/ACTUAL.TXT
