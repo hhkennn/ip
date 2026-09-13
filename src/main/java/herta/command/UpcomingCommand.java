@@ -13,6 +13,12 @@ import herta.ui.UiOutput;
  * Represents the command that displays incomplete tasks in a future time window.
  */
 public class UpcomingCommand extends QueryCommand {
+    /** Error message used when the requested upcoming range cannot be represented. */
+    public static final String INVALID_UPCOMING_DAYS_ERROR = "That day count is not useful. "
+            + "Use: upcoming <days>, with a positive number in range.";
+    private static final String UPCOMING_HEADING = "The next %d days, arranged for you:";
+    private static final String UPCOMING_EMPTY_MESSAGE =
+            "Nothing upcoming. Enjoy the silence while it lasts.";
     private final int days;
 
     /**
@@ -43,14 +49,13 @@ public class UpcomingCommand extends QueryCommand {
         try {
             until = now.plusDays(days);
         } catch (DateTimeException e) {
-            throw new UsageGuidanceException(
-                    "You want me to look that far ahead? Use a smaller number of days.");
+            throw new UsageGuidanceException(INVALID_UPCOMING_DAYS_ERROR);
         }
 
         showMatchingTasks(tasks,
                 task -> !task.isCompleted() && task.isUpcoming(now, until),
-                "Your next " + days + " days. Try not to fall behind:",
-                "Nothing upcoming. Enjoy the silence while it lasts.",
+                UPCOMING_HEADING.formatted(days),
+                UPCOMING_EMPTY_MESSAGE,
                 ui);
     }
 }

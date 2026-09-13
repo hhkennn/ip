@@ -10,6 +10,8 @@ import herta.ui.UiOutput;
  * Represents the command that searches task descriptions for a keyword.
  */
 public class FindCommand extends QueryCommand {
+    private static final String FIND_HEADING = "Found them. Here are the matches:";
+    private static final String FIND_EMPTY_MESSAGE = "Nothing matched. Try a more useful keyword.";
     private final String normalizedKeyword;
 
     /**
@@ -37,8 +39,8 @@ public class FindCommand extends QueryCommand {
         showMatchingTasksWithoutEmptyHeading(tasks,
                 task -> task.getDescription().toLowerCase(Locale.ROOT)
                         .contains(normalizedKeyword),
-                "Looking for something? How predictable. Here are the matches:",
-                "I found nothing. Perhaps the task was only in your imagination.",
+                FIND_HEADING,
+                FIND_EMPTY_MESSAGE,
                 ui);
     }
 }

@@ -12,6 +12,11 @@ import herta.ui.UiOutput;
  */
 public class RestoreCommand extends Command {
     private static final String RESTORE_FAILURE_PREFIX = "Failed to restore task: ";
+    private static final String INVALID_ARCHIVE_TASK_ERROR =
+            "That number points to nothing in the archive. Check again.";
+    private static final String RESTORE_SUCCESS_MESSAGE = "There. I've restored it:";
+    private static final String ACTIVE_TASK_COUNT_MESSAGE =
+            "That makes %d active %s. Back where it belongs.";
     private final int archiveIndex;
 
     /**
@@ -37,27 +42,23 @@ public class RestoreCommand extends Command {
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
         TaskList archivedTasks = repository.getArchivedTasks();
         if (archiveIndex < 0 || archiveIndex >= archivedTasks.size()) {
-            throw new HertaException(
-                    "That archived task doesn't exist. Did you even check the archived list?");
+            throw new HertaException(INVALID_ARCHIVE_TASK_ERROR);
         }
 
         Task task = archivedTasks.get(archiveIndex);
         TaskList updatedActiveTasks = new TaskList(repository.getActiveTasks().asUnmodifiableList());
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         updatedArchivedTasks.remove(archiveIndex);
-        try {
-            updatedActiveTasks.add(task);
-        } catch (IllegalArgumentException e) {
-            throw new HertaException("Cannot restore a duplicate task into the active list.");
-        }
+        updatedActiveTasks.add(task);
 
         repository.saveActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks,
                 RESTORE_FAILURE_PREFIX);
         repository.replaceActiveAndArchivedTasks(updatedActiveTasks, updatedArchivedTasks);
-        ui.showMessage("There. I've restored it:");
+        ui.showMessage(RESTORE_SUCCESS_MESSAGE);
         ui.showTask(task);
-        ui.showMessage("That makes " + updatedActiveTasks.size() + " active "
-                + getTaskNoun(updatedActiveTasks.size()) + ". Try to keep up.");
+        int activeTaskCount = updatedActiveTasks.size();
+        ui.showMessage(ACTIVE_TASK_COUNT_MESSAGE.formatted(
+                activeTaskCount, getTaskNoun(activeTaskCount)));
     }
 
     /**

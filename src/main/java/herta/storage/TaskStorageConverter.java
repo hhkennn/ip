@@ -1,17 +1,12 @@
 package herta.storage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
 import herta.task.Task;
-import herta.task.TaskIdentity;
 import herta.task.TaskList;
 import herta.task.Todo;
 
@@ -49,13 +44,9 @@ final class TaskStorageConverter {
         }
 
         List<String> lines = new ArrayList<>();
-        Set<TaskIdentity> serializedIdentities = new HashSet<>();
         for (Task task : tasks) {
             lines.add(serializeTask(task));
-            if (!serializedIdentities.add(task.getIdentity())) {
-                throw new HertaException("Failed to save tasks: duplicate tasks are not allowed.");
-            }
-            if (serializedIdentities.size() > TaskList.MAXIMUM_TASK_COUNT) {
+            if (lines.size() > TaskList.MAXIMUM_TASK_COUNT) {
                 throw new HertaException("Failed to save tasks: too many tasks.");
             }
         }
@@ -72,7 +63,6 @@ final class TaskStorageConverter {
      */
     TaskList parseStorageLines(List<String> lines, String recordPrefix) throws HertaException {
         TaskList tasks = new TaskList();
-        Map<TaskIdentity, Integer> sourceLines = new HashMap<>();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.isBlank()) {
@@ -80,18 +70,12 @@ final class TaskStorageConverter {
                         + ": blank records are not supported.");
             }
             Task task = parseStorageLine(line, i + 1, recordPrefix);
-            Integer duplicateLine = sourceLines.get(task.getIdentity());
-            if (duplicateLine != null) {
-                throw new HertaException(recordPrefix + "at line " + (i + 1)
-                        + ": duplicate task conflicts with line " + duplicateLine + ".");
-            }
             try {
                 tasks.add(task);
             } catch (IllegalArgumentException e) {
                 throw new HertaException(recordPrefix + "at line " + (i + 1)
                         + ": " + e.getMessage());
             }
-            sourceLines.put(task.getIdentity(), i + 1);
         }
         return tasks;
     }

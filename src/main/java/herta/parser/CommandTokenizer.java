@@ -5,7 +5,14 @@ import herta.exception.HertaException;
 /** Normalizes the command boundary while preserving spaces inside task text. */
 public final class CommandTokenizer {
     /** Maximum command length accepted from either the console or GUI. */
-    public static final int MAX_COMMAND_LENGTH = 4_096;
+    static final int MAX_COMMAND_LENGTH = 4_096;
+    private static final String NULL_COMMAND_ERROR =
+            "Nothing usable came through. Enter a command, such as list or todo <description>.";
+    private static final String LONG_COMMAND_ERROR =
+            "That is excessive. Keep the command under %d characters.";
+    private static final String UNSUPPORTED_CHARACTER_ERROR =
+            "That command contains unsupported spacing or control characters. "
+                    + "Use ordinary spaces and one line.";
 
     private CommandTokenizer() {
         // Utility class; do not instantiate.
@@ -44,17 +51,15 @@ public final class CommandTokenizer {
     /** Validates raw command size and characters before any parser work occurs. */
     private static void validateInput(String input) throws HertaException {
         if (input == null) {
-            throw new HertaException("A command cannot be null. Try entering a Herta command.");
+            throw new HertaException(NULL_COMMAND_ERROR);
         }
         if (input.length() > MAX_COMMAND_LENGTH) {
-            throw new HertaException("That command is too long. Keep it under "
-                    + MAX_COMMAND_LENGTH + " characters.");
+            throw new HertaException(LONG_COMMAND_ERROR.formatted(MAX_COMMAND_LENGTH));
         }
         for (int i = 0; i < input.length(); i++) {
             char character = input.charAt(i);
             if (isUnsupportedCharacter(character)) {
-                throw new HertaException(
-                        "Use ordinary spaces and one command per line; lookalike whitespace is unsupported.");
+                throw new HertaException(UNSUPPORTED_CHARACTER_ERROR);
             }
         }
     }

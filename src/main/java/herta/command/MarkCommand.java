@@ -10,6 +10,7 @@ import herta.ui.UiOutput;
  * Represents the command that marks a task as complete.
  */
 public class MarkCommand extends TaskStatusCommand {
+    private static final String MARK_CONFIRMATION_MESSAGE = "Done. It's marked complete:";
 
     /**
      * Creates a command that marks the task at the given index.
@@ -32,7 +33,7 @@ public class MarkCommand extends TaskStatusCommand {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         Task task = updateTaskStatus(tasks, storage, true);
-        ui.showMessage("There. It's marked complete:");
+        ui.showMessage(MARK_CONFIRMATION_MESSAGE);
         ui.showTask(task);
     }
 }

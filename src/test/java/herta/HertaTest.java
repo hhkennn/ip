@@ -68,9 +68,9 @@ class HertaTest {
         HertaResponse byeResponse = herta.getResponse("bye anything");
 
         assertEquals(ResponseCategory.USAGE_GUIDANCE, listResponse.getResponseCategory());
-        assertEquals("Use: list.", listResponse.getMessage());
+        assertEquals("Just use: list. Nothing else is required.", listResponse.getMessage());
         assertEquals(ResponseCategory.USAGE_GUIDANCE, byeResponse.getResponseCategory());
-        assertEquals("Use: bye.", byeResponse.getMessage());
+        assertEquals("Just use: bye. Nothing else is required.", byeResponse.getMessage());
     }
 
     @Test
@@ -130,7 +130,7 @@ class HertaTest {
 
         assertTrue(addResponse.getMessage().contains("There. I've added it:"));
         assertTrue(listResponse.getMessage().contains("1.[T][ ] read book"));
-        assertTrue(invalidResponse.getMessage().contains("That command is invalid."));
+        assertTrue(invalidResponse.getMessage().contains("That command isn't in my vocabulary."));
         assertTrue(goodbyeResponse.getMessage().contains("Leaving already? Goodbye."));
         assertEquals(ResponseCategory.ADD, addResponse.getResponseCategory());
         assertEquals(ResponseCategory.QUERY, listResponse.getResponseCategory());
@@ -181,7 +181,8 @@ class HertaTest {
         Herta herta = new Herta(dataFile.toString());
 
         assertTrue(herta.isReady());
-        assertEquals("No archived tasks.", herta.getResponse("archived").getMessage());
+        assertEquals("The archive has nothing to show. Complete a task before archiving it.",
+                herta.getResponse("archived").getMessage());
     }
 
     @Test

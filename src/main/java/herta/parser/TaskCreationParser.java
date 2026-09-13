@@ -6,6 +6,7 @@ import java.time.format.DateTimeParseException;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
+import herta.task.TaskDescriptionValidator;
 import herta.task.Todo;
 
 /**
@@ -13,14 +14,41 @@ import herta.task.Todo;
  */
 final class TaskCreationParser {
     private static final String DEADLINE_MARKER = "/by";
-    private static final String DEADLINE_FORMAT_ERROR = "Did you even read the deadline format? "
-            + "Use: deadline <description> /by <date/time>.";
+    private static final String DEADLINE_USAGE = "deadline <description> /by <date/time>";
+    private static final String TODO_USAGE = "todo <description>";
+    private static final String TODO_DESCRIPTION_ERROR = "You forgot the todo description. "
+            + "Try: " + TODO_USAGE + ".";
+    private static final String DEADLINE_FORMAT_ERROR = "That deadline format won't work. Use: "
+            + DEADLINE_USAGE + ".";
+    private static final String DEADLINE_DESCRIPTION_ERROR =
+            "Tell me what the deadline is for. Try: %s.";
+    private static final String DEADLINE_TIME_ERROR = "A deadline needs a time. Use: %s.";
+    private static final String DEADLINE_DATE_ERROR =
+            "I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.";
     private static final String EVENT_FROM_MARKER = "/from";
     private static final String EVENT_TO_MARKER = "/to";
-    private static final String EVENT_FORMAT_ERROR = "Did you even read the event format? "
-            + "Use: event <description> /from <start> /to <end>.";
-    private static final String EVENT_DATE_ERROR = "Those dates won't do. Use something valid, "
+    private static final String EVENT_FROM_USAGE = EVENT_FROM_MARKER + " <start>";
+    private static final String EVENT_TO_USAGE = EVENT_TO_MARKER + " <end>";
+    private static final String EVENT_USAGE = "event <description> /from <start> /to <end>";
+    private static final String EVENT_FORMAT_ERROR = "That event format won't work. Try: "
+            + EVENT_USAGE + ".";
+    private static final String EVENT_FROM_MARKER_ERROR = "An event needs a start marker: %s.";
+    private static final String EVENT_TO_MARKER_ERROR = "An event needs an end marker: %s.";
+    private static final String EVENT_DESCRIPTION_ERROR =
+            "Tell me what the event is. Try: %s.";
+    private static final String MISSING_EVENT_START_ERROR =
+            "An event cannot start from nowhere. Add: %s.";
+    private static final String MISSING_EVENT_END_ERROR = "An event cannot end nowhere. Add: %s.";
+    private static final String EVENT_DATE_ERROR = "Those dates won't do. Use valid dates, "
             + "such as 2019-10-15 or 2/12/2019 1800.";
+    private static final String EVENT_RANGE_ERROR =
+            "Time moves forward. Make the event end after it starts.";
+    private static final String LONG_DESCRIPTION_ERROR = "Even a task description has limits. "
+            + "Keep it under %d characters.";
+    private static final String INVALID_DESCRIPTION_ERROR = "Keep the description on one line and "
+            + "leave out the storage delimiter and control characters.";
+    private static final String TASK_DESCRIPTION_ERROR_PREFIX = "Task descriptions";
+    private static final String DUPLICATE_PARAMETER_ERROR = "One %s is enough. Use: %s.";
 
     /** Holds the validated fields extracted from an event command. */
     private record EventParts(String description, String fromInput, String toInput) {
@@ -36,8 +64,7 @@ final class TaskCreationParser {
     Todo parseTodo(String input) throws HertaException {
         String description = CommandType.TODO.extractArguments(input);
         if (description.isEmpty()) {
-            throw new HertaException("A blank todo? Even I can't organise nothing. "
-                    + "Use: todo <description>.");
+            throw new HertaException(TODO_DESCRIPTION_ERROR);
         }
         return createTodo(description);
     }
@@ -63,16 +90,12 @@ final class TaskCreationParser {
         String description = deadlineArguments.substring(0, markerIndex).trim();
         String byInput = deadlineArguments.substring(markerIndex + DEADLINE_MARKER.length()).trim();
         if (description.isEmpty()) {
-            throw new HertaException("A deadline needs a description. Use: deadline <description> "
-                    + "/by <date/time>.");
+            throw new HertaException(DEADLINE_DESCRIPTION_ERROR.formatted(DEADLINE_USAGE));
         }
         if (byInput.isEmpty()) {
-            throw new HertaException("A deadline needs a value after /by. Use: deadline "
-                    + "<description> /by <date/time>.");
+            throw new HertaException(DEADLINE_TIME_ERROR.formatted(DEADLINE_USAGE));
         }
-        String errorMessage = "That is not a date. Use a real one, such as "
-                + "2019-10-15 or 2/12/2019 1800.";
-        return createDeadline(description, parseUserDateTime(byInput, errorMessage));
+        return createDeadline(description, parseUserDateTime(byInput, DEADLINE_DATE_ERROR));
     }
 
     /**
@@ -113,12 +136,10 @@ final class TaskCreationParser {
             throw duplicateParameterError(EVENT_TO_MARKER);
         }
         if (fromCount == 0) {
-            throw new HertaException("You forgot the /from marker. "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_FROM_MARKER_ERROR.formatted(EVENT_FROM_USAGE));
         }
         if (toCount == 0) {
-            throw new HertaException("You forgot the /to marker. "
-                    + "Use: event <description> /from <start> /to <end>.");
+            throw new HertaException(EVENT_TO_MARKER_ERROR.formatted(EVENT_TO_USAGE));
         }
     }
 
@@ -135,16 +156,13 @@ final class TaskCreationParser {
         String fromInput = remainder.substring(0, toIndex).trim();
         String toInput = remainder.substring(toIndex + EVENT_TO_MARKER.length()).trim();
         if (description.isEmpty()) {
-            throw new HertaException("An event needs a description. Use: event <description> "
-                    + "/from <start> /to <end>.");
+            throw new HertaException(EVENT_DESCRIPTION_ERROR.formatted(EVENT_USAGE));
         }
         if (fromInput.isEmpty()) {
-            throw new HertaException("An event needs a value after /from. Use: event "
-                    + "<description> /from <start> /to <end>.");
+            throw new HertaException(MISSING_EVENT_START_ERROR.formatted(EVENT_FROM_USAGE));
         }
         if (toInput.isEmpty()) {
-            throw new HertaException("An event needs a value after /to. Use: event "
-                    + "<description> /from <start> /to <end>.");
+            throw new HertaException(MISSING_EVENT_END_ERROR.formatted(EVENT_TO_USAGE));
         }
         return new EventParts(description, fromInput, toInput);
     }
@@ -161,12 +179,12 @@ final class TaskCreationParser {
     private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
             throws HertaException {
         if (!from.isBefore(to)) {
-            throw new HertaException("Time moves forward. Make the event end after it starts.");
+            throw new HertaException(EVENT_RANGE_ERROR);
         }
         try {
             return new Event(description, from, to);
         } catch (IllegalArgumentException e) {
-            throw new HertaException(e.getMessage());
+            throw getDescriptionValidationError(description, e);
         }
     }
 
@@ -175,7 +193,7 @@ final class TaskCreationParser {
         try {
             return new Todo(description);
         } catch (IllegalArgumentException e) {
-            throw new HertaException(e.getMessage());
+            throw getDescriptionValidationError(description, e);
         }
     }
 
@@ -185,8 +203,22 @@ final class TaskCreationParser {
         try {
             return new Deadline(description, by);
         } catch (IllegalArgumentException e) {
-            throw new HertaException(e.getMessage());
+            throw getDescriptionValidationError(description, e);
         }
+    }
+
+    /** Converts task-description domain failures into command-entry guidance. */
+    private HertaException getDescriptionValidationError(String description,
+                                                          IllegalArgumentException exception) {
+        if (description.length() > TaskDescriptionValidator.MAX_DESCRIPTION_LENGTH) {
+            return new HertaException(LONG_DESCRIPTION_ERROR.formatted(
+                    TaskDescriptionValidator.MAX_DESCRIPTION_LENGTH));
+        }
+        if (exception.getMessage() != null
+                && exception.getMessage().startsWith(TASK_DESCRIPTION_ERROR_PREFIX)) {
+            return new HertaException(INVALID_DESCRIPTION_ERROR);
+        }
+        return new HertaException(exception.getMessage());
     }
 
     /**
@@ -245,7 +277,8 @@ final class TaskCreationParser {
 
     /** Returns the stable message used for repeated command parameters. */
     private HertaException duplicateParameterError(String marker) {
-        return new HertaException("Parameter " + marker + " specified more than once.");
+        String usage = marker.equals(DEADLINE_MARKER) ? DEADLINE_USAGE : EVENT_USAGE;
+        return new HertaException(DUPLICATE_PARAMETER_ERROR.formatted(marker, usage));
     }
 
 }

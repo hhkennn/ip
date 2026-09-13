@@ -1,6 +1,5 @@
 package herta.task;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,4 @@ class TaskDescriptionValidatorTest {
                 TaskDescriptionValidator.validate("bad\uD800"));
     }
 
-    @Test
-    void normalizeForDuplicate_reducesSurroundingAndRepeatedSpaces() {
-        assertEquals("read book", TaskDescriptionValidator.normalizeForDuplicate("  read   book  "));
-    }
 }

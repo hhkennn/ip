@@ -21,7 +21,6 @@ public abstract class Task {
     private static final String COMPLETED_STATUS_ICON = "X";
 
     private final String description;
-    private final String normalizedDescription;
     private boolean isCompleted;
 
     /**
@@ -33,7 +32,6 @@ public abstract class Task {
         this.description = Objects.requireNonNull(description,
                 "A task description cannot be null.");
         TaskDescriptionValidator.validate(description);
-        normalizedDescription = TaskDescriptionValidator.normalizeValidated(description);
         this.isCompleted = false;
     }
 
@@ -109,35 +107,6 @@ public abstract class Task {
         return getScheduledDateTime()
                 .map(dateTime -> !dateTime.isBefore(now) && dateTime.isBefore(until))
                 .orElse(false);
-    }
-
-    /**
-     * Indicates whether another task has the same duplicate identity.
-     * Completion status is intentionally excluded from this comparison.
-     *
-     * @param other the task to compare with
-     * @return {@code true} if both tasks have the same type, description, and schedule
-     */
-    public boolean isDuplicateOf(Task other) {
-        return other != null && getIdentity().equals(other.getIdentity());
-    }
-
-    /** Returns the immutable identity used for duplicate detection. */
-    public TaskIdentity getIdentity() {
-        if (this instanceof Deadline thisDeadline) {
-            return new TaskIdentity(getTaskType(), normalizedDescription,
-                    thisDeadline.getBy(), null);
-        }
-        if (this instanceof Event thisEvent) {
-            return new TaskIdentity(getTaskType(), normalizedDescription,
-                    thisEvent.getFrom(), thisEvent.getTo());
-        }
-        return new TaskIdentity(getTaskType(), normalizedDescription, null, null);
-    }
-
-    /** Returns the concrete runtime type used by the duplicate identity. */
-    private Class<? extends Task> getTaskType() {
-        return getClass().asSubclass(Task.class);
     }
 
     /**

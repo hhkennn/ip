@@ -62,19 +62,4 @@ public final class TaskDescriptionValidator {
                 || isFormatCharacter || isUnsupportedSpace;
     }
 
-    /**
-     * Returns the description form used when comparing tasks for duplicates.
-     *
-     * @param description the validated description
-     * @return a form with surrounding and repeated horizontal spaces normalized
-     */
-    public static String normalizeForDuplicate(String description) {
-        validate(description);
-        return normalizeValidated(description);
-    }
-
-    /** Normalizes a description after the caller has already validated it. */
-    static String normalizeValidated(String description) {
-        return description.trim().replaceAll("[ \\t]+", " ");
-    }
 }

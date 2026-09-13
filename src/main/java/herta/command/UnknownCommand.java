@@ -10,6 +10,11 @@ import herta.ui.UiOutput;
  * Represents an empty or unrecognized user command.
  */
 public class UnknownCommand extends Command {
+    private static final String EMPTY_COMMAND_ERROR = "Nothing? Use a command. "
+            + "Try: list, find <keyword>, or todo <description>.";
+    private static final String UNKNOWN_COMMAND_ERROR = "That command isn't in my vocabulary.\n"
+            + "Use: todo, deadline, event, list, find, filter, upcoming, sort, "
+            + "mark, unmark, delete, archive, archived, restore, and bye.";
     private final boolean isEmptyInput;
 
     /**
@@ -32,10 +37,8 @@ public class UnknownCommand extends Command {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         if (isEmptyInput) {
-            throw new HertaException("Nothing? Were you expecting me to read your mind?");
+            throw new HertaException(EMPTY_COMMAND_ERROR);
         }
-        throw new UsageGuidanceException("That command is invalid. Were you just guessing?\n"
-                + "Try todo, deadline, event, list, find, filter, upcoming, sort, "
-                + "mark, unmark, delete, archive, archived, restore, and bye.");
+        throw new UsageGuidanceException(UNKNOWN_COMMAND_ERROR);
     }
 }

@@ -54,7 +54,7 @@ class ArchiveRestoreCommandTest {
                 + "  [T][X] first\n"
                 + "  [T][X] second\n"
                 + "  [T][X] third\n"
-                + "That leaves 0 active tasks. Try to keep up.",
+                + "The active list is down to 0 tasks. Much tidier.",
                 response.getMessage().replace(System.lineSeparator(), "\n"));
         assertEquals(List.of(), Files.readAllLines(activeFile));
         assertEquals(List.of("T | 1 | first", "T | 1 | second", "T | 1 | third"),
@@ -72,7 +72,7 @@ class ArchiveRestoreCommandTest {
         HertaResponse response = herta.getResponse("archive 1 2");
 
         assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
-        assertEquals("Only completed tasks can be archived. Mark the task complete first.",
+        assertEquals("That task is still unfinished. Complete it before archiving.",
                 response.getMessage());
         assertEquals(List.of("T | 1 | complete", "T | 0 | incomplete"),
                 Files.readAllLines(activeFile));
@@ -80,18 +80,26 @@ class ArchiveRestoreCommandTest {
     }
 
     @Test
-    void addCommand_duplicateArchivedTask_isRejectedByGlobalPolicy() throws Exception {
+    void duplicateTasks_areAllowedInEveryList() throws Exception {
         Path activeFile = temporaryDirectory.resolve("global-duplicate").resolve("tasks.txt");
         Herta herta = new Herta(activeFile.toString());
 
         herta.getResponse("todo read book");
+        HertaResponse duplicateActiveResponse = herta.getResponse("todo read book");
         herta.getResponse("mark 1");
         herta.getResponse("archive 1");
-        HertaResponse response = herta.getResponse("todo  read   book ");
+        herta.getResponse("mark 1");
+        HertaResponse duplicateArchiveResponse = herta.getResponse("archive 1");
+        HertaResponse firstRestoreResponse = herta.getResponse("restore 1");
+        HertaResponse duplicateRestoreResponse = herta.getResponse("restore 1");
 
-        assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
-        assertEquals("That task is already in the archived task list.", response.getMessage());
-        assertEquals(List.of(), Files.readAllLines(activeFile));
+        assertEquals(ResponseCategory.ADD, duplicateActiveResponse.getResponseCategory());
+        assertEquals(ResponseCategory.ARCHIVE, duplicateArchiveResponse.getResponseCategory());
+        assertEquals(ResponseCategory.RESTORE, firstRestoreResponse.getResponseCategory());
+        assertEquals(ResponseCategory.RESTORE, duplicateRestoreResponse.getResponseCategory());
+        assertEquals(List.of("T | 1 | read book", "T | 1 | read book"),
+                Files.readAllLines(activeFile));
+        assertEquals(List.of(), Files.readAllLines(activeFile.resolveSibling("archive.txt")));
     }
 
     @Test
@@ -109,7 +117,7 @@ class ArchiveRestoreCommandTest {
 
         HertaResponse noOpResponse = herta.getResponse("archive all");
         assertEquals(ResponseCategory.ARCHIVE, noOpResponse.getResponseCategory());
-        assertEquals("Nothing to archive. There are no completed active tasks.",
+        assertEquals("Nothing is ready for archiving. Complete a task first.",
                 noOpResponse.getMessage());
         assertEquals(List.of("T | 1 | complete"),
                 Files.readAllLines(activeFile.resolveSibling("archive.txt")));
@@ -130,14 +138,14 @@ class ArchiveRestoreCommandTest {
         HertaResponse restoreResponse = herta.getResponse("restore 2");
 
         assertEquals(ResponseCategory.QUERY, viewResponse.getResponseCategory());
-        assertEquals("Here are the tasks you've archived:\n"
+        assertEquals("The archive, as requested:\n"
                 + "1.[T][X] completed\n"
                 + "2.[T][ ] incomplete", viewResponse.getMessage()
                 .replace(System.lineSeparator(), "\n"));
         assertEquals(ResponseCategory.RESTORE, restoreResponse.getResponseCategory());
         assertEquals("There. I've restored it:\n"
                 + "  [T][ ] incomplete\n"
-                + "That makes 1 active task. Try to keep up.", restoreResponse.getMessage()
+                + "That makes 1 active task. Back where it belongs.", restoreResponse.getMessage()
                 .replace(System.lineSeparator(), "\n"));
         assertEquals(List.of("T | 0 | incomplete"), Files.readAllLines(activeFile));
         assertEquals(List.of("T | 1 | completed"), Files.readAllLines(archiveFile));
@@ -154,7 +162,8 @@ class ArchiveRestoreCommandTest {
         herta.getResponse("todo incomplete");
         HertaResponse response = herta.getResponse("archive 1 2");
 
-        assertEquals("That task doesn't exist. Did you even check the list?", response.getMessage());
+        assertEquals("That number points to nothing on the active list. Check again.",
+                response.getMessage());
         assertEquals(List.of("T | 0 | incomplete"), Files.readAllLines(activeFile));
     }
 

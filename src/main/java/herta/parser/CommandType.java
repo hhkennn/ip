@@ -72,6 +72,11 @@ public enum CommandType {
         return keyword;
     }
 
+    /** Returns whether this command may be followed by arguments. */
+    boolean canAcceptArguments() {
+        return canAcceptArguments;
+    }
+
     /**
      * Extracts the arguments after this command type's keyword.
      *

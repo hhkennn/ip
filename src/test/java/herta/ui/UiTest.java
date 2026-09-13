@@ -35,8 +35,8 @@ class UiTest {
         assertTrue(output.contains("     second"));
         assertTrue(output.contains("       [T][ ] read book"));
         assertTrue(output.contains("     2.[T][ ] write book"));
-        assertTrue(output.contains("That makes 1 task. Try to keep up."));
-        assertTrue(output.contains("That makes 2 tasks. Try to keep up."));
+        assertTrue(output.contains("That makes 1 active task. Try to keep up."));
+        assertTrue(output.contains("That makes 2 active tasks. Try to keep up."));
         assertTrue(output.contains("Leaving already? Goodbye."));
     }
 

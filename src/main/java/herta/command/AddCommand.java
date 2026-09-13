@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import herta.exception.HertaException;
 import herta.storage.Storage;
-import herta.storage.TaskRepository;
 import herta.task.Task;
 import herta.task.TaskList;
 import herta.ui.UiOutput;
@@ -13,6 +12,7 @@ import herta.ui.UiOutput;
  * Base class for commands that append a task to the task list.
  */
 public abstract class AddCommand extends Command {
+    private static final String ADD_CONFIRMATION_MESSAGE = "There. I've added it:";
     private final Task task;
 
     /**
@@ -34,24 +34,12 @@ public abstract class AddCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        if (tasks.containsDuplicate(task)) {
-            throw new HertaException("That task is already in the active task list.");
-        }
         TaskList updatedTasks = new TaskList(tasks.asUnmodifiableList());
         updatedTasks.add(task);
         storage.save(updatedTasks);
         tasks.add(task);
-        ui.showMessage("There. I've added it:");
+        ui.showMessage(ADD_CONFIRMATION_MESSAGE);
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
-    }
-
-    /** Rejects a task that already exists in the archived collection. */
-    @Override
-    public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
-        if (repository.getArchivedTasks().containsDuplicate(task)) {
-            throw new HertaException("That task is already in the archived task list.");
-        }
-        execute(repository.getActiveTasks(), ui, repository.getActiveStorage());
     }
 }

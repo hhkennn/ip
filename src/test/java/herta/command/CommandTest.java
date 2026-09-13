@@ -46,7 +46,7 @@ class CommandTest {
         assertEquals(List.of("T | 0 | read book"), Files.readAllLines(dataFile));
         assertTrue(output.contains("There. I've added it:"));
         assertTrue(output.contains("[T][ ] read book"));
-        assertTrue(output.contains("That makes 1 task."));
+        assertTrue(output.contains("That makes 1 active task."));
     }
 
     @Test
@@ -80,17 +80,17 @@ class CommandTest {
         String markOutput = captureOutput(() ->
                 new MarkCommand(0).execute(tasks, new Ui(), storage));
         assertTrue(todo.isCompleted());
-        assertTrue(markOutput.contains("There. It's marked complete:"));
+        assertTrue(markOutput.contains("Done. It's marked complete:"));
 
         String unmarkOutput = captureOutput(() ->
                 new UnmarkCommand(0).execute(tasks, new Ui(), storage));
         assertFalse(todo.isCompleted());
-        assertTrue(unmarkOutput.contains("As you wish. It's incomplete again:"));
+        assertTrue(unmarkOutput.contains("Fine. It's incomplete again:"));
 
         String deleteOutput = captureOutput(() ->
                 new DeleteCommand(0).execute(tasks, new Ui(), storage));
         assertEquals(0, tasks.size());
-        assertTrue(deleteOutput.contains("There. It's gone:"));
+        assertTrue(deleteOutput.contains("Gone. I've removed it:"));
         assertEquals(List.of(), Files.readAllLines(dataFile));
     }
 
@@ -141,7 +141,7 @@ class CommandTest {
     private void assertInvalidIndexReportsHelpfulMessage(Storage failingStorage, TaskList tasks) {
         HertaException invalidIndexException = assertThrows(HertaException.class, () ->
                 new MarkCommand(1).execute(tasks, new Ui(), failingStorage));
-        assertEquals("That task doesn't exist. Did you even check the list?",
+        assertEquals("No active task has that number. Check the list and try again.",
                 invalidIndexException.getMessage());
     }
 
@@ -171,7 +171,7 @@ class CommandTest {
     private void assertFilterCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
         String output = captureOutput(() -> new FilterCommand(LocalDate.of(2019, 10, 15))
                 .execute(tasks, new Ui(), null));
-        assertTrue(output.contains("Here is what your schedule has for Oct 15 2019, if anything:"));
+        assertTrue(output.contains("Here's what's scheduled for Oct 15 2019. Try not to miss it:"));
         assertTrue(output.contains("2.[D][ ] submit report"));
         assertTrue(output.contains("3.[E][ ] project meeting"));
         assertFalse(output.contains("1.[T][ ] buy milk"));
@@ -179,7 +179,7 @@ class CommandTest {
 
     private void assertFindCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
         String output = captureOutput(() -> new FindCommand("REPORT").execute(tasks, new Ui(), null));
-        assertTrue(output.contains("Looking for something? How predictable. Here are the matches:"));
+        assertTrue(output.contains("Found them. Here are the matches:"));
         assertTrue(output.contains("2.[D][ ] submit report"));
         assertFalse(output.contains("1.[T][ ] buy milk"));
         assertFalse(output.contains("3.[E][ ] project meeting"));
@@ -203,7 +203,7 @@ class CommandTest {
                 new FilterCommand(LocalDate.of(2019, 10, 15))
                         .execute(tasks, new Ui(), null));
 
-        assertTrue(output.contains("Nothing scheduled. A remarkably empty date."));
+        assertTrue(output.contains("No tasks on Oct 15 2019. A remarkably empty date."));
     }
 
     @Test
@@ -213,9 +213,9 @@ class CommandTest {
                         .execute(new TaskList(List.of(new Todo("buy milk"))), new Ui(), null));
 
         assertTrue(output.contains(
-                "I found nothing. Perhaps the task was only in your imagination."));
+                "Nothing matched. Try a more useful keyword."));
         assertFalse(output.contains(
-                "Looking for something? How predictable. Here are the matches:"));
+                "Found them. Here are the matches:"));
     }
 
     @Test
@@ -229,7 +229,7 @@ class CommandTest {
         String output = captureOutput(() ->
                 new UpcomingCommand(2).execute(tasks, new Ui(), null));
 
-        assertTrue(output.contains("Your next 2 days. Try not to fall behind:"));
+        assertTrue(output.contains("The next 2 days, arranged for you:"));
         assertTrue(output.contains("2.[D][ ] upcoming report"));
         assertFalse(output.contains("buy milk"));
         assertFalse(output.contains("completed report"));
@@ -251,10 +251,10 @@ class CommandTest {
         HertaException invalidException = assertThrows(HertaException.class, () ->
                 new UnknownCommand("blah").execute(null, null, null));
 
-        assertEquals("Nothing? Were you expecting me to read your mind?",
+        assertEquals("Nothing? Use a command. Try: list, find <keyword>, or todo <description>.",
                 emptyException.getMessage());
         assertTrue(invalidException.getMessage().startsWith(
-                "That command is invalid. Were you just guessing?"));
+                "That command isn't in my vocabulary."));
     }
 
     private String captureOutput(OutputAction action) throws Exception {

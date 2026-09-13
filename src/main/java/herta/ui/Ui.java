@@ -84,7 +84,7 @@ public class Ui implements UiOutput {
      */
     @Override
     public void showGoodbye() {
-        showMessages("Leaving already? Goodbye.", SEPARATOR);
+        showMessages(GOODBYE_MESSAGE, SEPARATOR);
     }
 
     /**

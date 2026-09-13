@@ -21,7 +21,7 @@ public class ResponseCollector implements UiOutput {
      */
     @Override
     public void showGoodbye() {
-        append("Leaving already? Goodbye.");
+        append(GOODBYE_MESSAGE);
     }
 
     /**

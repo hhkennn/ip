@@ -8,6 +8,7 @@ import herta.ui.UiOutput;
  * Represents the command that displays every task in the current order.
  */
 public class ListCommand extends Command {
+    private static final String LIST_HEADING = "Let's see what you've managed to pile up:";
 
     /**
      * Displays the tasks managed by Herta.
@@ -18,7 +19,7 @@ public class ListCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
-        ui.showMessage("Let's see what you've managed to pile up:");
+        ui.showMessage(LIST_HEADING);
         for (int i = 0; i < tasks.size(); i++) {
             ui.showTask(i + 1, tasks.get(i));
         }

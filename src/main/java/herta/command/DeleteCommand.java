@@ -10,6 +10,7 @@ import herta.ui.UiOutput;
  * Represents the command that removes a task from the task list.
  */
 public class DeleteCommand extends TaskIndexCommand {
+    private static final String DELETE_CONFIRMATION_MESSAGE = "Gone. I've removed it:";
 
     /**
      * Creates a command that removes the task at the given index.
@@ -36,7 +37,7 @@ public class DeleteCommand extends TaskIndexCommand {
         updatedTasks.remove(taskIndex);
         storage.save(updatedTasks);
         tasks.remove(taskIndex);
-        ui.showMessage("There. It's gone:");
+        ui.showMessage(DELETE_CONFIRMATION_MESSAGE);
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
     }

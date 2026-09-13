@@ -20,6 +20,18 @@ import herta.ui.UiOutput;
  */
 public class ArchiveCommand extends Command {
     private static final String ARCHIVE_FAILURE_PREFIX = "Failed to archive tasks: ";
+    private static final String EMPTY_ACTIVE_LIST_MESSAGE =
+            "No active tasks. There is nothing here to archive.";
+    private static final String NO_COMPLETED_TASKS_MESSAGE =
+            "Nothing is ready for archiving. Complete a task first.";
+    private static final String INCOMPLETE_TASK_ERROR =
+            "That task is still unfinished. Complete it before archiving.";
+    private static final String ARCHIVE_SUCCESS_MESSAGE =
+            "There. I've archived %d completed %s:";
+    private static final String ACTIVE_TASK_COUNT_MESSAGE =
+            "The active list is down to %d %s. Much tidier.";
+    private static final String INVALID_ACTIVE_TASK_ERROR =
+            "That number points to nothing on the active list. Check again.";
     private final ArchiveSelection selection;
 
     /** Stores the collections and display items produced by an archive operation. */
@@ -95,9 +107,9 @@ public class ArchiveCommand extends Command {
      */
     private void showNoTasksMessage(TaskList activeTasks, UiOutput ui) {
         if (activeTasks.size() == 0) {
-            ui.showMessage("Nothing to archive. The active task list is already empty.");
+            ui.showMessage(EMPTY_ACTIVE_LIST_MESSAGE);
         } else {
-            ui.showMessage("Nothing to archive. There are no completed active tasks.");
+            ui.showMessage(NO_COMPLETED_TASKS_MESSAGE);
         }
     }
 
@@ -115,8 +127,7 @@ public class ArchiveCommand extends Command {
         }
         for (int index : selectedIndices) {
             if (!activeTasks.get(index).isCompleted()) {
-                throw new HertaException(
-                        "Only completed tasks can be archived. Mark the task complete first.");
+                throw new HertaException(INCOMPLETE_TASK_ERROR);
             }
         }
     }
@@ -130,18 +141,14 @@ public class ArchiveCommand extends Command {
      * @return the collections and tasks to display after archiving
      */
     private ArchiveResult archiveSelectedTasks(TaskList activeTasks, TaskList archivedTasks,
-                                               Set<Integer> selectedIndices) throws HertaException {
+                                               Set<Integer> selectedIndices) {
         TaskList updatedActiveTasks = new TaskList();
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         List<Task> archivedTasksForDisplay = new ArrayList<>();
         for (int index = 0; index < activeTasks.size(); index++) {
             Task task = activeTasks.get(index);
             if (selectedIndices.contains(index)) {
-                try {
-                    updatedArchivedTasks.add(task);
-                } catch (IllegalArgumentException e) {
-                    throw new HertaException("Cannot archive a duplicate task.");
-                }
+                updatedArchivedTasks.add(task);
                 archivedTasksForDisplay.add(task);
             } else {
                 updatedActiveTasks.add(task);
@@ -158,13 +165,14 @@ public class ArchiveCommand extends Command {
      * @param ui the output interface
      */
     private void showArchiveResult(ArchiveResult result, int archivedCount, UiOutput ui) {
-        ui.showMessage("There. I've archived " + archivedCount
-                + " completed " + getTaskNoun(archivedCount) + ":");
+        ui.showMessage(ARCHIVE_SUCCESS_MESSAGE.formatted(
+                archivedCount, getTaskNoun(archivedCount)));
         for (Task task : result.archivedTasksForDisplay()) {
             ui.showTask(task);
         }
-        ui.showMessage("That leaves " + result.activeTasks().size() + " active "
-                + getTaskNoun(result.activeTasks().size()) + ". Try to keep up.");
+        int activeTaskCount = result.activeTasks().size();
+        ui.showMessage(ACTIVE_TASK_COUNT_MESSAGE.formatted(
+                activeTaskCount, getTaskNoun(activeTaskCount)));
     }
 
     /**
@@ -183,7 +191,7 @@ public class ArchiveCommand extends Command {
 
         for (ArchiveRange range : selection.getRanges()) {
             if (range.start() <= 0 || range.end() > activeTasks.size()) {
-                throw new HertaException("That task doesn't exist. Did you even check the list?");
+                throw new HertaException(INVALID_ACTIVE_TASK_ERROR);
             }
         }
         for (ArchiveRange range : selection.getRanges()) {

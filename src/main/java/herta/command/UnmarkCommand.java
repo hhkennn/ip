@@ -10,6 +10,7 @@ import herta.ui.UiOutput;
  * Represents the command that marks a task as incomplete.
  */
 public class UnmarkCommand extends TaskStatusCommand {
+    private static final String UNMARK_CONFIRMATION_MESSAGE = "Fine. It's incomplete again:";
 
     /**
      * Creates a command that marks the task at the given index as incomplete.
@@ -32,7 +33,7 @@ public class UnmarkCommand extends TaskStatusCommand {
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
         Task task = updateTaskStatus(tasks, storage, false);
-        ui.showMessage("As you wish. It's incomplete again:");
+        ui.showMessage(UNMARK_CONFIRMATION_MESSAGE);
         ui.showTask(task);
     }
 }
