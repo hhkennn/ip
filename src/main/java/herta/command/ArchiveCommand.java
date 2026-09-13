@@ -141,7 +141,7 @@ public class ArchiveCommand extends Command {
      * @return the collections and tasks to display after archiving
      */
     private ArchiveResult archiveSelectedTasks(TaskList activeTasks, TaskList archivedTasks,
-                                               Set<Integer> selectedIndices) throws HertaException {
+                                               Set<Integer> selectedIndices) {
         TaskList updatedActiveTasks = new TaskList();
         TaskList updatedArchivedTasks = new TaskList(archivedTasks.asUnmodifiableList());
         List<Task> archivedTasksForDisplay = new ArrayList<>();

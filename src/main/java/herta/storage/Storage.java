@@ -118,9 +118,10 @@ public class Storage {
         }
 
         try {
-            boolean bothPathsExist = Files.exists(normalizedActivePath)
+            boolean areBothPathsPresent = Files.exists(normalizedActivePath)
                     && Files.exists(normalizedArchivePath);
-            if (bothPathsExist && Files.isSameFile(normalizedActivePath, normalizedArchivePath)) {
+            if (areBothPathsPresent
+                    && Files.isSameFile(normalizedActivePath, normalizedArchivePath)) {
                 throw new HertaException(ARCHIVE_LOAD_PREFIX
                         + "active and archive paths must be different files.");
             }

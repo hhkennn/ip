@@ -51,8 +51,6 @@ public class Parser {
     private static final String LOWERCASE_COMMAND_ERROR = "Lowercase only. Try: %s.";
     private static final String NO_ARGUMENT_COMMAND_ERROR =
             "Just use: %s. Nothing else is required.";
-    private static final String INVALID_UPCOMING_DAYS_ERROR = "That day count is not useful. "
-            + "Use: upcoming <days>, with a positive number in range.";
     private static final int MAX_NUMBER_LENGTH = 64;
     private static final int MAX_UPCOMING_DAYS = 4_000_000;
 
@@ -209,8 +207,7 @@ public class Parser {
                     FILTER_DATE_MARKER, FILTER_USAGE));
         }
         String[] filterParts = arguments.split("[ \\t]+", 2);
-        if (markerCount == 0 || filterParts.length == 0
-                || !filterParts[0].equals(FILTER_DATE_MARKER)) {
+        if (!FILTER_DATE_MARKER.equals(filterParts[0])) {
             throw new HertaException(MISSING_FILTER_MARKER_ERROR.formatted(
                     FILTER_DATE_MARKER, FILTER_USAGE));
         }
@@ -237,15 +234,15 @@ public class Parser {
         String daysInput = CommandType.UPCOMING.extractArguments(input);
         final int days;
         if (!daysInput.matches("[0-9]+") || daysInput.length() > MAX_NUMBER_LENGTH) {
-            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
+            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
         }
         try {
             days = Integer.parseInt(daysInput);
         } catch (NumberFormatException e) {
-            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
+            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
         }
         if (days <= 0 || days > MAX_UPCOMING_DAYS) {
-            throw new HertaException(INVALID_UPCOMING_DAYS_ERROR);
+            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
         }
         return days;
     }
@@ -317,7 +314,14 @@ public class Parser {
                 throw new HertaException(LOWERCASE_COMMAND_ERROR.formatted(supportedKeyword));
             }
         }
-        for (String noArgumentKeyword : new String[] {"list", "bye"}) {
+        for (CommandType noArgumentCommand : CommandType.values()) {
+            if (noArgumentCommand.canAcceptArguments()) {
+                continue;
+            }
+            String noArgumentKeyword = noArgumentCommand.getKeyword();
+            if (noArgumentKeyword.isEmpty()) {
+                continue;
+            }
             if (hasTrailingArguments(normalizedInput, noArgumentKeyword)) {
                 throw new HertaException(getNoArgumentError(noArgumentKeyword));
             }

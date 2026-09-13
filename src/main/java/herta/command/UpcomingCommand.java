@@ -13,7 +13,8 @@ import herta.ui.UiOutput;
  * Represents the command that displays incomplete tasks in a future time window.
  */
 public class UpcomingCommand extends QueryCommand {
-    private static final String INVALID_UPCOMING_DAYS_ERROR = "That day count is not useful. "
+    /** Error message used when the requested upcoming range cannot be represented. */
+    public static final String INVALID_UPCOMING_DAYS_ERROR = "That day count is not useful. "
             + "Use: upcoming <days>, with a positive number in range.";
     private static final String UPCOMING_HEADING = "The next %d days, arranged for you:";
     private static final String UPCOMING_EMPTY_MESSAGE =

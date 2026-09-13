@@ -85,9 +85,9 @@ public class Event extends Task {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime startOfNextDay = date.equals(LocalDate.MAX)
                 ? LocalDateTime.MAX : date.plusDays(1).atStartOfDay();
-        boolean startsBeforeNextDay = from.isBefore(startOfNextDay);
-        boolean endsAfterStartOfDay = to.isAfter(startOfDay);
-        return startsBeforeNextDay && endsAfterStartOfDay;
+        boolean isStartBeforeNextDay = from.isBefore(startOfNextDay);
+        boolean isEndAfterStartOfDay = to.isAfter(startOfDay);
+        return isStartBeforeNextDay && isEndAfterStartOfDay;
     }
 
     /**

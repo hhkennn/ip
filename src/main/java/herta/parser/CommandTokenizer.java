@@ -5,7 +5,7 @@ import herta.exception.HertaException;
 /** Normalizes the command boundary while preserving spaces inside task text. */
 public final class CommandTokenizer {
     /** Maximum command length accepted from either the console or GUI. */
-    public static final int MAX_COMMAND_LENGTH = 4_096;
+    static final int MAX_COMMAND_LENGTH = 4_096;
     private static final String NULL_COMMAND_ERROR =
             "Nothing usable came through. Enter a command, such as list or todo <description>.";
     private static final String LONG_COMMAND_ERROR =
