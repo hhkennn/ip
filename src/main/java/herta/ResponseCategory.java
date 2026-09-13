@@ -14,6 +14,7 @@ public enum ResponseCategory {
     RESTORE,
     QUERY,
     EXIT,
+    USAGE_GUIDANCE,
     ERROR;
 
     /**

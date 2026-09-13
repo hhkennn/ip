@@ -1,15 +1,20 @@
 package herta;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -21,6 +26,12 @@ public class MainWindow extends AnchorPane {
     /** Resource path shared by the avatar and application icon. */
     static final String HERTA_IMAGE_RESOURCE = "/images/herta.png";
     private static final int EXIT_DELAY_SECONDS = 2;
+    private static final int DEFAULT_ZOOM_LEVEL = 0;
+    private static final int MINIMUM_ZOOM_LEVEL = -2;
+    private static final int MAXIMUM_ZOOM_LEVEL = 4;
+    private static final double ZOOM_STEP = 0.1;
+    private static final double DIALOG_BASE_FONT_SIZE = 16.0;
+    private static final double AVATAR_BASE_SIZE = 64.0;
 
     @FXML
     private ScrollPane scrollPane;
@@ -34,6 +45,7 @@ public class MainWindow extends AnchorPane {
     private Button sendButton;
 
     private Herta herta;
+    private int zoomLevel = DEFAULT_ZOOM_LEVEL;
     private final Image hertaImage = new Image(
             Objects.requireNonNull(MainWindow.class.getResourceAsStream(HERTA_IMAGE_RESOURCE)));
 
@@ -43,6 +55,11 @@ public class MainWindow extends AnchorPane {
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        dialogContainer.widthProperty().addListener((observable, oldWidth, newWidth) ->
+                applyMessageWidths(newWidth.doubleValue()));
+        scrollPane.addEventFilter(ScrollEvent.SCROLL, this::handleZoomScroll);
+        Parent windowRoot = Objects.requireNonNull(scrollPane.getParent());
+        windowRoot.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyboardZoom);
         dialogContainer.getChildren().add(
                 DialogBox.getHertaDialog(
                         "Oh, you're here. I'm Herta.\nWell? What do you want?",
@@ -50,6 +67,7 @@ public class MainWindow extends AnchorPane {
         userInputPrompt.visibleProperty().bind(
                 userInput.textProperty().isEmpty()
                         .and(userInput.disabledProperty().not()));
+        applyZoom();
     }
 
     /**
@@ -65,6 +83,7 @@ public class MainWindow extends AnchorPane {
                             herta.getLoadingError(), hertaImage, ResponseCategory.ERROR));
             userInput.setDisable(true);
             sendButton.setDisable(true);
+            applyZoom();
         }
     }
 
@@ -82,6 +101,7 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getUserDialog(userText),
                 DialogBox.getHertaDialog(
                         hertaResponse.getMessage(), hertaImage, hertaResponse.getResponseCategory()));
+        applyZoom();
         userInput.clear();
 
         if (hertaResponse.isExitRequested()) {
@@ -92,5 +112,88 @@ public class MainWindow extends AnchorPane {
             exitDelay.setOnFinished(event -> Platform.exit());
             exitDelay.play();
         }
+    }
+
+    /** Adjusts the chat text size when the user holds Ctrl while scrolling. */
+    private void handleZoomScroll(ScrollEvent event) {
+        if (!event.isControlDown() || event.getDeltaY() == 0) {
+            return;
+        }
+
+        int zoomDirection = event.getDeltaY() > 0 ? 1 : -1;
+        setZoomLevel(zoomLevel + zoomDirection);
+        event.consume();
+    }
+
+    /** Applies the current zoom level to the conversation and avatars. */
+    private void applyZoom() {
+        double zoomScale = 1 + zoomLevel * ZOOM_STEP;
+        double dialogFontSize = DIALOG_BASE_FONT_SIZE * zoomScale;
+        String dialogFontSizeStyle = createFontSizeStyle(dialogFontSize);
+        double avatarSize = AVATAR_BASE_SIZE * zoomScale;
+
+        for (var child : dialogContainer.getChildren()) {
+            if (child instanceof DialogBox dialogBox) {
+                dialogBox.setFontSizeStyle(dialogFontSizeStyle);
+                dialogBox.setAvatarSize(avatarSize);
+            }
+        }
+        applyMessageWidths(dialogContainer.getWidth());
+    }
+
+    /** Updates message widths when the chat container or zoom level changes. */
+    private void applyMessageWidths(double availableWidth) {
+        if (availableWidth <= 0) {
+            return;
+        }
+
+        for (var child : dialogContainer.getChildren()) {
+            if (child instanceof DialogBox dialogBox) {
+                dialogBox.setMessageMaxWidth(availableWidth);
+            }
+        }
+    }
+
+    /** Adjusts the chat text size with keyboard shortcuts while Ctrl is held. */
+    private void handleKeyboardZoom(KeyEvent event) {
+        if (!event.isControlDown()) {
+            return;
+        }
+
+        if (event.getCode() == KeyCode.DIGIT0) {
+            setZoomLevel(DEFAULT_ZOOM_LEVEL);
+            event.consume();
+            return;
+        }
+
+        int zoomDirection;
+        if (event.getCode() == KeyCode.PLUS || event.getCode() == KeyCode.EQUALS) {
+            zoomDirection = 1;
+        } else if (event.getCode() == KeyCode.MINUS) {
+            zoomDirection = -1;
+        } else {
+            return;
+        }
+
+        setZoomLevel(zoomLevel + zoomDirection);
+        event.consume();
+    }
+
+    /** Restricts the zoom level to the supported range before applying it. */
+    private void setZoomLevel(int requestedZoomLevel) {
+        int boundedZoomLevel = Math.max(
+                MINIMUM_ZOOM_LEVEL,
+                Math.min(MAXIMUM_ZOOM_LEVEL, requestedZoomLevel));
+        if (boundedZoomLevel == zoomLevel) {
+            return;
+        }
+
+        zoomLevel = boundedZoomLevel;
+        applyZoom();
+    }
+
+    /** Creates an inline JavaFX font-size declaration for a control. */
+    private static String createFontSizeStyle(double fontSize) {
+        return String.format(Locale.ROOT, "-fx-font-size: %.1fpx;", fontSize);
     }
 }
