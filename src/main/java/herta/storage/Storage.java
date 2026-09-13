@@ -22,6 +22,7 @@ public class Storage {
     private static final String ACTIVE_LOAD_PREFIX = "Failed to load tasks: ";
     private static final String ARCHIVE_LOAD_PREFIX = "Failed to load archived tasks: ";
     private static final String RECORD_LOAD_PREFIX = "Failed to load tasks ";
+    private static final String ARCHIVE_RECORD_LOAD_PREFIX = "Failed to load archived tasks ";
     private static final String EXTERNAL_CHANGE_ERROR = "the data file changed outside Herta; "
             + "reload before saving.";
     private static final Logger LOGGER = Logger.getLogger(Storage.class.getName());
@@ -31,6 +32,7 @@ public class Storage {
     private final StorageFileManager fileManager;
     private StorageFileManager.FileSnapshot lastKnownSnapshot;
     private boolean isConsistent = true;
+    private PersistenceState lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
 
     /** Stores all data captured before a two-file persistence transaction begins. */
     private record StorageTransactionPlan(List<String> activeLines, List<String> archiveLines,
@@ -65,6 +67,16 @@ public class Storage {
      */
     public Path getDataFile() {
         return dataFile;
+    }
+
+    /** Resets the save outcome before a new command is parsed or executed. */
+    public void resetPersistenceState() {
+        lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+    }
+
+    /** Returns the outcome of the most recent save attempt. */
+    public PersistenceState getLastPersistenceState() {
+        return lastPersistenceState;
     }
 
     /**
@@ -139,7 +151,7 @@ public class Storage {
      * @throws HertaException if the archive cannot be read or parsed
      */
     public TaskList loadArchived() throws HertaException {
-        return loadWithPrefix(ARCHIVE_LOAD_PREFIX, ARCHIVE_LOAD_PREFIX + RECORD_LOAD_PREFIX);
+        return loadWithPrefix(ARCHIVE_LOAD_PREFIX, ARCHIVE_RECORD_LOAD_PREFIX);
     }
 
     /**
@@ -182,24 +194,54 @@ public class Storage {
      * @throws HertaException if the task list cannot be written
      */
     public void save(TaskList tasks) throws HertaException {
-        ensureConsistent();
+        lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
         List<String> lines = converter.serializeTasks(tasks);
+        try (StorageFileLock ignored = StorageFileLock.acquire(dataFile)) {
+            saveWhileLocked(lines);
+        } catch (IOException | RuntimeException e) {
+            logStorageFailure("Unable to acquire the storage lock.", e);
+            throw new HertaException("Failed to save tasks: " + mapFailure(e));
+        }
+    }
+
+    /** Saves one file while the adjacent lock excludes cooperating writers. */
+    private void saveWhileLocked(List<String> lines) throws HertaException {
+        ensureConsistent();
         StorageFileManager.FileSnapshot originalSnapshot = null;
-        boolean wasReplacementCompleted = false;
+        boolean wasReplacementStarted = false;
+        Path temporaryFile = null;
         try {
+            lastPersistenceState = PersistenceState.IN_PROGRESS;
             originalSnapshot = fileManager.captureSnapshot();
             initializeExpectedSnapshot(originalSnapshot);
             ensureHasNotChanged();
-            fileManager.writeLines(lines);
-            wasReplacementCompleted = true;
+            temporaryFile = fileManager.writeTemporaryFile(lines);
+            ensureHasNotChanged();
+            wasReplacementStarted = true;
+            fileManager.replaceDataFile(temporaryFile);
+            temporaryFile = null;
             lastKnownSnapshot = fileManager.captureSnapshot();
+            lastPersistenceState = PersistenceState.COMMITTED;
         } catch (IOException | RuntimeException e) {
-            if (wasReplacementCompleted) {
-                restoreAfterFailedSave(originalSnapshot);
-            }
-            logStorageFailure("Unable to save storage.", e);
+            handleSingleFileSaveFailure(e, wasReplacementStarted, originalSnapshot, temporaryFile);
             throw new HertaException("Failed to save tasks: " + mapFailure(e));
         }
+    }
+
+    /** Restores and cleans up after an unexpected single-file save failure. */
+    private void handleSingleFileSaveFailure(Exception failure, boolean wasReplacementStarted,
+                                             StorageFileManager.FileSnapshot originalSnapshot,
+                                             Path temporaryFile) throws HertaException {
+        try {
+            if (wasReplacementStarted) {
+                restoreAfterFailedSave(originalSnapshot);
+            } else {
+                lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+            }
+        } finally {
+            fileManager.deleteTemporaryFile(temporaryFile);
+        }
+        logStorageFailure("Unable to save storage.", failure);
     }
 
     /**
@@ -216,11 +258,21 @@ public class Storage {
     public void saveActiveAndArchivedTasks(Storage archiveStorage, TaskList activeTasks,
                                            TaskList archivedTasks, String failurePrefix)
             throws HertaException {
+        Objects.requireNonNull(archiveStorage, "Archive storage cannot be null.");
+        Objects.requireNonNull(failurePrefix, "A storage failure prefix cannot be null.");
+        lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+        archiveStorage.lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
         StorageTransactionPlan transactionPlan = null;
-        try {
+        try (StorageFileLock ignored = StorageFileLock.acquire(dataFile, archiveStorage.dataFile)) {
+            lastPersistenceState = PersistenceState.IN_PROGRESS;
+            archiveStorage.lastPersistenceState = PersistenceState.IN_PROGRESS;
             transactionPlan = prepareTransaction(archiveStorage, activeTasks, archivedTasks);
             commitTransaction(archiveStorage, transactionPlan);
         } catch (HertaException e) {
+            if (transactionPlan == null) {
+                lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+                archiveStorage.lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+            }
             cleanUpTransaction(transactionPlan);
             throw withFailurePrefix(failurePrefix, e.getMessage());
         } catch (IOException | RuntimeException e) {
@@ -261,6 +313,8 @@ public class Storage {
                 transactionPlan.originalActiveFile(), transactionPlan.originalArchiveFile());
         lastKnownSnapshot = fileManager.captureSnapshot();
         archiveStorage.lastKnownSnapshot = archiveStorage.fileManager.captureSnapshot();
+        lastPersistenceState = PersistenceState.COMMITTED;
+        archiveStorage.lastPersistenceState = PersistenceState.COMMITTED;
         transactionPlan.transactionJournal().cleanUp();
     }
 
@@ -269,11 +323,15 @@ public class Storage {
                                                StorageTransactionPlan transactionPlan,
                                                String failureReason) {
         if (transactionPlan == null) {
+            lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+            archiveStorage.lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
             return new RollbackResult(failureReason, true);
         }
         try {
             restoreOriginalFiles(archiveStorage, transactionPlan.originalActiveFile(),
                     transactionPlan.originalArchiveFile());
+            lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
+            archiveStorage.lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
             return new RollbackResult(failureReason, true);
         } catch (IOException | RuntimeException rollbackError) {
             String recoveryMessage = failureReason + "; rollback failed; recovery journal retained at "
@@ -281,6 +339,8 @@ public class Storage {
             logStorageFailure("Rollback failed while restoring storage.", rollbackError);
             isConsistent = false;
             archiveStorage.isConsistent = false;
+            lastPersistenceState = PersistenceState.UNKNOWN;
+            archiveStorage.lastPersistenceState = PersistenceState.UNKNOWN;
             return new RollbackResult(recoveryMessage, false);
         }
     }
@@ -298,8 +358,10 @@ public class Storage {
         try {
             fileManager.restoreSnapshot(originalSnapshot);
             lastKnownSnapshot = originalSnapshot;
+            lastPersistenceState = PersistenceState.NOT_ATTEMPTED;
         } catch (IOException | RuntimeException rollbackError) {
             isConsistent = false;
+            lastPersistenceState = PersistenceState.UNKNOWN;
             logStorageFailure("Rollback failed while restoring storage.", rollbackError);
             throw new HertaException("Failed to save tasks: storage consistency is uncertain; "
                     + "restart Herta before writing again.");
@@ -378,10 +440,13 @@ public class Storage {
         try {
             temporaryActiveFile = fileManager.writeTemporaryFile(activeLines);
             temporaryArchiveFile = archiveStorage.fileManager.writeTemporaryFile(archiveLines);
+            ensureHasNotChanged();
+            archiveStorage.ensureHasNotChanged();
             fileManager.replaceDataFile(temporaryActiveFile);
             temporaryActiveFile = null;
             transactionJournal.markActiveCommitted(dataFile, archiveStorage.dataFile,
                     originalActiveFile, originalArchiveFile);
+            archiveStorage.ensureHasNotChanged();
             archiveStorage.fileManager.replaceDataFile(temporaryArchiveFile);
             temporaryArchiveFile = null;
             transactionJournal.markCommitted(dataFile, archiveStorage.dataFile,

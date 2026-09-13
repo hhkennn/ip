@@ -3,9 +3,11 @@ package herta.task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -14,13 +16,18 @@ import java.util.stream.IntStream;
  * Owns Herta's ordered collection of tasks and its task-related operations.
  */
 public class TaskList implements Iterable<Task> {
+    /** Maximum number of tasks accepted in one active or archived collection. */
+    public static final int MAXIMUM_TASK_COUNT = 10_000;
+
     private final List<Task> tasks;
+    private final Set<TaskIdentity> taskIdentities;
 
     /**
      * Creates an empty task list.
      */
     public TaskList() {
         tasks = new ArrayList<>();
+        taskIdentities = new HashSet<>();
     }
 
     /**
@@ -30,8 +37,11 @@ public class TaskList implements Iterable<Task> {
      */
     public TaskList(List<Task> initialTasks) {
         Objects.requireNonNull(initialTasks, "Initial tasks cannot be null.");
-        tasks = new ArrayList<>(initialTasks);
-        validateInitialTasks();
+        tasks = new ArrayList<>();
+        taskIdentities = new HashSet<>();
+        for (Task task : initialTasks) {
+            add(task);
+        }
     }
 
     /**
@@ -60,7 +70,11 @@ public class TaskList implements Iterable<Task> {
      */
     public void add(Task task) {
         Objects.requireNonNull(task, "A task list cannot contain a null task.");
-        if (containsDuplicate(task)) {
+        if (tasks.size() >= MAXIMUM_TASK_COUNT) {
+            throw new IllegalArgumentException("A task list cannot contain more than "
+                    + MAXIMUM_TASK_COUNT + " tasks.");
+        }
+        if (!taskIdentities.add(task.getIdentity())) {
             throw new IllegalArgumentException("Duplicate tasks are not allowed.");
         }
         tasks.add(task);
@@ -76,36 +90,7 @@ public class TaskList implements Iterable<Task> {
         if (candidate == null) {
             return false;
         }
-        return tasks.stream()
-                .filter(Objects::nonNull)
-                .anyMatch(task -> task.isDuplicateOf(candidate));
-    }
-
-    /** Rejects duplicate non-null tasks supplied through the collection constructor. */
-    private void validateInitialTasks() {
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (task == null) {
-                continue;
-            }
-            if (containsDuplicateBeforeIndex(task, i)) {
-                throw new IllegalArgumentException("Duplicate tasks are not allowed.");
-            }
-        }
-    }
-
-    /** Checks only the tasks preceding the candidate to avoid reporting itself as a duplicate. */
-    private boolean containsDuplicateBeforeIndex(Task candidate, int candidateIndex) {
-        for (int i = 0; i < candidateIndex; i++) {
-            Task existingTask = tasks.get(i);
-            if (existingTask == null) {
-                continue;
-            }
-            if (existingTask.isDuplicateOf(candidate)) {
-                return true;
-            }
-        }
-        return false;
+        return taskIdentities.contains(candidate.getIdentity());
     }
 
     /**
@@ -115,7 +100,9 @@ public class TaskList implements Iterable<Task> {
      * @return the removed task
      */
     public Task remove(int index) {
-        return tasks.remove(index);
+        Task removedTask = tasks.remove(index);
+        taskIdentities.remove(removedTask.getIdentity());
+        return removedTask;
     }
 
     /**
@@ -127,7 +114,11 @@ public class TaskList implements Iterable<Task> {
         Objects.requireNonNull(replacement, "A replacement task list cannot be null.");
         TaskList validatedReplacement = new TaskList(replacement.asUnmodifiableList());
         tasks.clear();
+        taskIdentities.clear();
         tasks.addAll(validatedReplacement.asUnmodifiableList());
+        for (Task task : tasks) {
+            taskIdentities.add(task.getIdentity());
+        }
     }
 
     /**
@@ -180,6 +171,7 @@ public class TaskList implements Iterable<Task> {
      * @return matching zero-based task indices in their current list order
      */
     public List<Integer> matchingIndices(Predicate<Task> matcher) {
+        Objects.requireNonNull(matcher, "A task matcher cannot be null.");
         return IntStream.range(0, tasks.size())
                 .filter(index -> matcher.test(tasks.get(index)))
                 .boxed()
@@ -194,6 +186,7 @@ public class TaskList implements Iterable<Task> {
      * @return zero-based task indices in sorted order
      */
     public List<Integer> sortedIndices(Comparator<Task> comparator) {
+        Objects.requireNonNull(comparator, "A task comparator cannot be null.");
         List<Integer> sortedIndices = IntStream.range(0, tasks.size())
                 .boxed()
                 .sorted((first, second) -> comparator.compare(

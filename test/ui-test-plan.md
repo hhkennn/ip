@@ -1120,7 +1120,7 @@ Your command?      ____________________________________________________________
 
 ```text
 todo borrow book
-deadline return book /by 2/12/2019 1800
+deadline return book /by 2/12/2019  1800
 event project meeting /from 2/12/2019 1800 /to 3/12/2019 1800
 list
 bye

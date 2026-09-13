@@ -6,7 +6,6 @@ import java.time.format.DateTimeParseException;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
-import herta.task.TaskDescriptionValidator;
 import herta.task.Todo;
 
 /**
@@ -40,8 +39,7 @@ final class TaskCreationParser {
             throw new HertaException("A blank todo? Even I can't organise nothing. "
                     + "Use: todo <description>.");
         }
-        validateDescription(description);
-        return new Todo(description);
+        return createTodo(description);
     }
 
     /**
@@ -72,11 +70,9 @@ final class TaskCreationParser {
             throw new HertaException("A deadline needs a value after /by. Use: deadline "
                     + "<description> /by <date/time>.");
         }
-        validateDescription(description);
-
         String errorMessage = "That is not a date. Use a real one, such as "
                 + "2019-10-15 or 2/12/2019 1800.";
-        return new Deadline(description, parseUserDateTime(byInput, errorMessage));
+        return createDeadline(description, parseUserDateTime(byInput, errorMessage));
     }
 
     /**
@@ -150,7 +146,6 @@ final class TaskCreationParser {
             throw new HertaException("An event needs a value after /to. Use: event "
                     + "<description> /from <start> /to <end>.");
         }
-        validateDescription(description);
         return new EventParts(description, fromInput, toInput);
     }
 
@@ -165,10 +160,32 @@ final class TaskCreationParser {
      */
     private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
             throws HertaException {
+        if (!from.isBefore(to)) {
+            throw new HertaException("Time moves forward. Make the event end after it starts.");
+        }
         try {
             return new Event(description, from, to);
         } catch (IllegalArgumentException e) {
-            throw new HertaException("Time moves forward. Make the event end after it starts.");
+            throw new HertaException(e.getMessage());
+        }
+    }
+
+    /** Creates a todo and exposes domain validation as command usage guidance. */
+    private Todo createTodo(String description) throws HertaException {
+        try {
+            return new Todo(description);
+        } catch (IllegalArgumentException e) {
+            throw new HertaException(e.getMessage());
+        }
+    }
+
+    /** Creates a deadline and exposes domain validation as command usage guidance. */
+    private Deadline createDeadline(String description, LocalDateTime by)
+            throws HertaException {
+        try {
+            return new Deadline(description, by);
+        } catch (IllegalArgumentException e) {
+            throw new HertaException(e.getMessage());
         }
     }
 
@@ -186,15 +203,6 @@ final class TaskCreationParser {
             return DateTimeParser.parseUserDateTime(input);
         } catch (DateTimeParseException e) {
             throw new HertaException(errorMessage);
-        }
-    }
-
-    /** Validates a task description and turns domain validation into usage guidance. */
-    private void validateDescription(String description) throws HertaException {
-        try {
-            TaskDescriptionValidator.validate(description);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new HertaException(e.getMessage());
         }
     }
 

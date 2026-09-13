@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -14,8 +18,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +41,9 @@ final class StorageTransactionJournal {
     private static final String ACTIVE_COMMITTED_PHASE = "ACTIVE_COMMITTED";
     private static final String COMMITTED_PHASE = "COMMITTED";
     private static final String ABSENT_BACKUP = "ABSENT";
+    private static final Set<String> JOURNAL_KEYS = Set.of(ACTIVE_PATH_KEY, ARCHIVE_PATH_KEY,
+            ACTIVE_PRESENT_KEY, ARCHIVE_PRESENT_KEY, ACTIVE_BACKUP_KEY, ARCHIVE_BACKUP_KEY,
+            PHASE_KEY);
     private static final Duration STALE_FILE_AGE = Duration.ofDays(1);
     private static final Logger LOGGER = Logger.getLogger(StorageTransactionJournal.class.getName());
 
@@ -114,6 +123,19 @@ final class StorageTransactionJournal {
 
     /** Recovers an interrupted transaction belonging to the supplied data paths. */
     static void recoverPendingTransaction(Path activeFile, Path archiveFile) throws HertaException {
+        try (StorageFileLock ignored = StorageFileLock.acquire(activeFile, archiveFile)) {
+            recoverPendingTransactionWhileLocked(activeFile, archiveFile);
+        } catch (HertaException e) {
+            throw e;
+        } catch (IOException | RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unable to inspect the Herta transaction journal.", e);
+            throw new HertaException("Failed to recover interrupted storage transaction safely.");
+        }
+    }
+
+    /** Performs journal recovery while cooperating writers are excluded. */
+    private static void recoverPendingTransactionWhileLocked(Path activeFile, Path archiveFile)
+            throws HertaException {
         Path journalPath = getJournalPath(activeFile);
         if (isJournalMissing(journalPath)) {
             cleanStaleTemporaryFiles(activeFile);
@@ -122,21 +144,26 @@ final class StorageTransactionJournal {
         try {
             Properties properties = loadProperties(journalPath);
             validateOwnership(properties, activeFile, archiveFile);
-            if (COMMITTED_PHASE.equals(properties.getProperty(PHASE_KEY))) {
-                deleteOwnedFile(Path.of(properties.getProperty(ACTIVE_BACKUP_KEY)));
-                deleteOwnedFile(Path.of(properties.getProperty(ARCHIVE_BACKUP_KEY)));
-                deleteOwnedFile(journalPath);
+            String phase = properties.getProperty(PHASE_KEY);
+            if (COMMITTED_PHASE.equals(phase)) {
+                deleteBackupFiles(properties);
             } else {
                 restorePath(properties, ACTIVE_PATH_KEY, ACTIVE_PRESENT_KEY, ACTIVE_BACKUP_KEY);
                 restorePath(properties, ARCHIVE_PATH_KEY, ARCHIVE_PRESENT_KEY, ARCHIVE_BACKUP_KEY);
-                deleteOwnedFile(Path.of(properties.getProperty(ACTIVE_BACKUP_KEY)));
-                deleteOwnedFile(Path.of(properties.getProperty(ARCHIVE_BACKUP_KEY)));
-                deleteOwnedFile(journalPath);
+                deleteBackupFiles(properties);
             }
+            deleteOwnedFile(journalPath);
             cleanStaleTemporaryFiles(activeFile);
         } catch (IOException | RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unable to validate the Herta transaction journal.", e);
             throw new HertaException("Failed to recover interrupted storage transaction safely.");
         }
+    }
+
+    /** Deletes only the validated backup paths from a journal. */
+    private static void deleteBackupFiles(Properties properties) {
+        deleteOwnedFile(Path.of(properties.getProperty(ACTIVE_BACKUP_KEY)));
+        deleteOwnedFile(Path.of(properties.getProperty(ARCHIVE_BACKUP_KEY)));
     }
 
     /** Writes the journal and forces it so the recovery phase survives a power loss. */
@@ -153,11 +180,27 @@ final class StorageTransactionJournal {
         properties.setProperty(ARCHIVE_BACKUP_KEY, archiveBackup.toString());
         properties.setProperty(PHASE_KEY, phase);
         String serializedProperties = serializeProperties(properties);
-        Files.writeString(journalPath, serializedProperties, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE);
-        try (FileChannel channel = FileChannel.open(journalPath, StandardOpenOption.WRITE)) {
-            channel.force(true);
+        Path temporaryJournal = null;
+        try {
+            temporaryJournal = StorageFileManager.createOwnedTemporaryFile(
+                    journalPath.getParent(), ".herta-transaction-", ".tmp");
+            Files.writeString(temporaryJournal, serializedProperties, StandardCharsets.UTF_8,
+                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            forcePath(temporaryJournal);
+            replaceJournal(temporaryJournal);
+            temporaryJournal = null;
+        } finally {
+            deleteOwnedFile(temporaryJournal);
+        }
+    }
+
+    /** Replaces the journal atomically when the file system supports it. */
+    private void replaceJournal(Path temporaryJournal) throws IOException {
+        try {
+            Files.move(temporaryJournal, journalPath, StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException | FileAlreadyExistsException | AccessDeniedException e) {
+            Files.move(temporaryJournal, journalPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -179,11 +222,45 @@ final class StorageTransactionJournal {
 
     /** Loads a journal without exposing its platform-specific contents to the caller. */
     private static Properties loadProperties(Path journalPath) throws IOException {
+        validatePropertyKeys(journalPath);
         Properties properties = new Properties();
         try (var reader = Files.newBufferedReader(journalPath, StandardCharsets.UTF_8)) {
             properties.load(reader);
         }
+        if (!properties.stringPropertyNames().equals(JOURNAL_KEYS)) {
+            throw new IOException("Storage transaction journal schema is invalid.");
+        }
         return properties;
+    }
+
+    /** Rejects duplicate or unknown property declarations before Properties resolves them. */
+    private static void validatePropertyKeys(Path journalPath) throws IOException {
+        Set<String> declaredKeys = new HashSet<>();
+        try (var reader = Files.newBufferedReader(journalPath, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String key = extractPropertyKey(line);
+                if (key.isEmpty()) {
+                    continue;
+                }
+                if (!JOURNAL_KEYS.contains(key) || !declaredKeys.add(key)) {
+                    throw new IOException("Storage transaction journal schema is invalid.");
+                }
+            }
+        }
+    }
+
+    /** Returns the simple key in one generated journal property line. */
+    private static String extractPropertyKey(String line) {
+        String trimmedLine = line.trim();
+        if (trimmedLine.isEmpty() || trimmedLine.startsWith("#") || trimmedLine.startsWith("!")) {
+            return "";
+        }
+        int separatorIndex = trimmedLine.indexOf('=');
+        if (separatorIndex < 0) {
+            separatorIndex = trimmedLine.indexOf(':');
+        }
+        return separatorIndex < 0 ? trimmedLine : trimmedLine.substring(0, separatorIndex).trim();
     }
 
     /** Ensures a journal can only recover the files it was created to manage. */
@@ -191,27 +268,36 @@ final class StorageTransactionJournal {
             throws IOException {
         Path normalizedActiveFile = normalize(activeFile);
         Path normalizedArchiveFile = normalize(archiveFile);
-        boolean hasActiveOwnership = normalizedActiveFile.toString()
-                .equals(properties.getProperty(ACTIVE_PATH_KEY));
-        boolean hasArchiveOwnership = normalizedArchiveFile.toString()
-                .equals(properties.getProperty(ARCHIVE_PATH_KEY));
-        if (!hasActiveOwnership || !hasArchiveOwnership) {
-            throw new IOException("Storage transaction ownership mismatch.");
-        }
+        validatePathProperty(properties, ACTIVE_PATH_KEY, normalizedActiveFile);
+        validatePathProperty(properties, ARCHIVE_PATH_KEY, normalizedArchiveFile);
+        boolean wasActivePresent = parseBooleanProperty(properties, ACTIVE_PRESENT_KEY);
+        boolean wasArchivePresent = parseBooleanProperty(properties, ARCHIVE_PRESENT_KEY);
+        validatePhase(properties.getProperty(PHASE_KEY));
         Path directory = normalizedActiveFile.getParent();
         validateBackupPath(properties.getProperty(ACTIVE_BACKUP_KEY), directory,
-                ".herta-active-");
+                ".herta-active-", wasActivePresent);
         validateBackupPath(properties.getProperty(ARCHIVE_BACKUP_KEY), directory,
-                ".herta-archive-");
+                ".herta-archive-", wasArchivePresent);
+    }
+
+    /** Verifies that a required journal path is exactly the normalized owned path. */
+    private static void validatePathProperty(Properties properties, String key, Path expectedPath)
+            throws IOException {
+        String pathText = properties.getProperty(key);
+        if (pathText == null || !normalize(Path.of(pathText)).toString().equals(pathText)
+                || !expectedPath.toString().equals(pathText)) {
+            throw new IOException("Storage transaction ownership mismatch.");
+        }
     }
 
     /** Verifies that a journal backup stays beside the data file and has Herta's prefix. */
-    private static void validateBackupPath(String backupText, Path directory, String prefix)
+    private static void validateBackupPath(String backupText, Path directory, String prefix,
+                                           boolean wasPresent)
             throws IOException {
-        if (ABSENT_BACKUP.equals(backupText)) {
+        if (!wasPresent && ABSENT_BACKUP.equals(backupText)) {
             return;
         }
-        if (backupText == null) {
+        if (!wasPresent || backupText == null || ABSENT_BACKUP.equals(backupText)) {
             throw new IOException("Storage transaction backup is missing.");
         }
         Path backup = normalize(Path.of(backupText));
@@ -219,8 +305,37 @@ final class StorageTransactionJournal {
         boolean isBesideDataFile = Objects.equals(backup.getParent(), directory);
         boolean hasExpectedPrefix = fileName.startsWith(prefix);
         boolean hasExpectedSuffix = fileName.endsWith(".bak");
-        if (!isBesideDataFile || !hasExpectedPrefix || !hasExpectedSuffix) {
+        boolean isNormalizedPath = backup.toString().equals(backupText);
+        if (!isBesideDataFile || !hasExpectedPrefix || !hasExpectedSuffix || !isNormalizedPath) {
             throw new IOException("Storage transaction backup ownership mismatch.");
+        }
+        BasicFileAttributes attributes = Files.readAttributes(backup,
+                BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        if (!attributes.isRegularFile() || attributes.size() > StorageFileManager.MAX_STORAGE_FILE_BYTES) {
+            throw new IOException("Storage transaction backup is not readable.");
+        }
+        try (var input = Files.newInputStream(backup)) {
+            input.read();
+        }
+    }
+
+    /** Parses a journal boolean without accepting missing or lookalike values. */
+    private static boolean parseBooleanProperty(Properties properties, String key) throws IOException {
+        String text = properties.getProperty(key);
+        if ("true".equals(text)) {
+            return true;
+        }
+        if ("false".equals(text)) {
+            return false;
+        }
+        throw new IOException("Storage transaction journal boolean is invalid.");
+    }
+
+    /** Rejects phases that are not part of the journal state machine. */
+    private static void validatePhase(String phase) throws IOException {
+        if (!PREPARED_PHASE.equals(phase) && !ACTIVE_COMMITTED_PHASE.equals(phase)
+                && !COMMITTED_PHASE.equals(phase)) {
+            throw new IOException("Storage transaction journal phase is invalid.");
         }
     }
 
@@ -228,7 +343,7 @@ final class StorageTransactionJournal {
     private static void restorePath(Properties properties, String pathKey, String presentKey,
                                     String backupKey) throws IOException {
         Path path = Path.of(properties.getProperty(pathKey));
-        boolean wasPresent = Boolean.parseBoolean(properties.getProperty(presentKey));
+        boolean wasPresent = parseBooleanProperty(properties, presentKey);
         String backupText = properties.getProperty(backupKey);
         boolean isAbsentBackup = ABSENT_BACKUP.equals(backupText);
         if (!wasPresent || isAbsentBackup) {

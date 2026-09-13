@@ -3,6 +3,7 @@ package herta.parser;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 import herta.command.ArchiveCommand;
 import herta.command.ArchivedCommand;
@@ -183,6 +184,7 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
+        Objects.requireNonNull(input, "A filter command cannot be null.");
         String arguments = CommandType.FILTER.extractArguments(input);
         int markerCount = countMarker(arguments, FILTER_DATE_MARKER);
         if (markerCount > 1) {

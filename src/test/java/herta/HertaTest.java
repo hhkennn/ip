@@ -193,7 +193,7 @@ class HertaTest {
         Herta herta = new Herta(dataFile.toString());
 
         assertFalse(herta.isReady());
-        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks: "));
+        assertTrue(herta.getLoadingError().startsWith("Failed to load archived tasks at line "));
         HertaResponse response = herta.getResponse("list");
         assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
         assertEquals(herta.getLoadingError(), response.getMessage());

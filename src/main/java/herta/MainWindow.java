@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -36,6 +38,7 @@ public class MainWindow extends AnchorPane {
     private static final double ZOOM_STEP = 0.1;
     private static final double DIALOG_BASE_FONT_SIZE = 16.0;
     private static final double AVATAR_BASE_SIZE = 64.0;
+    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
 
     @FXML
     private ScrollPane scrollPane;
@@ -68,10 +71,7 @@ public class MainWindow extends AnchorPane {
         Parent windowRoot = Objects.requireNonNull(scrollPane.getParent());
         windowRoot.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyboardZoom);
         userInput.setOnKeyPressed(this::handleCommandHistory);
-        dialogContainer.getChildren().add(
-                DialogBox.getHertaDialog(
-                        "Oh, you're here. I'm Herta.\nWell? What do you want?",
-                        hertaImage));
+        addInitialDialog();
         userInputPrompt.visibleProperty().bind(
                 userInput.textProperty().isEmpty()
                         .and(userInput.disabledProperty().not()));
@@ -84,7 +84,7 @@ public class MainWindow extends AnchorPane {
      * @param herta the Herta instance to use
      */
     public void setHerta(Herta herta) {
-        this.herta = herta;
+        this.herta = Objects.requireNonNull(herta, "The main window needs a Herta instance.");
         if (!herta.isReady()) {
             dialogContainer.getChildren().add(
                     DialogBox.getHertaDialog(
@@ -106,10 +106,7 @@ public class MainWindow extends AnchorPane {
         String userText = userInput.getText();
         recordCommand(userText);
         HertaResponse hertaResponse = herta.getResponse(userText);
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(userText),
-                DialogBox.getHertaDialog(
-                        hertaResponse.getMessage(), hertaImage, hertaResponse.getResponseCategory()));
+        addCommandDialogs(userText, hertaResponse);
         trimDialogHistory();
         applyZoom();
         userInput.clear();
@@ -191,6 +188,38 @@ public class MainWindow extends AnchorPane {
     private void resetCommandHistoryNavigation() {
         commandHistoryIndex = commandHistory.size();
         commandDraft = "";
+    }
+
+    /** Adds the opening message and keeps the window usable if its bubble FXML is malformed. */
+    private void addInitialDialog() {
+        try {
+            dialogContainer.getChildren().add(DialogBox.getHertaDialog(
+                    "Oh, you're here. I'm Herta.\nWell? What do you want?", hertaImage));
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unable to load the opening dialog bubble.", e);
+            dialogContainer.getChildren().add(createFallbackMessage(
+                    "Application files are incomplete; reinstall Herta."));
+        }
+    }
+
+    /** Adds command bubbles or a minimal fallback when a bubble cannot be constructed. */
+    private void addCommandDialogs(String userText, HertaResponse response) {
+        try {
+            dialogContainer.getChildren().addAll(
+                    DialogBox.getUserDialog(userText),
+                    DialogBox.getHertaDialog(response.getMessage(), hertaImage,
+                            response.getResponseCategory()));
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Unable to render a dialog bubble.", e);
+            dialogContainer.getChildren().add(createFallbackMessage(response.getMessage()));
+        }
+    }
+
+    /** Creates a plain wrapped label for use when styled dialog resources fail. */
+    private Label createFallbackMessage(String message) {
+        Label fallbackMessage = new Label(message);
+        fallbackMessage.setWrapText(true);
+        return fallbackMessage;
     }
 
     /** Keeps long GUI sessions bounded while retaining the newest conversation bubbles. */

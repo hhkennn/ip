@@ -7,8 +7,6 @@ public final class TaskDescriptionValidator {
     /** Maximum number of UTF-16 code units allowed in a task description. */
     public static final int MAX_DESCRIPTION_LENGTH = 1_000;
 
-    private static final char STORAGE_FIELD_DELIMITER = '|';
-
     private TaskDescriptionValidator() {
         // Utility class; do not instantiate.
     }
@@ -31,21 +29,35 @@ public final class TaskDescriptionValidator {
                     + MAX_DESCRIPTION_LENGTH + " characters.");
         }
         for (int i = 0; i < description.length(); i++) {
-            char character = description.charAt(i);
-            if (isInvalidCharacter(character)) {
-                throw new IllegalArgumentException(
-                        "Task descriptions cannot contain `|`, line breaks, or control characters.");
+            int codePoint = description.codePointAt(i);
+            if (Character.isHighSurrogate(description.charAt(i))) {
+                if (i + 1 >= description.length()
+                        || !Character.isLowSurrogate(description.charAt(i + 1))) {
+                    throw invalidDescriptionCharacter();
+                }
+                i++;
+            } else if (Character.isLowSurrogate(description.charAt(i))) {
+                throw invalidDescriptionCharacter();
+            }
+            if (isInvalidCharacter(codePoint)) {
+                throw invalidDescriptionCharacter();
             }
         }
     }
 
+    /** Returns the stable error used for every unsupported description character. */
+    private static IllegalArgumentException invalidDescriptionCharacter() {
+        return new IllegalArgumentException(
+                "Task descriptions cannot contain `|`, line breaks, or control characters.");
+    }
+
     /** Identifies storage delimiters, line breaks, controls, and unsupported invisible characters. */
-    private static boolean isInvalidCharacter(char character) {
-        boolean isStorageDelimiter = character == STORAGE_FIELD_DELIMITER;
-        boolean isLineBreak = character == '\n' || character == '\r';
-        boolean isControlCharacter = Character.isISOControl(character);
-        boolean isFormatCharacter = Character.getType(character) == Character.FORMAT;
-        boolean isUnsupportedSpace = Character.isSpaceChar(character) && character != ' ';
+    private static boolean isInvalidCharacter(int codePoint) {
+        boolean isStorageDelimiter = codePoint == '|';
+        boolean isLineBreak = codePoint == '\n' || codePoint == '\r';
+        boolean isControlCharacter = Character.isISOControl(codePoint);
+        boolean isFormatCharacter = Character.getType(codePoint) == Character.FORMAT;
+        boolean isUnsupportedSpace = Character.isSpaceChar(codePoint) && codePoint != ' ';
         return isStorageDelimiter || isLineBreak || isControlCharacter
                 || isFormatCharacter || isUnsupportedSpace;
     }
@@ -58,6 +70,11 @@ public final class TaskDescriptionValidator {
      */
     public static String normalizeForDuplicate(String description) {
         validate(description);
+        return normalizeValidated(description);
+    }
+
+    /** Normalizes a description after the caller has already validated it. */
+    static String normalizeValidated(String description) {
         return description.trim().replaceAll("[ \\t]+", " ");
     }
 }

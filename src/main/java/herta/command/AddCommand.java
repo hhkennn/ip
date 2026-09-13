@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import herta.exception.HertaException;
 import herta.storage.Storage;
+import herta.storage.TaskRepository;
 import herta.task.Task;
 import herta.task.TaskList;
 import herta.ui.UiOutput;
@@ -43,5 +44,14 @@ public abstract class AddCommand extends Command {
         ui.showMessage("There. I've added it:");
         ui.showTask(task);
         ui.showTaskCount(tasks.size());
+    }
+
+    /** Rejects a task that already exists in the archived collection. */
+    @Override
+    public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
+        if (repository.getArchivedTasks().containsDuplicate(task)) {
+            throw new HertaException("That task is already in the archived task list.");
+        }
+        execute(repository.getActiveTasks(), ui, repository.getActiveStorage());
     }
 }

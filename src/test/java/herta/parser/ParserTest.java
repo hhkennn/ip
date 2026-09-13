@@ -211,6 +211,11 @@ class ParserTest {
     }
 
     @Test
+    void parseFilterDate_nullInput_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> parser.parseFilterDate(null));
+    }
+
+    @Test
     void parseUpcomingDays_positiveNumber_returnsNumber() throws HertaException {
         assertEquals(30, parser.parseUpcomingDays("upcoming 30"));
     }

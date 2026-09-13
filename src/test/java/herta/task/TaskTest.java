@@ -22,6 +22,17 @@ class TaskTest {
     }
 
     @Test
+    void task_invalidDescriptionCharacters_rejectAtDomainBoundary() {
+        String overlongDescription = "a".repeat(TaskDescriptionValidator.MAX_DESCRIPTION_LENGTH + 1);
+
+        assertThrows(IllegalArgumentException.class, () -> new TestTask("bad | task"));
+        assertThrows(IllegalArgumentException.class, () -> new TestTask("bad\u0000task"));
+        assertThrows(IllegalArgumentException.class, () -> new TestTask(overlongDescription));
+        assertThrows(IllegalArgumentException.class, () -> new TestTask("bad\uD800"));
+        assertThrows(IllegalArgumentException.class, () -> new TestTask("bad\uDC00"));
+    }
+
+    @Test
     void taskStatusAndFormatting_changeAfterCompletion() {
         Task task = new TestTask("plain task");
 

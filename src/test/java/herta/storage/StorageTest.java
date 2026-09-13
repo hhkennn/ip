@@ -175,9 +175,41 @@ class StorageTest {
     }
 
     @Test
+    void startup_malformedTransactionJournal_preservesFilesAndDisablesRecovery() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("journal-active.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Files.writeString(activeFile, "T | 0 | original active\n");
+        Files.writeString(archiveFile, "T | 0 | original archive\n");
+        Files.writeString(activeFile.resolveSibling(".herta-transaction"), "phase=UNKNOWN\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                TaskRepository.load(activeFile.toString()));
+
+        assertEquals("Failed to recover interrupted storage transaction safely.",
+                exception.getMessage());
+        assertEquals("T | 0 | original active\n", Files.readString(activeFile));
+        assertEquals("T | 0 | original archive\n", Files.readString(archiveFile));
+        assertTrue(Files.exists(activeFile.resolveSibling(".herta-transaction")));
+    }
+
+    @Test
+    void startup_activeAndArchivedDuplicate_rejectsGlobalDuplicatePolicy() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("duplicate-active.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Files.writeString(activeFile, "T | 0 | read book\n");
+        Files.writeString(archiveFile, "T | 1 |  read   book \n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                TaskRepository.load(activeFile.toString()));
+
+        assertEquals("Failed to load archived tasks: Active and archived task lists cannot contain "
+                + "duplicates.", exception.getMessage());
+    }
+
+    @Test
     void save_taskWithStorageDelimiter_rejectsInvalidRecord() {
         Path dataFile = temporaryDirectory.resolve("invalid.txt");
-        TaskList tasks = new TaskList(List.of(new Todo("contains | separator")));
+        TaskList tasks = new TaskList(List.of(new MalformedStorageTask("valid task")));
 
         HertaException exception = assertThrows(HertaException.class, () ->
                 new Storage(dataFile.toString()).save(tasks));
@@ -193,12 +225,12 @@ class StorageTest {
 
         HertaException nullListException = assertThrows(HertaException.class, () ->
                 storage.save(null));
-        HertaException nullTaskException = assertThrows(HertaException.class, () ->
+        NullPointerException nullTaskException = assertThrows(NullPointerException.class, () ->
                 storage.save(new TaskList(Collections.singletonList(null))));
 
         assertEquals("Failed to save tasks: task list is null.",
                 nullListException.getMessage());
-        assertEquals("Failed to save tasks: task list contains a null task.",
+        assertEquals("A task list cannot contain a null task.",
                 nullTaskException.getMessage());
     }
 
@@ -224,7 +256,7 @@ class StorageTest {
         Files.writeString(archiveFile, "T | 2 | invalid\n");
         Storage storage = new Storage(archiveFile.toString());
         HertaException exception = assertThrows(HertaException.class, storage::loadArchived);
-        assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
+        assertTrue(exception.getMessage().startsWith("Failed to load archived tasks at line "));
     }
 
     @Test
@@ -273,5 +305,17 @@ class StorageTest {
 
     private void validatePathsForTest(Path activeFile, Path archiveFile) throws HertaException {
         Storage.validateDistinctPaths(activeFile, archiveFile);
+    }
+
+    /** Supplies an invalid serialized record without bypassing task construction validation. */
+    private static final class MalformedStorageTask extends Todo {
+        MalformedStorageTask(String description) {
+            super(description);
+        }
+
+        @Override
+        public String toStorageString() {
+            return "T | 0 | contains | separator";
+        }
     }
 }

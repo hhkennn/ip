@@ -21,6 +21,7 @@ public abstract class Task {
     private static final String COMPLETED_STATUS_ICON = "X";
 
     private final String description;
+    private final String normalizedDescription;
     private boolean isCompleted;
 
     /**
@@ -31,9 +32,8 @@ public abstract class Task {
     public Task(String description) {
         this.description = Objects.requireNonNull(description,
                 "A task description cannot be null.");
-        if (description.isBlank()) {
-            throw new IllegalArgumentException("A task description cannot be blank.");
-        }
+        TaskDescriptionValidator.validate(description);
+        normalizedDescription = TaskDescriptionValidator.normalizeValidated(description);
         this.isCompleted = false;
     }
 
@@ -119,24 +119,25 @@ public abstract class Task {
      * @return {@code true} if both tasks have the same type, description, and schedule
      */
     public boolean isDuplicateOf(Task other) {
-        if (other == null || getClass() != other.getClass()) {
-            return false;
-        }
-        boolean hasSameDescription = TaskDescriptionValidator.normalizeForDuplicate(description)
-                .equals(TaskDescriptionValidator.normalizeForDuplicate(other.description));
-        return hasSameDescription && hasSameTemporalFields(other);
+        return other != null && getIdentity().equals(other.getIdentity());
     }
 
-    /** Compares the temporal fields that distinguish concrete task subtypes. */
-    private boolean hasSameTemporalFields(Task other) {
-        if (this instanceof Deadline thisDeadline && other instanceof Deadline otherDeadline) {
-            return thisDeadline.getBy().equals(otherDeadline.getBy());
+    /** Returns the immutable identity used for duplicate detection. */
+    public TaskIdentity getIdentity() {
+        if (this instanceof Deadline thisDeadline) {
+            return new TaskIdentity(getTaskType(), normalizedDescription,
+                    thisDeadline.getBy(), null);
         }
-        if (this instanceof Event thisEvent && other instanceof Event otherEvent) {
-            return thisEvent.getFrom().equals(otherEvent.getFrom())
-                    && thisEvent.getTo().equals(otherEvent.getTo());
+        if (this instanceof Event thisEvent) {
+            return new TaskIdentity(getTaskType(), normalizedDescription,
+                    thisEvent.getFrom(), thisEvent.getTo());
         }
-        return getScheduledDateTime().equals(other.getScheduledDateTime());
+        return new TaskIdentity(getTaskType(), normalizedDescription, null, null);
+    }
+
+    /** Returns the concrete runtime type used by the duplicate identity. */
+    private Class<? extends Task> getTaskType() {
+        return getClass().asSubclass(Task.class);
     }
 
     /**

@@ -50,8 +50,9 @@ public class Main extends Application {
 
     /** Checks every resource referenced by the GUI before constructing any controls. */
     private void validateApplicationResources() {
-        for (String resourcePath : new String[] {"/view/MainWindow.fxml", "/view/DialogBox.fxml",
-            "/css/main.css", "/css/dialog-box.css", MainWindow.HERTA_IMAGE_RESOURCE}) {
+        String[] requiredResourcePaths = {"/view/MainWindow.fxml", "/view/DialogBox.fxml",
+            "/css/main.css", "/css/dialog-box.css", MainWindow.HERTA_IMAGE_RESOURCE};
+        for (String resourcePath : requiredResourcePaths) {
             URL resource = Main.class.getResource(resourcePath);
             if (resource == null) {
                 throw new MissingResourceException(STARTUP_ERROR, Main.class.getName(), resourcePath);

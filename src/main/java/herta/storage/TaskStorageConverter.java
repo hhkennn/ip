@@ -1,13 +1,17 @@
 package herta.storage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
 import herta.task.Task;
-import herta.task.TaskDescriptionValidator;
+import herta.task.TaskIdentity;
 import herta.task.TaskList;
 import herta.task.Todo;
 
@@ -31,7 +35,6 @@ final class TaskStorageConverter {
     private static final int TODO_PART_COUNT = 3;
     private static final int DEADLINE_PART_COUNT = 4;
     private static final int EVENT_PART_COUNT = 5;
-    private static final int MAX_TASK_COUNT = 10_000;
 
     /**
      * Converts every task to a validated storage record.
@@ -46,14 +49,13 @@ final class TaskStorageConverter {
         }
 
         List<String> lines = new ArrayList<>();
-        List<Task> serializedTasks = new ArrayList<>();
+        Set<TaskIdentity> serializedIdentities = new HashSet<>();
         for (Task task : tasks) {
             lines.add(serializeTask(task));
-            if (hasDuplicate(serializedTasks, task)) {
+            if (!serializedIdentities.add(task.getIdentity())) {
                 throw new HertaException("Failed to save tasks: duplicate tasks are not allowed.");
             }
-            serializedTasks.add(task);
-            if (serializedTasks.size() > MAX_TASK_COUNT) {
+            if (serializedIdentities.size() > TaskList.MAXIMUM_TASK_COUNT) {
                 throw new HertaException("Failed to save tasks: too many tasks.");
             }
         }
@@ -70,7 +72,7 @@ final class TaskStorageConverter {
      */
     TaskList parseStorageLines(List<String> lines, String recordPrefix) throws HertaException {
         TaskList tasks = new TaskList();
-        List<Integer> sourceLines = new ArrayList<>();
+        Map<TaskIdentity, Integer> sourceLines = new HashMap<>();
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.isBlank()) {
@@ -78,8 +80,8 @@ final class TaskStorageConverter {
                         + ": blank records are not supported.");
             }
             Task task = parseStorageLine(line, i + 1, recordPrefix);
-            int duplicateLine = findDuplicateLine(tasks, task, sourceLines);
-            if (duplicateLine > 0) {
+            Integer duplicateLine = sourceLines.get(task.getIdentity());
+            if (duplicateLine != null) {
                 throw new HertaException(recordPrefix + "at line " + (i + 1)
                         + ": duplicate task conflicts with line " + duplicateLine + ".");
             }
@@ -89,11 +91,7 @@ final class TaskStorageConverter {
                 throw new HertaException(recordPrefix + "at line " + (i + 1)
                         + ": " + e.getMessage());
             }
-            sourceLines.add(i + 1);
-            if (tasks.size() > MAX_TASK_COUNT) {
-                throw new HertaException(recordPrefix + "at line " + (i + 1)
-                        + ": too many tasks.");
-            }
+            sourceLines.put(task.getIdentity(), i + 1);
         }
         return tasks;
     }
@@ -274,29 +272,7 @@ final class TaskStorageConverter {
             if (storageFields[i].isBlank()) {
                 throw new HertaException("Invalid saved task: task fields cannot be blank.");
             }
-            if (i == DESCRIPTION_INDEX) {
-                try {
-                    TaskDescriptionValidator.validate(storageFields[i]);
-                } catch (IllegalArgumentException | NullPointerException e) {
-                    throw new HertaException(e.getMessage());
-                }
-            }
         }
-    }
-
-    /** Indicates whether a candidate duplicates any task already serialized. */
-    private boolean hasDuplicate(List<Task> serializedTasks, Task candidate) {
-        return candidate != null && serializedTasks.stream().anyMatch(candidate::isDuplicateOf);
-    }
-
-    /** Returns the source line of the first duplicate task, or zero when none exists. */
-    private int findDuplicateLine(TaskList tasks, Task candidate, List<Integer> sourceLines) {
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).isDuplicateOf(candidate)) {
-                return sourceLines.get(i);
-            }
-        }
-        return 0;
     }
 
     /**

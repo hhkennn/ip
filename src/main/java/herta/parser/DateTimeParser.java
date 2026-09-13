@@ -8,6 +8,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Parses and formats the date/time values used by deadline and event tasks.
@@ -49,7 +50,7 @@ public final class DateTimeParser {
      * @throws DateTimeParseException if the input does not match a supported format
      */
     public static LocalDateTime parseUserDateTime(String input) {
-        String normalizedInput = input.trim();
+        String normalizedInput = normalizeInput(input);
 
         for (DateTimeFormatter formatter : USER_DATE_TIME_FORMATS) {
             try {
@@ -72,7 +73,7 @@ public final class DateTimeParser {
      * @throws DateTimeParseException if the input does not match a supported date format
      */
     public static LocalDate parseUserDate(String input) {
-        String normalizedInput = input.trim();
+        String normalizedInput = normalizeInput(input);
 
         try {
             return validateSupportedDate(LocalDate.parse(normalizedInput, ISO_DATE_FORMAT),
@@ -91,7 +92,7 @@ public final class DateTimeParser {
      * @throws DateTimeParseException if the stored value is invalid
      */
     public static LocalDateTime parseStoredDateTime(String input) {
-        String normalizedInput = input.trim();
+        String normalizedInput = normalizeInput(input);
         try {
             return validateSupportedDateTime(LocalDateTime.parse(normalizedInput, STORAGE_FORMAT),
                     normalizedInput);
@@ -109,7 +110,8 @@ public final class DateTimeParser {
      * @throws IllegalArgumentException if the date is outside the supported range
      */
     public static void validateSupportedDateTime(LocalDateTime dateTime) {
-        if (dateTime == null || isOutsideSupportedRange(dateTime.toLocalDate())) {
+        Objects.requireNonNull(dateTime, "A date/time cannot be null.");
+        if (isOutsideSupportedRange(dateTime.toLocalDate())) {
             throw new IllegalArgumentException("Dates must be between 0001-01-01 and 9999-12-31.");
         }
     }
@@ -142,7 +144,7 @@ public final class DateTimeParser {
      * @return the stable serialized representation
      */
     public static String formatForStorage(LocalDateTime dateTime) {
-        return STORAGE_FORMAT.format(dateTime);
+        return STORAGE_FORMAT.format(Objects.requireNonNull(dateTime));
     }
 
     /**
@@ -152,6 +154,7 @@ public final class DateTimeParser {
      * @return a readable date or date/time representation
      */
     public static String formatForDisplay(LocalDateTime dateTime) {
+        Objects.requireNonNull(dateTime, "A date/time cannot be null.");
         if (dateTime.toLocalTime().equals(LocalTime.MIDNIGHT)) {
             return DATE_OUTPUT_FORMAT.format(dateTime);
         }
@@ -165,7 +168,7 @@ public final class DateTimeParser {
      * @return a readable date representation
      */
     public static String formatDateForDisplay(LocalDate date) {
-        return DATE_OUTPUT_FORMAT.format(date);
+        return DATE_OUTPUT_FORMAT.format(Objects.requireNonNull(date, "A date cannot be null."));
     }
 
     /**
@@ -177,5 +180,12 @@ public final class DateTimeParser {
     private static DateTimeFormatter strictFormatter(String pattern) {
         return DateTimeFormatter.ofPattern(pattern)
                 .withResolverStyle(ResolverStyle.STRICT);
+    }
+
+    /** Trims the input and treats repeated horizontal whitespace as one separator. */
+    private static String normalizeInput(String input) {
+        return Objects.requireNonNull(input, "A date input cannot be null.")
+                .trim()
+                .replaceAll("[ \\t]+", " ");
     }
 }

@@ -9,6 +9,7 @@ import herta.exception.UsageGuidanceException;
 import herta.parser.CommandTokenizer;
 import herta.parser.CommandType;
 import herta.parser.Parser;
+import herta.storage.PersistenceState;
 import herta.storage.Storage;
 import herta.storage.TaskRepository;
 import herta.task.TaskList;
@@ -21,8 +22,12 @@ import herta.ui.UiOutput;
  */
 public class Herta {
     private static final String DEFAULT_DATA_FILE = "data/herta.txt";
-    private static final String UNEXPECTED_ERROR = "Something went wrong while processing that command. "
-            + "No data was changed.";
+    private static final String UNEXPECTED_NO_CHANGE_ERROR = "Something went wrong while processing "
+            + "that command. No data was changed.";
+    private static final String UNEXPECTED_COMMITTED_ERROR = "The change was saved, but Herta could "
+            + "not display the complete response.";
+    private static final String UNEXPECTED_UNKNOWN_ERROR = "Something went wrong while processing "
+            + "that command. Data may have changed; check your task list before continuing.";
     private static final Logger LOGGER = Logger.getLogger(Herta.class.getName());
 
     private final Ui ui;
@@ -118,6 +123,7 @@ public class Herta {
             return ResponseCategory.ERROR;
         }
 
+        repository.resetPersistenceState();
         try {
             return executeCommand(parseCommand(input), output);
         } catch (HertaException e) {
@@ -125,7 +131,7 @@ public class Herta {
             return ResponseCategory.USAGE_GUIDANCE;
         } catch (RuntimeException e) {
             logUnexpectedFailure("Unexpected command parsing failure.", e);
-            showMessageSafely(output, UNEXPECTED_ERROR);
+            showMessageSafely(output, getUnexpectedErrorMessage());
             return ResponseCategory.ERROR;
         }
     }
@@ -151,9 +157,26 @@ public class Herta {
             return ResponseCategory.ERROR;
         } catch (RuntimeException e) {
             logUnexpectedFailure("Unexpected command execution failure.", e);
-            showMessageSafely(output, UNEXPECTED_ERROR);
-            return ResponseCategory.ERROR;
+            showMessageSafely(output, getUnexpectedErrorMessage());
+            return getUnexpectedResponseCategory(parsedCommand);
         }
+    }
+
+    /** Returns the response category that remains truthful after an unexpected failure. */
+    private ResponseCategory getUnexpectedResponseCategory(ParsedCommand parsedCommand) {
+        return repository.getPersistenceState() == PersistenceState.COMMITTED
+                ? ResponseCategory.fromCommandType(parsedCommand.commandType())
+                : ResponseCategory.ERROR;
+    }
+
+    /** Explains whether an unexpected failure can prove the command's persistence outcome. */
+    private String getUnexpectedErrorMessage() {
+        return switch (repository.getPersistenceState()) {
+            case NOT_ATTEMPTED -> UNEXPECTED_NO_CHANGE_ERROR;
+            case COMMITTED -> UNEXPECTED_COMMITTED_ERROR;
+            case IN_PROGRESS, UNKNOWN -> UNEXPECTED_UNKNOWN_ERROR;
+            default -> UNEXPECTED_UNKNOWN_ERROR;
+        };
     }
 
     /** Displays an error without allowing a failing UI output implementation to escape. */
