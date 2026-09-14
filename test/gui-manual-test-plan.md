@@ -5,7 +5,7 @@ coverage. Run it with a clean disposable data directory and record the result,
 OS, Java version, display scale, locale, and any relevant screenshot or
 transcript beside each case.
 
-## Manual execution record
+## Manual execution record — 2026-09-14
 
 | Environment | Result |
 | --- | --- |

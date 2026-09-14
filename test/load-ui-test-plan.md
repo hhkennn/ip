@@ -3,12 +3,20 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/load-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
+- Setup command:
+
+  ```powershell
+  $javaSources = Get-ChildItem -Path src/main/java -Recurse -Filter *.java `
+      | Where-Object { $_.BaseName -notin @('DialogBox', 'Launcher', 'Main', 'MainWindow') } `
+      | ForEach-Object { $_.FullName }
+  javac -d out $javaSources
+  ```
 - Session log: `test/load-ui-test-session.log`
 
-The launcher writes valid saved tasks before starting Herta. This verifies that
-the chatbot reconstructs todo, deadline, and event objects, including their
-completion statuses, when it starts.
+The fixture writes valid saved tasks beneath a disposable system-temp directory
+before starting Herta. This verifies that the chatbot reconstructs todo,
+deadline, and event objects, including their completion statuses, when it starts
+without touching repository task data.
 
 ## Test case: Load saved tasks at startup
 

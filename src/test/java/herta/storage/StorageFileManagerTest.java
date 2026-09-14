@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,47 @@ class StorageFileManagerTest {
         } catch (UnsupportedOperationException | IOException | SecurityException exception) {
             Assumptions.assumeTrue(false, "Symbolic links are unavailable on this host.");
         }
+    }
+
+    @Test
+    void readLines_missingFile_throwsNoSuchFileException() {
+        Path missingFile = temporaryDirectory.resolve("missing.txt");
+
+        assertThrows(NoSuchFileException.class, () -> new StorageFileManager(missingFile).readLines());
+    }
+
+    @Test
+    void readLines_directoryPath_throwsRegularFileError() throws Exception {
+        Path directory = temporaryDirectory.resolve("directory");
+        Files.createDirectory(directory);
+
+        IOException exception = assertThrows(IOException.class, () ->
+                new StorageFileManager(directory).readLines());
+
+        assertEquals("data path is not a regular file", exception.getMessage());
+    }
+
+    @Test
+    void writeTemporaryFile_directoryPath_rejectsTarget() throws Exception {
+        Path directory = temporaryDirectory.resolve("directory");
+        Files.createDirectory(directory);
+
+        IOException exception = assertThrows(IOException.class, () ->
+                new StorageFileManager(directory).writeTemporaryFile(List.of("record")));
+
+        assertEquals("data path is not a regular file", exception.getMessage());
+        assertEquals(List.of(), findTemporaryFiles());
+    }
+
+    @Test
+    void captureSnapshot_directoryPath_rejectsTarget() throws Exception {
+        Path directory = temporaryDirectory.resolve("directory");
+        Files.createDirectory(directory);
+
+        IOException exception = assertThrows(IOException.class, () ->
+                new StorageFileManager(directory).captureSnapshot());
+
+        assertEquals("data path is not a readable regular file", exception.getMessage());
     }
 
     @Test

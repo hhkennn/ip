@@ -37,6 +37,18 @@ class CommandTokenizerTest {
     }
 
     @Test
+    void normalize_supplementaryUnicodeDescription_preservesCodePointsExactly() throws Exception {
+        String command = "todo plan 🚀 launch";
+
+        assertEquals(command, CommandTokenizer.normalize(command));
+    }
+
+    @Test
+    void normalize_keywordWithHorizontalWhitespace_removesTrailingSeparator() throws Exception {
+        assertEquals("list", CommandTokenizer.normalize("list \t  "));
+    }
+
+    @Test
     void normalize_unsupportedWhitespaceAndFormatCharacters_rejectsInput() {
         String[] invalidInputs = {
             "todo read\rbook", "todo read\nbook", "todo read\u000Bbook",

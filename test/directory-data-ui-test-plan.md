@@ -3,11 +3,19 @@
 - Program command: `powershell -NoProfile -ExecutionPolicy Bypass -File test/directory-data-and-run.ps1`
 - Working directory: `.`
 - Java requirement: Java 25
-- Setup command: `javac -d out (Get-ChildItem -Path src/main/java -Recurse -Filter *.java | ForEach-Object { $_.FullName })`
+- Setup command:
+
+  ```powershell
+  $javaSources = Get-ChildItem -Path src/main/java -Recurse -Filter *.java `
+      | Where-Object { $_.BaseName -notin @('DialogBox', 'Launcher', 'Main', 'MainWindow') } `
+      | ForEach-Object { $_.FullName }
+  javac -d out $javaSources
+  ```
 - Session log: `test/directory-data-ui-test-session.log`
 
-The launcher temporarily makes `data/herta.txt` a directory. Herta should
-report the invalid data path instead of crashing.
+The fixture temporarily makes `data/herta.txt` inside a disposable system-temp
+directory a directory. Herta should report the invalid data path instead of
+crashing or touching repository task data.
 
 ## Test case: Reject a directory data path
 

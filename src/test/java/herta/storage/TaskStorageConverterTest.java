@@ -70,6 +70,15 @@ class TaskStorageConverterTest {
     }
 
     @Test
+    void parseStorageLines_innerBom_rejectsDescriptionOnSourceLine() {
+        HertaException exception = assertThrows(HertaException.class, () -> converter.parseStorageLines(
+                List.of("T | 0 | valid", "T | 0 | bad\uFEFFtext"), RECORD_PREFIX));
+
+        assertTrue(exception.getMessage().contains("at line 2:"));
+        assertTrue(exception.getMessage().contains("descriptions cannot contain"));
+    }
+
+    @Test
     void parseStorageLines_malformedRecords_reportSpecificOneBasedLine() {
         assertMalformedRecord("", "blank records are not supported");
         assertMalformedRecord("T", "missing task type or status");

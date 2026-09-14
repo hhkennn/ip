@@ -91,4 +91,17 @@ class DeadlineTest {
         assertEquals("D | 1 | deadline | 2019-12-02T00:00:00", deadline.toStorageString());
         assertEquals("[D][X] deadline (by: Dec 02 2019)", deadline.toString());
     }
+
+    @Test
+    void deadline_supportedBoundaryYears_preserveStorageSerialization() {
+        Deadline minimumDeadline = new Deadline("minimum",
+                LocalDateTime.of(1, 1, 1, 0, 0));
+        Deadline maximumDeadline = new Deadline("maximum",
+                LocalDateTime.of(9999, 12, 31, 23, 59));
+
+        assertEquals("D | 0 | minimum | 0001-01-01T00:00:00",
+                minimumDeadline.toStorageString());
+        assertEquals("D | 0 | maximum | 9999-12-31T23:59:00",
+                maximumDeadline.toStorageString());
+    }
 }

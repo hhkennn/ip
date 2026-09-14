@@ -1,5 +1,6 @@
 package herta.command;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -315,6 +316,35 @@ class ArchiveRestoreCommandTest {
         assertEquals(1, archivedTasks.size());
         assertTrue(Files.notExists(activeFile));
         assertEquals(List.of("T | 0 | archived"), Files.readAllLines(archiveFile));
+    }
+
+    @Test
+    void archiveCommand_atArchiveCapacity_preservesCollectionsAndFiles() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("archive-capacity").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active");
+        activeTask.markAsDone();
+        Todo archivedTask = new Todo("archived");
+        TaskList activeTasks = new TaskList(List.of(activeTask));
+        TaskList archivedTasks = new TaskList(Collections.nCopies(
+                TaskList.MAXIMUM_TASK_COUNT, archivedTask));
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        activeStorage.save(activeTasks);
+        archiveStorage.save(archivedTasks);
+        byte[] originalActiveBytes = Files.readAllBytes(activeFile);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
+                activeTasks, archivedTasks);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new ArchiveCommand(new ArchiveSelection(List.of(new ArchiveRange(1, 1)), false))
+                        .execute(repository, new Ui()));
+
+        assertEquals(1, activeTasks.size());
+        assertEquals(TaskList.MAXIMUM_TASK_COUNT, archivedTasks.size());
+        assertArrayEquals(originalActiveBytes, Files.readAllBytes(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
     }
 
     @Test

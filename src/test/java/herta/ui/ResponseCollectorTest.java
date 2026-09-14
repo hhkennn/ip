@@ -32,4 +32,18 @@ class ResponseCollectorTest {
         assertEquals("last command" + System.lineSeparator() + UiOutput.GOODBYE_MESSAGE,
                 collector.getOutput());
     }
+
+    @Test
+    void responseCollector_multilineMessages_preserveOrderAndEmbeddedLineBreaks() {
+        ResponseCollector collector = new ResponseCollector();
+        String multilineMessage = "first line\nsecond line";
+
+        collector.showMessage(multilineMessage);
+        collector.showMessage("next message");
+        collector.showGoodbye();
+
+        assertEquals(multilineMessage + System.lineSeparator() + "next message"
+                + System.lineSeparator() + UiOutput.GOODBYE_MESSAGE,
+                collector.getOutput());
+    }
 }

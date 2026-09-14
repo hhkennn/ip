@@ -123,4 +123,25 @@ class EventTest {
         assertEquals("E | 1 | event | 2019-12-03T00:00:00 | 2019-12-04T00:00:00",
                 event.toStorageString());
     }
+
+    @Test
+    void event_supportedBoundaryYears_preserveStorageSerialization() {
+        Event minimumEvent = new Event("minimum", LocalDateTime.of(1, 1, 1, 0, 0),
+                LocalDateTime.of(1, 1, 1, 0, 1));
+        Event maximumEvent = new Event("maximum", LocalDateTime.of(9999, 12, 31, 23, 58),
+                LocalDateTime.of(9999, 12, 31, 23, 59));
+
+        assertEquals("E | 0 | minimum | 0001-01-01T00:00:00 | 0001-01-01T00:01:00",
+                minimumEvent.toStorageString());
+        assertEquals("E | 0 | maximum | 9999-12-31T23:58:00 | 9999-12-31T23:59:00",
+                maximumEvent.toStorageString());
+    }
+
+    @Test
+    void occursOn_maximumDateWithEarlierEvent_returnsFalseWithoutOverflow() {
+        Event event = new Event("earlier event", LocalDateTime.of(9999, 12, 30, 10, 0),
+                LocalDateTime.of(9999, 12, 30, 11, 0));
+
+        assertFalse(event.occursOn(LocalDate.MAX));
+    }
 }

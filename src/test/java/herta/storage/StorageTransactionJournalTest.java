@@ -106,6 +106,7 @@ class StorageTransactionJournalTest {
         Files.writeString(unrelatedFile, "keep", StandardCharsets.UTF_8);
 
         journal.cleanUp();
+        journal.cleanUp();
 
         assertTrue(Files.exists(unrelatedFile));
         assertNoTransactionArtifacts(journal);

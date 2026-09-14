@@ -49,6 +49,11 @@ class CommandTypeTest {
     }
 
     @Test
+    void fromInput_tabSeparatedArgument_recognizesCommandType() {
+        assertEquals(CommandType.TODO, CommandType.fromInput("todo\tread book"));
+    }
+
+    @Test
     void extractArguments_commandWithInnerSpaces_preservesMeaningfulText() {
         assertEquals("read   book", CommandType.TODO.extractArguments("todo read   book"));
         assertEquals("", CommandType.LIST.extractArguments("list \t"));

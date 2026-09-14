@@ -1,5 +1,6 @@
 package herta.command;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -23,6 +24,7 @@ import herta.storage.Storage;
 import herta.storage.TaskRepository;
 import herta.task.Deadline;
 import herta.task.Event;
+import herta.task.Task;
 import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
@@ -353,18 +355,110 @@ class CommandTest {
     void repositoryAdapter_addChangesActiveFileOnly() throws Exception {
         Path activeFile = temporaryDirectory.resolve("tasks.txt");
         Path archiveFile = activeFile.resolveSibling("archive.txt");
-        Storage activeStorage = new Storage(activeFile.toString());
-        Storage archiveStorage = new Storage(archiveFile.toString());
         TaskList activeTasks = new TaskList();
         Todo archivedTask = new Todo("archived task");
-        archiveStorage.save(new TaskList(List.of(archivedTask)));
-        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
-                activeTasks, new TaskList(List.of(archivedTask)));
+        TaskRepository repository = createRepositoryWithArchive(activeFile, archiveFile,
+                activeTasks, archivedTask);
 
         new TodoCommand(new Todo("active task")).execute(repository, new Ui());
 
         assertEquals(List.of("T | 0 | active task"), Files.readAllLines(activeFile));
         assertEquals(List.of("T | 0 | archived task"), Files.readAllLines(archiveFile));
+    }
+
+    @Test
+    void repositoryAdapter_markChangesActiveFileOnlyAndReportsInOrder() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("mark-repository.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active task");
+        Todo archivedTask = new Todo("archived task");
+        TaskRepository repository = createRepositoryWithArchive(activeFile, archiveFile,
+                new TaskList(List.of(activeTask)), archivedTask);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        RecordingUiOutput output = new RecordingUiOutput();
+
+        new MarkCommand(0).execute(repository, output);
+
+        assertTrue(activeTask.isCompleted());
+        assertEquals(List.of("Done. It's marked complete:", "  [T][X] active task"),
+                output.getMessages());
+        assertEquals(List.of("T | 1 | active task"), Files.readAllLines(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+    }
+
+    @Test
+    void repositoryAdapter_unmarkChangesActiveFileOnlyAndReportsInOrder() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("unmark-repository.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active task");
+        activeTask.markAsDone();
+        Todo archivedTask = new Todo("archived task");
+        TaskRepository repository = createRepositoryWithArchive(activeFile, archiveFile,
+                new TaskList(List.of(activeTask)), archivedTask);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        RecordingUiOutput output = new RecordingUiOutput();
+
+        new UnmarkCommand(0).execute(repository, output);
+
+        assertFalse(activeTask.isCompleted());
+        assertEquals(List.of("Fine. It's incomplete again:", "  [T][ ] active task"),
+                output.getMessages());
+        assertEquals(List.of("T | 0 | active task"), Files.readAllLines(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+    }
+
+    @Test
+    void repositoryAdapter_deleteChangesActiveFileOnlyAndReportsInOrder() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("delete-repository.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active task");
+        Todo archivedTask = new Todo("archived task");
+        TaskRepository repository = createRepositoryWithArchive(activeFile, archiveFile,
+                new TaskList(List.of(activeTask)), archivedTask);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        RecordingUiOutput output = new RecordingUiOutput();
+
+        new DeleteCommand(0).execute(repository, output);
+
+        assertEquals(0, repository.getActiveTasks().size());
+        assertEquals(List.of("Gone. I've removed it:", "  [T][ ] active task",
+                "That makes 0 active tasks. Try to keep up."), output.getMessages());
+        assertEquals(List.of(), Files.readAllLines(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+    }
+
+    @Test
+    void statusCommands_saveFailureRestoresStatusAndSuppressesSuccessOutput() {
+        Storage failingStorage = new SaveFailingStorage(
+                temporaryDirectory.resolve("status-failure.txt"));
+        Todo incompleteTask = new Todo("incomplete task");
+        TaskList incompleteTasks = new TaskList(List.of(incompleteTask));
+        RecordingUiOutput markOutput = new RecordingUiOutput();
+
+        assertThrows(IllegalStateException.class, () ->
+                new MarkCommand(0).execute(incompleteTasks, markOutput, failingStorage));
+        assertFalse(incompleteTask.isCompleted());
+        assertEquals(List.of(), markOutput.getMessages());
+
+        Todo completedTask = new Todo("completed task");
+        completedTask.markAsDone();
+        TaskList completedTasks = new TaskList(List.of(completedTask));
+        RecordingUiOutput unmarkOutput = new RecordingUiOutput();
+
+        assertThrows(IllegalStateException.class, () ->
+                new UnmarkCommand(0).execute(completedTasks, unmarkOutput, failingStorage));
+        assertTrue(completedTask.isCompleted());
+        assertEquals(List.of(), unmarkOutput.getMessages());
+    }
+
+    private TaskRepository createRepositoryWithArchive(Path activeFile, Path archiveFile,
+                                                       TaskList activeTasks, Task archivedTask)
+            throws HertaException {
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        TaskList archivedTasks = new TaskList(List.of(archivedTask));
+        archiveStorage.save(archivedTasks);
+        return new TaskRepository(new Storage(activeFile.toString()), archiveStorage,
+                activeTasks, archivedTasks);
     }
 
     private String captureOutput(OutputAction action) throws Exception {
@@ -382,5 +476,16 @@ class CommandTest {
     @FunctionalInterface
     private interface OutputAction {
         void run() throws Exception;
+    }
+
+    private static final class SaveFailingStorage extends Storage {
+        SaveFailingStorage(Path dataFile) {
+            super(dataFile.toString());
+        }
+
+        @Override
+        public void save(TaskList tasks) {
+            throw new IllegalStateException("test save failure");
+        }
     }
 }

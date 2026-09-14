@@ -60,4 +60,25 @@ class TaskDescriptionValidatorTest {
         TaskDescriptionValidator.validate("matched \uD83D\uDE80");
     }
 
+    @Test
+    void validate_emojiAtUtf16Limit_acceptsExactlyTheMaximumLength() {
+        String maximumEmojiDescription = "🚀".repeat(500);
+
+        TaskDescriptionValidator.validate(maximumEmojiDescription);
+    }
+
+    @Test
+    void validate_emojiBeyondUtf16Limit_rejectsDescription() {
+        String overlongEmojiDescription = "🚀".repeat(501);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                TaskDescriptionValidator.validate(overlongEmojiDescription));
+    }
+
+    @Test
+    void validate_highSurrogateFollowedByOrdinaryCharacter_rejectsDescription() {
+        assertThrows(IllegalArgumentException.class, () ->
+                TaskDescriptionValidator.validate("bad\uD800text"));
+    }
+
 }

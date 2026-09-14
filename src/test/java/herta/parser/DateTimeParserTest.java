@@ -134,6 +134,33 @@ class DateTimeParserTest {
     }
 
     @Test
+    void validateSupportedDateTime_boundaryYears_acceptsSupportedValues() {
+        DateTimeParser.validateSupportedDateTime(LocalDateTime.of(1, 1, 1, 0, 0));
+        DateTimeParser.validateSupportedDateTime(LocalDateTime.of(9999, 12, 31, 23, 59));
+    }
+
+    @Test
+    void validateSupportedDateTime_unsupportedYears_rejectsWithStableMessage() {
+        String expectedMessage = "Dates must be between 0001-01-01 and 9999-12-31.";
+
+        IllegalArgumentException belowMinimum = assertThrows(IllegalArgumentException.class, () ->
+                DateTimeParser.validateSupportedDateTime(LocalDateTime.of(0, 1, 1, 0, 0)));
+        IllegalArgumentException aboveMaximum = assertThrows(IllegalArgumentException.class, () ->
+                DateTimeParser.validateSupportedDateTime(LocalDateTime.of(10000, 1, 1, 0, 0)));
+
+        assertEquals(expectedMessage, belowMinimum.getMessage());
+        assertEquals(expectedMessage, aboveMaximum.getMessage());
+    }
+
+    @Test
+    void validateSupportedDateTime_nullValue_rejectsWithDocumentedException() {
+        NullPointerException exception = assertThrows(NullPointerException.class, () ->
+                DateTimeParser.validateSupportedDateTime(null));
+
+        assertEquals("A date/time cannot be null.", exception.getMessage());
+    }
+
+    @Test
     void parseDates_supportedBoundaryYears_areAccepted() {
         assertEquals(LocalDate.of(1, 1, 1), DateTimeParser.parseUserDate("0001-01-01"));
         assertEquals(LocalDate.of(9999, 12, 31), DateTimeParser.parseUserDate("9999-12-31"));
