@@ -1,7 +1,5 @@
 package herta;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -53,9 +51,7 @@ public class MainWindow extends AnchorPane {
 
     private Herta herta;
     /** Stores commands submitted through the GUI for arrow-key navigation. */
-    private final List<String> commandHistory = new ArrayList<>();
-    private int commandHistoryIndex;
-    private String commandDraft = "";
+    private final CommandHistory commandHistory = new CommandHistory(MAXIMUM_HISTORY_ENTRIES);
     private int zoomLevel = DEFAULT_ZOOM_LEVEL;
     private final Image hertaImage = loadHertaImage();
 
@@ -128,38 +124,11 @@ public class MainWindow extends AnchorPane {
         }
 
         if (event.getCode() == KeyCode.UP) {
-            navigateToPreviousCommand();
+            commandHistory.previous(userInput.getText()).ifPresent(this::showCommand);
             event.consume();
         } else if (event.getCode() == KeyCode.DOWN) {
-            navigateToNextCommand();
+            commandHistory.next().ifPresent(this::showCommand);
             event.consume();
-        }
-    }
-
-    /** Shows the previous command in the input field, if one exists. */
-    private void navigateToPreviousCommand() {
-        if (commandHistory.isEmpty()) {
-            return;
-        }
-
-        if (commandHistoryIndex == commandHistory.size()) {
-            commandDraft = userInput.getText();
-        }
-        commandHistoryIndex = Math.max(0, commandHistoryIndex - 1);
-        showCommand(commandHistory.get(commandHistoryIndex));
-    }
-
-    /** Shows the next command or restores the draft after the newest command. */
-    private void navigateToNextCommand() {
-        if (commandHistoryIndex >= commandHistory.size()) {
-            return;
-        }
-
-        commandHistoryIndex++;
-        if (commandHistoryIndex == commandHistory.size()) {
-            showCommand(commandDraft);
-        } else {
-            showCommand(commandHistory.get(commandHistoryIndex));
         }
     }
 
@@ -171,23 +140,7 @@ public class MainWindow extends AnchorPane {
 
     /** Records a non-blank command unless it duplicates the latest history entry. */
     private void recordCommand(String command) {
-        boolean isBlankCommand = command.isBlank();
-        boolean hasPreviousCommand = !commandHistory.isEmpty();
-        boolean isDuplicateCommand = hasPreviousCommand
-                && command.equals(commandHistory.get(commandHistory.size() - 1));
-        if (!isBlankCommand && !isDuplicateCommand) {
-            commandHistory.add(command);
-            if (commandHistory.size() > MAXIMUM_HISTORY_ENTRIES) {
-                commandHistory.remove(0);
-            }
-        }
-        resetCommandHistoryNavigation();
-    }
-
-    /** Resets history navigation to the position after the newest command. */
-    private void resetCommandHistoryNavigation() {
-        commandHistoryIndex = commandHistory.size();
-        commandDraft = "";
+        commandHistory.record(command);
     }
 
     /** Adds the opening message and keeps the window usable if its bubble FXML is malformed. */

@@ -38,7 +38,7 @@ final class ArchiveCommandParser {
         }
 
         String[] selectorInputs = arguments.split("\\s+");
-        if (containsAllSelector(selectorInputs)) {
+        if (hasAllSelector(selectorInputs)) {
             return parseAllSelection(selectorInputs);
         }
         return new ArchiveSelection(parseArchiveRanges(selectorInputs), false);
@@ -50,7 +50,7 @@ final class ArchiveCommandParser {
      * @param selectorInputs the individual archive selectors
      * @return {@code true} if one selector requests all completed tasks
      */
-    private boolean containsAllSelector(String[] selectorInputs) {
+    private boolean hasAllSelector(String[] selectorInputs) {
         for (String selectorInput : selectorInputs) {
             if (selectorInput.equals("all")) {
                 return true;
@@ -101,7 +101,7 @@ final class ArchiveCommandParser {
                 throw new HertaException(ARCHIVE_SELECTION_ERROR);
             }
             String[] endpoints = selectorInput.split("-", -1);
-            if (containsZeroEndpoint(endpoints)) {
+            if (hasZeroEndpoint(endpoints)) {
                 throw new HertaException(ARCHIVE_SELECTION_ERROR);
             }
             rawRanges.add(endpoints);
@@ -110,7 +110,7 @@ final class ArchiveCommandParser {
     }
 
     /** Rejects zero because task numbers are one-based and strictly positive. */
-    private boolean containsZeroEndpoint(String[] endpoints) {
+    private boolean hasZeroEndpoint(String[] endpoints) {
         for (String endpoint : endpoints) {
             if (new BigInteger(endpoint).signum() == 0) {
                 return true;

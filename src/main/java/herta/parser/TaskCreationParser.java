@@ -78,7 +78,7 @@ final class TaskCreationParser {
      */
     Deadline parseDeadline(String input) throws HertaException {
         String deadlineArguments = CommandType.DEADLINE.extractArguments(input);
-        int markerCount = countMarker(deadlineArguments, DEADLINE_MARKER);
+        int markerCount = CommandTokenizer.countMarker(deadlineArguments, DEADLINE_MARKER);
         if (markerCount == 0) {
             throw new HertaException(DEADLINE_FORMAT_ERROR);
         }
@@ -86,7 +86,7 @@ final class TaskCreationParser {
             throw duplicateParameterError(DEADLINE_MARKER);
         }
 
-        int markerIndex = findMarker(deadlineArguments, DEADLINE_MARKER);
+        int markerIndex = CommandTokenizer.findMarker(deadlineArguments, DEADLINE_MARKER);
         String description = deadlineArguments.substring(0, markerIndex).trim();
         String byInput = deadlineArguments.substring(markerIndex + DEADLINE_MARKER.length()).trim();
         if (description.isEmpty()) {
@@ -127,8 +127,8 @@ final class TaskCreationParser {
 
     /** Validates event marker presence and uniqueness before extracting any fields. */
     private void validateEventMarkers(String eventArguments) throws HertaException {
-        int fromCount = countMarker(eventArguments, EVENT_FROM_MARKER);
-        int toCount = countMarker(eventArguments, EVENT_TO_MARKER);
+        int fromCount = CommandTokenizer.countMarker(eventArguments, EVENT_FROM_MARKER);
+        int toCount = CommandTokenizer.countMarker(eventArguments, EVENT_TO_MARKER);
         if (fromCount > 1) {
             throw duplicateParameterError(EVENT_FROM_MARKER);
         }
@@ -145,10 +145,10 @@ final class TaskCreationParser {
 
     /** Extracts the event description and both date/time values from validated arguments. */
     private EventParts extractEventParts(String eventArguments) throws HertaException {
-        int fromIndex = findMarker(eventArguments, EVENT_FROM_MARKER);
+        int fromIndex = CommandTokenizer.findMarker(eventArguments, EVENT_FROM_MARKER);
         String description = eventArguments.substring(0, fromIndex).trim();
         String remainder = eventArguments.substring(fromIndex + EVENT_FROM_MARKER.length());
-        int toIndex = findMarker(remainder, EVENT_TO_MARKER);
+        int toIndex = CommandTokenizer.findMarker(remainder, EVENT_TO_MARKER);
         if (toIndex < 0) {
             throw new HertaException(EVENT_FORMAT_ERROR);
         }
@@ -236,43 +236,6 @@ final class TaskCreationParser {
         } catch (DateTimeParseException e) {
             throw new HertaException(errorMessage);
         }
-    }
-
-    /** Counts marker tokens rather than marker-like text embedded in a word. */
-    private int countMarker(String input, String marker) {
-        int markerCount = 0;
-        int searchStart = 0;
-        while (searchStart < input.length()) {
-            int markerIndex = findMarker(input, marker, searchStart);
-            if (markerIndex < 0) {
-                return markerCount;
-            }
-            markerCount++;
-            searchStart = markerIndex + marker.length();
-        }
-        return markerCount;
-    }
-
-    /** Finds the first marker token after the supplied character offset. */
-    private int findMarker(String input, String marker) {
-        return findMarker(input, marker, 0);
-    }
-
-    /** Finds a marker token whose surrounding characters are separators or boundaries. */
-    private int findMarker(String input, String marker, int searchStart) {
-        int markerIndex = input.indexOf(marker, searchStart);
-        while (markerIndex >= 0) {
-            int markerEnd = markerIndex + marker.length();
-            boolean hasValidLeftBoundary = markerIndex == 0
-                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerIndex - 1));
-            boolean hasValidRightBoundary = markerEnd == input.length()
-                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerEnd));
-            if (hasValidLeftBoundary && hasValidRightBoundary) {
-                return markerIndex;
-            }
-            markerIndex = input.indexOf(marker, markerIndex + 1);
-        }
-        return -1;
     }
 
     /** Returns the stable message used for repeated command parameters. */

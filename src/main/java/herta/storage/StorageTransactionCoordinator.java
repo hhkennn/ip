@@ -1,0 +1,182 @@
+package herta.storage;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+
+import herta.exception.HertaException;
+import herta.task.TaskList;
+
+/** Coordinates durable replacement and rollback of active and archived task files. */
+final class StorageTransactionCoordinator {
+    private final Storage activeStorage;
+    private final Storage archiveStorage;
+    private final String failurePrefix;
+
+    /** Stores all data captured before a two-file persistence transaction begins. */
+    private record StorageTransactionPlan(List<String> activeLines, List<String> archiveLines,
+                                          StorageFileManager.FileSnapshot originalActiveFile,
+                                          StorageFileManager.FileSnapshot originalArchiveFile,
+                                          StorageTransactionJournal transactionJournal) {
+    }
+
+    /** Stores a rollback message together with whether transaction cleanup is safe. */
+    private record RollbackResult(String failureReason, boolean wasSuccessful) {
+    }
+
+    StorageTransactionCoordinator(Storage activeStorage, Storage archiveStorage,
+                                  String failurePrefix) {
+        this.activeStorage = Objects.requireNonNull(activeStorage);
+        this.archiveStorage = Objects.requireNonNull(archiveStorage);
+        this.failurePrefix = Objects.requireNonNull(failurePrefix);
+    }
+
+    /** Saves both collections while preserving the original state on a failed commit. */
+    void save(TaskList activeTasks, TaskList archivedTasks) throws HertaException {
+        StorageTransactionPlan transactionPlan = null;
+        try (StorageFileLock ignored = StorageFileLock.acquire(activeStorage.dataFile(),
+                archiveStorage.dataFile())) {
+            setInProgress();
+            transactionPlan = prepareTransaction(activeTasks, archivedTasks);
+            commitTransaction(transactionPlan);
+        } catch (HertaException e) {
+            handleValidationFailure(transactionPlan, e);
+        } catch (IOException | RuntimeException e) {
+            handleUnexpectedFailure(transactionPlan, e);
+        }
+    }
+
+    /** Marks both storage facades as participating in the current transaction. */
+    private void setInProgress() {
+        activeStorage.setPersistenceState(PersistenceState.IN_PROGRESS);
+        archiveStorage.setPersistenceState(PersistenceState.IN_PROGRESS);
+    }
+
+    /** Resets states after a failure that happened before transaction preparation. */
+    private void setNotAttempted() {
+        activeStorage.setPersistenceState(PersistenceState.NOT_ATTEMPTED);
+        archiveStorage.setPersistenceState(PersistenceState.NOT_ATTEMPTED);
+    }
+
+    /** Handles validation failures that do not need file rollback. */
+    private void handleValidationFailure(StorageTransactionPlan transactionPlan,
+                                         HertaException failure) throws HertaException {
+        if (transactionPlan == null) {
+            setNotAttempted();
+        }
+        cleanUpTransaction(transactionPlan);
+        throw withFailurePrefix(failure.getMessage());
+    }
+
+    /** Rolls back unexpected failures and retains a journal when rollback is uncertain. */
+    private void handleUnexpectedFailure(StorageTransactionPlan transactionPlan,
+                                         Exception failure) throws HertaException {
+        RollbackResult rollbackResult = rollbackTransaction(transactionPlan,
+                StorageFailureMapper.map(failure));
+        if (rollbackResult.wasSuccessful()) {
+            cleanUpTransaction(transactionPlan);
+        }
+        throw withFailurePrefix(rollbackResult.failureReason());
+    }
+
+    /** Validates both collections and records their original state. */
+    private StorageTransactionPlan prepareTransaction(TaskList activeTasks,
+                                                      TaskList archivedTasks)
+            throws HertaException, IOException {
+        activeStorage.ensureConsistent();
+        archiveStorage.ensureConsistent();
+        List<String> activeLines = activeStorage.serializeTasks(activeTasks);
+        List<String> archiveLines = archiveStorage.serializeTasks(archivedTasks);
+        StorageFileManager.FileSnapshot originalActiveFile = activeStorage.fileManager()
+                .captureSnapshot();
+        StorageFileManager.FileSnapshot originalArchiveFile = archiveStorage.fileManager()
+                .captureSnapshot();
+        activeStorage.initializeExpectedSnapshot(originalActiveFile);
+        archiveStorage.initializeExpectedSnapshot(originalArchiveFile);
+        activeStorage.ensureHasNotChanged();
+        archiveStorage.ensureHasNotChanged();
+        StorageTransactionJournal transactionJournal = StorageTransactionJournal.prepare(
+                activeStorage.dataFile(), archiveStorage.dataFile(), originalActiveFile,
+                originalArchiveFile);
+        return new StorageTransactionPlan(activeLines, archiveLines, originalActiveFile,
+                originalArchiveFile, transactionJournal);
+    }
+
+    /** Commits both replacements and updates snapshots used by future saves. */
+    private void commitTransaction(StorageTransactionPlan transactionPlan) throws IOException {
+        writeAndReplaceBothFiles(transactionPlan);
+        activeStorage.updateKnownSnapshot(activeStorage.fileManager().captureSnapshot());
+        archiveStorage.updateKnownSnapshot(archiveStorage.fileManager().captureSnapshot());
+        activeStorage.setPersistenceState(PersistenceState.COMMITTED);
+        archiveStorage.setPersistenceState(PersistenceState.COMMITTED);
+        transactionPlan.transactionJournal().cleanUp();
+    }
+
+    /** Stages and replaces both serialized task files. */
+    private void writeAndReplaceBothFiles(StorageTransactionPlan transactionPlan)
+            throws IOException {
+        Path temporaryActiveFile = null;
+        Path temporaryArchiveFile = null;
+        try {
+            temporaryActiveFile = activeStorage.fileManager().writeTemporaryFile(
+                    transactionPlan.activeLines());
+            temporaryArchiveFile = archiveStorage.fileManager().writeTemporaryFile(
+                    transactionPlan.archiveLines());
+            activeStorage.ensureHasNotChanged();
+            archiveStorage.ensureHasNotChanged();
+            activeStorage.fileManager().replaceDataFile(temporaryActiveFile);
+            temporaryActiveFile = null;
+            transactionPlan.transactionJournal().markActiveCommitted(activeStorage.dataFile(),
+                    archiveStorage.dataFile(), transactionPlan.originalActiveFile(),
+                    transactionPlan.originalArchiveFile());
+            archiveStorage.ensureHasNotChanged();
+            archiveStorage.fileManager().replaceDataFile(temporaryArchiveFile);
+            temporaryArchiveFile = null;
+            transactionPlan.transactionJournal().markCommitted(activeStorage.dataFile(),
+                    archiveStorage.dataFile(), transactionPlan.originalActiveFile(),
+                    transactionPlan.originalArchiveFile());
+        } finally {
+            activeStorage.fileManager().deleteTemporaryFile(temporaryActiveFile);
+            archiveStorage.fileManager().deleteTemporaryFile(temporaryArchiveFile);
+        }
+    }
+
+    /** Restores the captured state after an unexpected two-file commit failure. */
+    private RollbackResult rollbackTransaction(StorageTransactionPlan transactionPlan,
+                                               String failureReason) {
+        if (transactionPlan == null) {
+            setNotAttempted();
+            return new RollbackResult(failureReason, true);
+        }
+        try {
+            activeStorage.fileManager().restoreSnapshot(transactionPlan.originalActiveFile());
+            archiveStorage.fileManager().restoreSnapshot(transactionPlan.originalArchiveFile());
+            setNotAttempted();
+            return new RollbackResult(failureReason, true);
+        } catch (IOException | RuntimeException rollbackError) {
+            String recoveryMessage = failureReason + "; rollback failed; recovery journal retained at "
+                    + transactionPlan.transactionJournal().getRecoveryLocation() + ".";
+            StorageFailureMapper.log("Rollback failed while restoring storage.", rollbackError);
+            activeStorage.markInconsistent();
+            archiveStorage.markInconsistent();
+            activeStorage.setPersistenceState(PersistenceState.UNKNOWN);
+            archiveStorage.setPersistenceState(PersistenceState.UNKNOWN);
+            return new RollbackResult(recoveryMessage, false);
+        }
+    }
+
+    /** Removes transaction files once a transaction no longer needs recovery. */
+    private void cleanUpTransaction(StorageTransactionPlan transactionPlan) {
+        if (transactionPlan != null) {
+            transactionPlan.transactionJournal().cleanUp();
+        }
+    }
+
+    /** Adds the operation-specific prefix to a persistence failure. */
+    private HertaException withFailurePrefix(String reason) {
+        String safeReason = reason == null || reason.isBlank()
+                ? "unknown persistence error" : reason;
+        return new HertaException(failurePrefix + safeReason);
+    }
+}

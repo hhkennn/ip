@@ -48,6 +48,43 @@ public final class CommandTokenizer {
         return character == ' ' || character == '\t';
     }
 
+    /** Counts complete marker tokens in command arguments. */
+    static int countMarker(String input, String marker) {
+        int markerCount = 0;
+        int searchStart = 0;
+        while (searchStart < input.length()) {
+            int markerIndex = findMarker(input, marker, searchStart);
+            if (markerIndex < 0) {
+                return markerCount;
+            }
+            markerCount++;
+            searchStart = markerIndex + marker.length();
+        }
+        return markerCount;
+    }
+
+    /** Finds the first complete marker token after the supplied character offset. */
+    static int findMarker(String input, String marker) {
+        return findMarker(input, marker, 0);
+    }
+
+    /** Finds a complete marker token after the supplied character offset. */
+    private static int findMarker(String input, String marker, int searchStart) {
+        int markerIndex = input.indexOf(marker, searchStart);
+        while (markerIndex >= 0) {
+            int markerEnd = markerIndex + marker.length();
+            boolean hasValidLeftBoundary = markerIndex == 0
+                    || isHorizontalWhitespace(input.charAt(markerIndex - 1));
+            boolean hasValidRightBoundary = markerEnd == input.length()
+                    || isHorizontalWhitespace(input.charAt(markerEnd));
+            if (hasValidLeftBoundary && hasValidRightBoundary) {
+                return markerIndex;
+            }
+            markerIndex = input.indexOf(marker, markerIndex + 1);
+        }
+        return -1;
+    }
+
     /** Validates raw command size and characters before any parser work occurs. */
     private static void validateInput(String input) throws HertaException {
         if (input == null) {

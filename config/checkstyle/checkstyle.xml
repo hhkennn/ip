@@ -34,6 +34,12 @@
     <property name="max" value="120"/>
   </module>
 
+  <module name="FileLength">
+    <!-- Keeps every Java source file focused and reviewable. -->
+    <property name="max" value="300"/>
+    <property name="fileExtensions" value="java"/>
+  </module>
+
   <!-- All Java AST specific tests live under TreeWalker module. -->
   <module name="TreeWalker">
 
@@ -158,6 +164,13 @@
 
     <!-- Checks if a catch block is empty and does not contain any comments. -->
     <module name="EmptyCatchBlock"/>
+
+    <module name="MethodLength">
+      <!-- Includes methods, constructors, and compact record constructors. -->
+      <property name="max" value="30"/>
+      <property name="countEmpty" value="true"/>
+      <property name="tokens" value="METHOD_DEF,CTOR_DEF,COMPACT_CTOR_DEF"/>
+    </module>
 
     <module name="LeftCurly">
       <!-- Checks for placement of the left curly brace ('{'). -->

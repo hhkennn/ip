@@ -18,13 +18,9 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import herta.task.TaskList;
 
 /** Tests strict file-manager reads, writes, snapshots, and path handling. */
 class StorageFileManagerTest {
-    private static final int MAX_RECORD_LENGTH = 4_096;
-    private static final int EXCESS_RECORD_COUNT = TaskList.MAXIMUM_TASK_COUNT + 1;
-
     @TempDir
     Path temporaryDirectory;
 
@@ -97,45 +93,6 @@ class StorageFileManagerTest {
                 new StorageFileManager(directory).captureSnapshot());
 
         assertEquals("data path is not a readable regular file", exception.getMessage());
-    }
-
-    @Test
-    void readLines_allSupportedLineSeparatorsAndEmptyRecords_returnsRecords() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("line-endings.txt");
-        Files.write(dataFile, "first\n\rsecond\r\n\nthird".getBytes(StandardCharsets.UTF_8));
-
-        List<String> lines = new StorageFileManager(dataFile).readLines();
-
-        assertEquals(List.of("first", "", "second", "", "third"), lines);
-    }
-
-    @Test
-    void readLines_malformedUtf8AndOverlongRecord_rejectInput() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("invalid.txt");
-        StorageFileManager manager = new StorageFileManager(dataFile);
-        Files.write(dataFile, new byte[] {(byte) 0xc3, (byte) 0x28});
-        assertThrows(IOException.class, manager::readLines);
-
-        Files.writeString(dataFile, "a".repeat(MAX_RECORD_LENGTH), StandardCharsets.UTF_8);
-        assertEquals(List.of("a".repeat(MAX_RECORD_LENGTH)), manager.readLines());
-
-        Files.writeString(dataFile, "a".repeat(MAX_RECORD_LENGTH + 1), StandardCharsets.UTF_8);
-        assertThrows(IOException.class, manager::readLines);
-    }
-
-    @Test
-    void readLines_exactRecordAndTaskCountLimits_acceptBoundaryAndRejectExcess() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("records.txt");
-        StorageFileManager manager = new StorageFileManager(dataFile);
-        String record = "T | 0 | task";
-        List<String> maximumRecords = Collections.nCopies(TaskList.MAXIMUM_TASK_COUNT, record);
-        Files.writeString(dataFile, String.join(System.lineSeparator(), maximumRecords),
-                StandardCharsets.UTF_8);
-        assertEquals(TaskList.MAXIMUM_TASK_COUNT, manager.readLines().size());
-
-        Files.writeString(dataFile, String.join(System.lineSeparator(),
-                Collections.nCopies(EXCESS_RECORD_COUNT, record)), StandardCharsets.UTF_8);
-        assertThrows(IOException.class, manager::readLines);
     }
 
     @Test

@@ -157,9 +157,9 @@ final class TaskStorageConverter {
      */
     private Task parseStoredTask(String line) throws HertaException {
         String[] storageFields = splitStorageRecord(line);
-        boolean isCompleted = validateAndCheckCompletion(storageFields);
+        validateStorageFields(storageFields);
         Task task = createTask(storageFields);
-        if (isCompleted) {
+        if (hasCompletedStatus(storageFields)) {
             task.markAsDone();
         }
         return task;
@@ -179,14 +179,8 @@ final class TaskStorageConverter {
         return normalizedLine.split("\\s*\\|\\s*", -1);
     }
 
-    /**
-     * Validates a serialized task record and checks whether it is complete.
-     *
-     * @param storageFields the storage fields to validate
-     * @return {@code true} if the record marks the task as complete
-     * @throws HertaException if the record is malformed
-     */
-    private boolean validateAndCheckCompletion(String[] storageFields) throws HertaException {
+    /** Validates all structural and field values in a serialized task record. */
+    private void validateStorageFields(String[] storageFields) throws HertaException {
         if (storageFields.length < MINIMUM_PART_COUNT) {
             throw new HertaException("Invalid saved task: missing task type or status.");
         }
@@ -196,6 +190,10 @@ final class TaskStorageConverter {
         validatePartCount(storageFields, type, expectedPartCount);
         validateStatus(storageFields[STATUS_INDEX]);
         validateTaskFields(storageFields);
+    }
+
+    /** Returns whether a validated record marks its task as complete. */
+    private boolean hasCompletedStatus(String[] storageFields) {
         return COMPLETED_STATUS.equals(storageFields[STATUS_INDEX]);
     }
 

@@ -1,9 +1,6 @@
 package herta.parser;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.Objects;
 
 import herta.command.ArchiveCommand;
 import herta.command.ArchivedCommand;
@@ -31,31 +28,13 @@ import herta.task.Todo;
  * Interprets user commands and delegates specialized argument parsing.
  */
 public class Parser {
-    private static final String FILTER_DATE_MARKER = "/on";
-    private static final String FILTER_USAGE = "filter /on <date>";
-    private static final String MISSING_FIND_KEYWORD_ERROR =
-            "Find something specific. Use: find <keyword>.";
-    private static final String DUPLICATE_FILTER_MARKER_ERROR =
-            "One %s marker is enough. Try: %s.";
-    private static final String MISSING_FILTER_MARKER_ERROR =
-            "Your filter needs %s. Try: %s.";
-    private static final String MISSING_FILTER_DATE_ERROR =
-            "You gave me %s without a date. Try: %s.";
-    private static final String INVALID_FILTER_DATE_ERROR =
-            "That date won't do. Try 2019-10-15 or 15/10/2019.";
-    private static final String DATE_SORT_COMMAND = "sort date";
-    private static final String UNSUPPORTED_SORT_OPTION_ERROR =
-            "That sorting option is not supported. Try: %s.";
-    private static final String INVALID_TASK_NUMBER_ERROR =
-            "That's not a task number. Try: %s 1.";
     private static final String LOWERCASE_COMMAND_ERROR = "Lowercase only. Try: %s.";
     private static final String NO_ARGUMENT_COMMAND_ERROR =
             "Just use: %s. Nothing else is required.";
-    private static final int MAX_NUMBER_LENGTH = 64;
-    private static final int MAX_UPCOMING_DAYS = 4_000_000;
-
     private final TaskCreationParser taskCreationParser = new TaskCreationParser();
     private final ArchiveCommandParser archiveCommandParser = new ArchiveCommandParser();
+    private final QueryCommandParser queryCommandParser = new QueryCommandParser();
+    private final TaskIndexParser taskIndexParser = new TaskIndexParser();
 
     /**
      * Identifies the command represented by the user's input.
@@ -162,11 +141,7 @@ public class Parser {
      * @throws HertaException if the keyword is empty
      */
     public String parseFindKeyword(String input) throws HertaException {
-        String keyword = CommandType.FIND.extractArguments(input);
-        if (keyword.isEmpty()) {
-            throw new HertaException(MISSING_FIND_KEYWORD_ERROR);
-        }
-        return keyword;
+        return queryCommandParser.parseFindKeyword(input);
     }
 
     /**
@@ -199,28 +174,7 @@ public class Parser {
      * @throws HertaException if the command format or date is invalid
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
-        Objects.requireNonNull(input, "A filter command cannot be null.");
-        String arguments = CommandType.FILTER.extractArguments(input);
-        int markerCount = countMarker(arguments, FILTER_DATE_MARKER);
-        if (markerCount > 1) {
-            throw new HertaException(DUPLICATE_FILTER_MARKER_ERROR.formatted(
-                    FILTER_DATE_MARKER, FILTER_USAGE));
-        }
-        String[] filterParts = arguments.split("[ \\t]+", 2);
-        if (!FILTER_DATE_MARKER.equals(filterParts[0])) {
-            throw new HertaException(MISSING_FILTER_MARKER_ERROR.formatted(
-                    FILTER_DATE_MARKER, FILTER_USAGE));
-        }
-        if (filterParts.length == 1 || filterParts[1].isBlank()) {
-            throw new HertaException(MISSING_FILTER_DATE_ERROR.formatted(
-                    FILTER_DATE_MARKER, FILTER_USAGE));
-        }
-
-        try {
-            return DateTimeParser.parseUserDate(filterParts[1]);
-        } catch (DateTimeParseException e) {
-            throw new HertaException(INVALID_FILTER_DATE_ERROR);
-        }
+        return queryCommandParser.parseFilterDate(input);
     }
 
     /**
@@ -231,20 +185,7 @@ public class Parser {
      * @throws HertaException if the command does not contain a positive number
      */
     public int parseUpcomingDays(String input) throws HertaException {
-        String daysInput = CommandType.UPCOMING.extractArguments(input);
-        final int days;
-        if (!daysInput.matches("[0-9]+") || daysInput.length() > MAX_NUMBER_LENGTH) {
-            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
-        }
-        try {
-            days = Integer.parseInt(daysInput);
-        } catch (NumberFormatException e) {
-            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
-        }
-        if (days <= 0 || days > MAX_UPCOMING_DAYS) {
-            throw new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
-        }
-        return days;
+        return queryCommandParser.parseUpcomingDays(input);
     }
 
     /**
@@ -254,9 +195,7 @@ public class Parser {
      * @throws HertaException if the command does not request date sorting
      */
     public void validateSortCommand(String input) throws HertaException {
-        if (!CommandType.SORT.extractArguments(input).equals("date")) {
-            throw new HertaException(UNSUPPORTED_SORT_OPTION_ERROR.formatted(DATE_SORT_COMMAND));
-        }
+        queryCommandParser.validateSortCommand(input);
     }
 
     /**
@@ -268,29 +207,7 @@ public class Parser {
      * @throws HertaException if the task number is not numeric
      */
     public int parseTaskIndex(String input, String commandKeyword) throws HertaException {
-        if (input == null || commandKeyword == null) {
-            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
-        }
-        String normalizedInput = input.trim();
-        if (!hasTaskNumberPrefix(normalizedInput, commandKeyword)) {
-            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
-        }
-        String taskNumber = normalizedInput.substring(commandKeyword.length()).trim();
-        if (!isPositiveDecimal(taskNumber)) {
-            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
-        }
-        try {
-            return new BigInteger(taskNumber).intValueExact() - 1;
-        } catch (ArithmeticException e) {
-            throw new HertaException(getInvalidTaskNumberError(commandKeyword));
-        }
-    }
-
-    /** Checks that a task number follows its command keyword with a supported separator. */
-    private boolean hasTaskNumberPrefix(String input, String commandKeyword) {
-        return input.startsWith(commandKeyword)
-                && input.length() > commandKeyword.length()
-                && CommandTokenizer.isHorizontalWhitespace(input.charAt(commandKeyword.length()));
+        return taskIndexParser.parseTaskIndex(input, commandKeyword);
     }
 
     /** Rejects trailing input for commands whose grammar has no arguments. */
@@ -345,45 +262,6 @@ public class Parser {
     /** Returns usage guidance for a command that does not accept arguments. */
     private String getNoArgumentError(String keyword) {
         return NO_ARGUMENT_COMMAND_ERROR.formatted(keyword);
-    }
-
-    /** Returns usage guidance for an invalid task number. */
-    private String getInvalidTaskNumberError(String commandKeyword) {
-        return INVALID_TASK_NUMBER_ERROR.formatted(commandKeyword);
-    }
-
-    /** Checks a bounded, positive decimal number before constructing a BigInteger. */
-    private boolean isPositiveDecimal(String input) {
-        if (!input.matches("[0-9]+") || input.length() > MAX_NUMBER_LENGTH) {
-            return false;
-        }
-        try {
-            return new BigInteger(input).signum() > 0;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    /** Counts a marker only when it is a complete token. */
-    private int countMarker(String input, String marker) {
-        int count = 0;
-        int searchStart = 0;
-        while (searchStart < input.length()) {
-            int markerIndex = input.indexOf(marker, searchStart);
-            if (markerIndex < 0) {
-                break;
-            }
-            int markerEnd = markerIndex + marker.length();
-            boolean hasValidLeftBoundary = markerIndex == 0
-                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerIndex - 1));
-            boolean hasValidRightBoundary = markerEnd == input.length()
-                    || CommandTokenizer.isHorizontalWhitespace(input.charAt(markerEnd));
-            if (hasValidLeftBoundary && hasValidRightBoundary) {
-                count++;
-            }
-            searchStart = markerIndex + 1;
-        }
-        return count;
     }
 
     /**
