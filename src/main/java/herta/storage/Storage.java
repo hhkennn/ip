@@ -91,8 +91,6 @@ public class Storage {
             TaskList loadedTasks = converter.parseStorageLines(fileManager.readLines(), recordPrefix);
             lastKnownSnapshot = fileManager.captureSnapshot();
             return loadedTasks;
-        } catch (HertaException e) {
-            throw e;
         } catch (NoSuchFileException e) {
             throw new HertaException(loadPrefix + "data file is missing.");
         } catch (IOException | RuntimeException e) {

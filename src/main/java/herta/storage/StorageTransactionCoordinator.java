@@ -41,7 +41,8 @@ final class StorageTransactionCoordinator {
             transactionPlan = prepareTransaction(activeTasks, archivedTasks);
             commitTransaction(transactionPlan);
         } catch (HertaException e) {
-            handleValidationFailure(transactionPlan, e);
+            setNotAttempted();
+            throw withFailurePrefix(e.getMessage());
         } catch (IOException | RuntimeException e) {
             handleUnexpectedFailure(transactionPlan, e);
         }
@@ -57,16 +58,6 @@ final class StorageTransactionCoordinator {
     private void setNotAttempted() {
         activeStorage.setPersistenceState(PersistenceState.NOT_ATTEMPTED);
         archiveStorage.setPersistenceState(PersistenceState.NOT_ATTEMPTED);
-    }
-
-    /** Handles validation failures that do not need file rollback. */
-    private void handleValidationFailure(StorageTransactionPlan transactionPlan,
-                                         HertaException failure) throws HertaException {
-        if (transactionPlan == null) {
-            setNotAttempted();
-        }
-        cleanUpTransaction(transactionPlan);
-        throw withFailurePrefix(failure.getMessage());
     }
 
     /** Rolls back unexpected failures and retains a journal when rollback is uncertain. */

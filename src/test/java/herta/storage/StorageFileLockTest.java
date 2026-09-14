@@ -17,7 +17,7 @@ class StorageFileLockTest {
         Path activeFile = temporaryDirectory.resolve("herta.txt");
         Path archiveFile = temporaryDirectory.resolve("herta-archive.txt");
 
-        try (StorageFileLock lock = StorageFileLock.acquire(activeFile, archiveFile)) {
+        try (StorageFileLock ignored = StorageFileLock.acquire(activeFile, archiveFile)) {
             // Acquiring both paths succeeds only when the shared lock path is deduplicated.
         }
     }
@@ -27,7 +27,7 @@ class StorageFileLockTest {
         Path activeFile = temporaryDirectory.resolve("herta.txt");
         Path archiveFile = temporaryDirectory.resolve("herta-archive.txt");
 
-        try (StorageFileLock lock = StorageFileLock.acquire(activeFile, archiveFile)) {
+        try (StorageFileLock ignored = StorageFileLock.acquire(activeFile, archiveFile)) {
             FileSystemException exception = assertThrows(FileSystemException.class, () ->
                     StorageFileLock.acquire(archiveFile, activeFile));
             String message = exception.getReason();
@@ -43,7 +43,7 @@ class StorageFileLockTest {
 
         lock.close();
 
-        try (StorageFileLock reacquiredLock = StorageFileLock.acquire(archiveFile, activeFile)) {
+        try (StorageFileLock ignored = StorageFileLock.acquire(archiveFile, activeFile)) {
             // The closed lock must release every channel before acquisition can succeed again.
         }
     }

@@ -259,9 +259,8 @@ public class MainWindow extends AnchorPane {
 
     /** Restricts the zoom level to the supported range before applying it. */
     private void setZoomLevel(int requestedZoomLevel) {
-        int boundedZoomLevel = Math.max(
-                MINIMUM_ZOOM_LEVEL,
-                Math.min(MAXIMUM_ZOOM_LEVEL, requestedZoomLevel));
+        int boundedZoomLevel = Math.clamp(requestedZoomLevel,
+                MINIMUM_ZOOM_LEVEL, MAXIMUM_ZOOM_LEVEL);
         if (boundedZoomLevel == zoomLevel) {
             return;
         }

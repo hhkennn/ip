@@ -23,7 +23,8 @@ class StorageRecordReaderTest {
     @Test
     void read_allSupportedLineSeparatorsAndEmptyRecords_returnsRecords() throws Exception {
         Path dataFile = temporaryDirectory.resolve("line-endings.txt");
-        Files.write(dataFile, "first\n\rsecond\r\n\nthird".getBytes(StandardCharsets.UTF_8));
+        Files.writeString(dataFile, "first\n\rsecond\r\n\nthird",
+                StandardCharsets.UTF_8);
 
         List<String> records = StorageRecordReader.read(dataFile);
 

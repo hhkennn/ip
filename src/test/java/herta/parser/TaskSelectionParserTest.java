@@ -46,7 +46,7 @@ class TaskSelectionParserTest {
         assertEquals(List.of(new ArchiveRange(2, 2), new ArchiveRange(2, 2),
                 new ArchiveRange(3, 5), new ArchiveRange(4, 4)), selection.getRanges());
         assertEquals(new ArchiveRange(2, 2),
-                parser.parseArchiveSelection("archive 0000000000000000000002").getRanges().get(0));
+                parser.parseArchiveSelection("archive 0000000000000000000002").getRanges().getFirst());
         assertTrue(parser.parseArchiveSelection("archive all").isAllSelected());
     }
 

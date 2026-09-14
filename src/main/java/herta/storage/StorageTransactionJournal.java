@@ -35,6 +35,7 @@ final class StorageTransactionJournal {
             PHASE_KEY);
     static final Duration STALE_FILE_AGE = Duration.ofDays(1);
     private static final Logger LOGGER = Logger.getLogger(StorageTransactionJournal.class.getName());
+    private static final Path ABSENT_BACKUP_PATH = Path.of(ABSENT_BACKUP);
 
     private final Path journalPath;
     private final Path activeBackup;
@@ -70,8 +71,8 @@ final class StorageTransactionJournal {
         Path directory = getDataDirectory(activeFile);
         Files.createDirectories(directory);
         Path journalPath = directory.resolve(JOURNAL_FILE_NAME);
-        Path activeBackup = Path.of(ABSENT_BACKUP);
-        Path archiveBackup = Path.of(ABSENT_BACKUP);
+        Path activeBackup = ABSENT_BACKUP_PATH;
+        Path archiveBackup = ABSENT_BACKUP_PATH;
         try {
             activeBackup = createBackup(directory, "active", activeSnapshot);
             archiveBackup = createBackup(directory, "archive", archiveSnapshot);
@@ -172,7 +173,7 @@ final class StorageTransactionJournal {
     private static Path createBackup(Path directory, String fileRole,
                                      StorageFileManager.FileSnapshot snapshot) throws IOException {
         if (!snapshot.wasPresent()) {
-            return Path.of(ABSENT_BACKUP);
+            return ABSENT_BACKUP_PATH;
         }
         Path backup = StorageFileManager.createOwnedTemporaryFile(directory,
                 ".herta-" + fileRole + "-", ".bak");

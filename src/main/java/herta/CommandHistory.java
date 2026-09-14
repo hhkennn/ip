@@ -23,7 +23,7 @@ final class CommandHistory {
         boolean isBlankCommand = command.isBlank();
         boolean hasPreviousCommand = !commands.isEmpty();
         boolean isDuplicateCommand = hasPreviousCommand
-                && command.equals(commands.get(commands.size() - 1));
+                && command.equals(commands.getLast());
         if (!isBlankCommand && !isDuplicateCommand) {
             commands.add(command);
             removeExcessCommands();
@@ -56,7 +56,7 @@ final class CommandHistory {
     /** Removes the oldest entries when the configured capacity is exceeded. */
     private void removeExcessCommands() {
         if (commands.size() > maximumEntries) {
-            commands.remove(0);
+            commands.removeFirst();
         }
     }
 

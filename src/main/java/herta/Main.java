@@ -34,8 +34,8 @@ public class Main extends Application {
             Scene scene = new Scene(mainWindow);
 
             stage.setTitle("Herta");
-            Image appIcon = new Image(MainWindow.class.getResourceAsStream(
-                    MainWindow.HERTA_IMAGE_RESOURCE));
+            URL iconResource = requireResource(MainWindow.HERTA_IMAGE_RESOURCE);
+            Image appIcon = new Image(iconResource.toExternalForm());
             stage.getIcons().add(appIcon);
             stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
             stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
@@ -53,11 +53,17 @@ public class Main extends Application {
         String[] requiredResourcePaths = {"/view/MainWindow.fxml", "/view/DialogBox.fxml",
             "/css/main.css", "/css/dialog-box.css", MainWindow.HERTA_IMAGE_RESOURCE};
         for (String resourcePath : requiredResourcePaths) {
-            URL resource = Main.class.getResource(resourcePath);
-            if (resource == null) {
-                throw new MissingResourceException(STARTUP_ERROR, Main.class.getName(), resourcePath);
-            }
+            requireResource(resourcePath);
         }
+    }
+
+    /** Returns a required application resource or reports an incomplete installation. */
+    private static URL requireResource(String resourcePath) {
+        URL resource = Main.class.getResource(resourcePath);
+        if (resource == null) {
+            throw new MissingResourceException(STARTUP_ERROR, Main.class.getName(), resourcePath);
+        }
+        return resource;
     }
 
     /** Presents a minimal error scene when the normal GUI resources cannot be loaded. */
