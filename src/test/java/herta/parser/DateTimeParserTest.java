@@ -26,8 +26,30 @@ class DateTimeParserTest {
 
     @Test
     void parseUserDateTime_dateOnlyInput_returnsStartOfDay() {
-        assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0),
-                DateTimeParser.parseUserDateTime("2019-12-02"));
+        LocalDateTime expected = LocalDateTime.of(2019, 12, 2, 0, 0);
+
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2019-12-02"));
+        assertEquals(expected, DateTimeParser.parseUserDateTime("2/12/2019"));
+    }
+
+    @Test
+    void parseUserDateTime_impossibleDateOnlyValues_throwDateTimeParseException() {
+        String[] invalidInputs = {"31/02/2019", "2019-02-30"};
+
+        for (String input : invalidInputs) {
+            assertThrows(DateTimeParseException.class, () ->
+                    DateTimeParser.parseUserDateTime(input));
+        }
+    }
+
+    @Test
+    void parseUserDateTime_malformedDateOnlyValues_throwDateTimeParseException() {
+        String[] invalidInputs = {"2-12-2019", "2019/12/02", "2/12/19", "2019-12-02 trailing"};
+
+        for (String input : invalidInputs) {
+            assertThrows(DateTimeParseException.class, () ->
+                    DateTimeParser.parseUserDateTime(input));
+        }
     }
 
     @Test
@@ -106,6 +128,12 @@ class DateTimeParserTest {
     void parseStoredDateTime_invalidInput_throwsDateTimeParseException() {
         assertThrows(DateTimeParseException.class, () ->
                 DateTimeParser.parseStoredDateTime("2019-02-30T18:00:00"));
+    }
+
+    @Test
+    void parseStoredDateTime_slashDateOnlyInput_remainsRejected() {
+        assertThrows(DateTimeParseException.class, () ->
+                DateTimeParser.parseStoredDateTime("2/12/2019"));
     }
 
     @Test

@@ -43,16 +43,31 @@ class TaskCreationParserTest {
     }
 
     @Test
+    void parseDeadline_dateOnlyFormats_returnsMidnightDeadline() throws HertaException {
+        Deadline slashDeadline = parser.parseDeadline("deadline slash report /by 2/12/2019");
+        Deadline isoDeadline = parser.parseDeadline("deadline ISO report /by 2019-12-02");
+
+        assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0), slashDeadline.getBy());
+        assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0), isoDeadline.getBy());
+    }
+
+    @Test
     void parseDeadline_malformedInput_throwsHelpfulException() {
         HertaException missingDelimiter = assertThrows(HertaException.class, () ->
                 parser.parseDeadline("deadline submit report"));
         HertaException invalidDate = assertThrows(HertaException.class, () ->
                 parser.parseDeadline("deadline submit report /by 31/02/2019 1800"));
+        HertaException invalidSlashDate = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline submit report /by 31/02/2019"));
+        HertaException invalidIsoDate = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline submit report /by 2019-02-30"));
 
         assertEquals("That deadline format won't work. Use: deadline <description> /by <date/time>.",
                 missingDelimiter.getMessage());
         assertEquals("I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.",
                 invalidDate.getMessage());
+        assertEquals(invalidDate.getMessage(), invalidSlashDate.getMessage());
+        assertEquals(invalidDate.getMessage(), invalidIsoDate.getMessage());
     }
 
     @Test
@@ -113,6 +128,15 @@ class TaskCreationParserTest {
     }
 
     @Test
+    void parseEvent_mixedDateOnlyFormats_returnsMidnightRange() throws HertaException {
+        Event event = parser.parseEvent(
+                "event project meeting /from 2/12/2019 /to 2019-12-03");
+
+        assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0), event.getFrom());
+        assertEquals(LocalDateTime.of(2019, 12, 3, 0, 0), event.getTo());
+    }
+
+    @Test
     void parseEvent_nonIncreasingRange_throwsHelpfulException() {
         HertaException exception = assertThrows(HertaException.class, () -> parser.parseEvent(
                 "event meeting /from 2019-10-16 /to 2019-10-15"));
@@ -124,9 +148,12 @@ class TaskCreationParserTest {
     void parseEvent_invalidDateTime_throwsHelpfulException() {
         HertaException exception = assertThrows(HertaException.class, () -> parser.parseEvent(
                 "event meeting /from someday /to 2019-10-16"));
+        HertaException invalidIsoDate = assertThrows(HertaException.class, () -> parser.parseEvent(
+                "event meeting /from 2019-02-30 /to 2019-03-01"));
 
         assertEquals("Those dates won't do. Use valid dates, such as 2019-10-15 or 2/12/2019 1800.",
                 exception.getMessage());
+        assertEquals(exception.getMessage(), invalidIsoDate.getMessage());
     }
 
     @Test

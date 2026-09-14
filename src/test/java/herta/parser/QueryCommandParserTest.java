@@ -44,10 +44,17 @@ class QueryCommandParserTest {
 
     @Test
     void parseFilterDate_invalidDate_throwsHelpfulException() {
-        HertaException exception = assertThrows(HertaException.class, () ->
-                parser.parseFilterDate("filter /on 31/02/2019"));
+        String[] invalidInputs = {
+            "filter /on 31/02/2019",
+            "filter /on 2019-02-30",
+            "filter /on 2-12-2019"
+        };
 
-        assertEquals("That date won't do. Try 2019-10-15 or 15/10/2019.", exception.getMessage());
+        for (String input : invalidInputs) {
+            HertaException exception = assertThrows(HertaException.class, () ->
+                    parser.parseFilterDate(input));
+            assertEquals("That date won't do. Try 2019-10-15 or 15/10/2019.", exception.getMessage());
+        }
     }
 
     @Test

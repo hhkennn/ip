@@ -43,9 +43,9 @@ public final class DateTimeParser {
     }
 
     /**
-     * Parses a deadline entered by the user.
+     * Parses a date/time entered by the user for a deadline or event.
      *
-     * @param input the date/time entered after {@code /by}
+     * @param input the date/time entered after a task date marker
      * @return the parsed date/time, with date-only input represented at midnight
      * @throws DateTimeParseException if the input does not match a supported format
      */
@@ -61,8 +61,7 @@ public final class DateTimeParser {
             }
         }
 
-        LocalDate date = LocalDate.parse(normalizedInput, ISO_DATE_FORMAT);
-        return validateSupportedDateTime(date.atStartOfDay(), normalizedInput);
+        return parseUserDate(normalizedInput).atStartOfDay();
     }
 
     /**

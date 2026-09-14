@@ -89,8 +89,7 @@ Archived tasks use a separate numbering system shown by `archived`;
 | Date and time | `d/M/yyyy HHmm` | `2/12/2026 1800` |
 | Date and time | `yyyy-MM-dd HHmm` | `2026-12-02 1800` |
 | Date and time | `yyyy-MM-dd HH:mm` | `2026-12-02 18:00` |
-| Date only for deadlines and events | `yyyy-MM-dd` | `2026-12-02` |
-| Date used by `filter` | `d/M/yyyy` or `yyyy-MM-dd` | `2/12/2026` |
+| Date only (`deadline`, `event`, and `filter`) | `d/M/yyyy` or `yyyy-MM-dd` | `2/12/2026` or `2026-12-02` |
 
 A date-only deadline or event endpoint represents midnight at the beginning of
 that date. Events must end after they start. Dates must be valid between
@@ -126,7 +125,7 @@ Format: `deadline DESCRIPTION /by DATE_OR_DATE_TIME`
 Example: `deadline submit report /by 2026-10-15 18:00`
 
 The `/by` marker is required and may appear only once. Use the supported
-formats described earlier; a date-only deadline uses ISO `yyyy-MM-dd`.
+formats described earlier.
 
 ### Adding an event: `event`
 

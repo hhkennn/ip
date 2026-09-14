@@ -32,7 +32,7 @@ that plan supplies a persisted data fixture before startup.
 | Start and exit | `bye` | End of input | Fresh process per case |
 | List tasks | Populated list | Empty list | State checked after errors |
 | Find tasks | Matching keyword in descriptions | Empty keyword or no matches | Original task numbering and order are preserved |
-| Add tasks | Todo, deadline, event with valid date/time | Empty fields, invalid delimiters, and invalid date/time | Whitespace normalization, date formatting, and reuse of archived task descriptions |
+| Add tasks | Todo, deadline, and event with valid date/time or date-only input in `d/M/yyyy` or `yyyy-MM-dd` | Empty fields, invalid delimiters, and malformed or impossible date/time | Whitespace normalization, date-only midnight, date formatting, and reuse of archived task descriptions |
 | Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
 | Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to the test's temporary `data/herta.txt` |
@@ -41,6 +41,10 @@ that plan supplies a persisted data fixture before startup.
 | Restore tasks | Completed archive task and leading-zero number | Malformed, multiple, ranged, and out-of-bounds numbers | Restored task is appended to active tasks |
 | Archive persistence | Archive then load in a fresh process | File failures are covered by JUnit tests | Cross-process persistence is verified in `test/archive-persistence-ui-test-plan.md` |
 | Command matching | All supported commands | Command-name lookalikes | Lookalikes do not change state |
+
+Date-only input is supported consistently by `deadline`, `event`, and `filter` in
+both `d/M/yyyy` and `yyyy-MM-dd` forms. Impossible and malformed dates are
+rejected strictly.
 
 ## Test case: Exit immediately
 
@@ -1202,6 +1206,8 @@ deadline return book
 event project meeting /from Mon 2pm
 deadline report /bye Friday
 deadline report /by 31/02/2019 1800
+deadline report /by 31/02/2019
+event meeting /from 2026-02-30 /to 2026-03-01
 event meeting /from nope /to 2019-10-16
 event meeting /from 2019-10-16 /to 2019-10-15
 event meeting /fromage Mon /today Tue
@@ -1247,6 +1253,12 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     I can't schedule that value. Use a valid date/time, such as 2019-10-15 1800.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Those dates won't do. Use valid dates, such as 2019-10-15 or 2/12/2019 1800.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Those dates won't do. Use valid dates, such as 2019-10-15 or 2/12/2019 1800.
@@ -1319,14 +1331,16 @@ Your command?      ____________________________________________________________
 
 ## Test case: Add deadlines and events
 
-- Aim: Verify that deadlines parse date/time input into a typed value, display it in a readable format, and retain the correct task type.
+- Aim: Verify that deadlines and events parse date/time and date-only input into typed values, represent date-only values at midnight, display them in a readable format, and retain the correct task type.
 
 ### Inputs
 
 ```text
 todo borrow book
 deadline return book /by 2/12/2019  1800
+deadline date-only slash /by 2/12/2019
 event project meeting /from 2/12/2019 1800 /to 3/12/2019 1800
+event date-only mixed /from 2019-12-03 /to 4/12/2019
 list
 bye
 ```
@@ -1355,14 +1369,26 @@ Your command?      ____________________________________________________________
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've added it:
-       [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
+       [D][ ] date-only slash (by: Dec 02 2019)
      That makes 3 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
+     That makes 4 active tasks. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [E][ ] date-only mixed (from: Dec 03 2019 to: Dec 04 2019)
+     That makes 5 active tasks. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1. [T][ ] borrow book
      2. [D][ ] return book (by: Dec 02 2019, 6:00 PM)
-     3. [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
+     3. [D][ ] date-only slash (by: Dec 02 2019)
+     4. [E][ ] project meeting (from: Dec 02 2019, 6:00 PM to: Dec 03 2019, 6:00 PM)
+     5. [E][ ] date-only mixed (from: Dec 03 2019 to: Dec 04 2019)
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
