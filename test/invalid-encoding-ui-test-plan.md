@@ -32,5 +32,5 @@ bye
      Oh, you're here. I'm Herta.
      Well? What do you want?
      ____________________________________________________________
-     Failed to load tasks: Input length = 1
+     Failed to load tasks: an I/O failure occurred.
 ```

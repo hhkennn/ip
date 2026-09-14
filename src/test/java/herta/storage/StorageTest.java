@@ -78,6 +78,26 @@ class StorageTest {
     }
 
     @Test
+    void storagePaths_nullAndMalformedInput_rejectConfiguration() {
+        IllegalArgumentException storageException = assertThrows(IllegalArgumentException.class, () ->
+                new Storage(null));
+        IllegalArgumentException archiveException = assertThrows(IllegalArgumentException.class, () ->
+                Storage.resolveArchivePath("\u0000"));
+
+        assertEquals("Configured data path is invalid.", storageException.getMessage());
+        assertEquals("Configured data path is invalid.", archiveException.getMessage());
+    }
+
+    @Test
+    void resolveArchivePath_relativeAndNestedFiles_useSiblingArchive() {
+        Path relativeArchive = Storage.resolveArchivePath("tasks.txt");
+        Path nestedArchive = Storage.resolveArchivePath("data" + java.io.File.separator + "tasks.txt");
+
+        assertEquals(Path.of(".").resolve("archive.txt"), relativeArchive);
+        assertEquals(Path.of("data").resolve("archive.txt"), nestedArchive);
+    }
+
+    @Test
     void load_directoryPath_throwsHelpfulException() throws Exception {
         Path dataDirectory = temporaryDirectory.resolve("data-directory");
         Files.createDirectory(dataDirectory);
@@ -151,6 +171,45 @@ class StorageTest {
 
         assertTrue(exception.getMessage().contains("changed outside Herta"));
         assertEquals("T | 0 | edited outside Herta\n", Files.readString(dataFile));
+    }
+
+    @Test
+    void save_afterSaveExternalEdit_abortsWithoutOverwritingEditedFile() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("external-edit-after-save.txt");
+        Storage storage = new Storage(dataFile.toString());
+        storage.save(new TaskList(List.of(new Todo("original"))));
+        Files.writeString(dataFile, "T | 0 | edited outside Herta\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                storage.save(new TaskList(List.of(new Todo("new")))));
+
+        assertTrue(exception.getMessage().contains("changed outside Herta"));
+        assertEquals("T | 0 | edited outside Herta\n", Files.readString(dataFile));
+    }
+
+    @Test
+    void saveActiveAndArchivedTasks_successUpdatesBothFilesAndSnapshots() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("transaction").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        Todo activeTask = new Todo("café");
+        Todo archivedTask = new Todo("归档");
+
+        activeStorage.saveActiveAndArchivedTasks(archiveStorage,
+                new TaskList(List.of(activeTask)), new TaskList(List.of(archivedTask)),
+                "Failed to save transaction: ");
+
+        assertEquals(PersistenceState.COMMITTED, activeStorage.getLastPersistenceState());
+        assertEquals(PersistenceState.COMMITTED, archiveStorage.getLastPersistenceState());
+        assertEquals(List.of("T | 0 | café"), Files.readAllLines(activeFile));
+        assertEquals(List.of("T | 0 | 归档"), Files.readAllLines(archiveFile));
+        assertTrue(Files.notExists(activeFile.resolveSibling(".herta-transaction")));
+        assertNoTransactionFiles(activeFile.getParent());
+
+        activeStorage.save(new TaskList(List.of(new Todo("later"))));
+
+        assertEquals(List.of("T | 0 | later"), Files.readAllLines(activeFile));
     }
 
     @Test
@@ -307,6 +366,17 @@ class StorageTest {
 
     private void validatePathsForTest(Path activeFile, Path archiveFile) throws HertaException {
         Storage.validateDistinctPaths(activeFile, archiveFile);
+    }
+
+    private void assertNoTransactionFiles(Path directory) throws Exception {
+        try (var paths = Files.list(directory)) {
+            assertEquals(List.of(), paths.filter(path -> {
+                String fileName = path.getFileName().toString();
+                return fileName.startsWith(".herta-active-")
+                        || fileName.startsWith(".herta-archive-")
+                        || fileName.startsWith(".herta-transaction");
+            }).toList());
+        }
     }
 
     /** Supplies an invalid serialized record without bypassing task construction validation. */

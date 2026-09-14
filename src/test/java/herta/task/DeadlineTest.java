@@ -53,4 +53,42 @@ class DeadlineTest {
         assertEquals("[D][ ] submit report (by: Dec 02 2019, 6:00 PM)",
                 deadline.toString());
     }
+
+    @Test
+    void deadlineConstructor_nullDateTime_rejectsInput() {
+        assertThrows(NullPointerException.class, () -> new Deadline("deadline", null));
+    }
+
+    @Test
+    void fromStorage_nullDateTime_rejectsInput() {
+        assertThrows(NullPointerException.class, () -> Deadline.fromStorage("deadline", null));
+    }
+
+    @Test
+    void fromStorage_dateOnlyValue_defaultsToMidnight() {
+        Deadline deadline = Deadline.fromStorage("deadline", "2019-12-02");
+
+        assertEquals(LocalDateTime.of(2019, 12, 2, 0, 0), deadline.getBy());
+        assertEquals("D | 0 | deadline | 2019-12-02T00:00:00", deadline.toStorageString());
+    }
+
+    @Test
+    void fromStorage_outOfRangeAndNullValues_rejectThem() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Deadline.fromStorage("deadline", "0000-01-01"));
+        assertThrows(IllegalArgumentException.class, () ->
+                Deadline.fromStorage("deadline", "10000-01-01"));
+        assertThrows(NullPointerException.class, () ->
+                new Deadline("deadline", LocalDateTime.of(2019, 12, 2, 0, 0)).occursOn(null));
+    }
+
+    @Test
+    void deadlineSerialization_afterCompletion_writesCompletedStatus() {
+        Deadline deadline = new Deadline("deadline", LocalDateTime.of(2019, 12, 2, 0, 0));
+
+        deadline.markAsDone();
+
+        assertEquals("D | 1 | deadline | 2019-12-02T00:00:00", deadline.toStorageString());
+        assertEquals("[D][X] deadline (by: Dec 02 2019)", deadline.toString());
+    }
 }

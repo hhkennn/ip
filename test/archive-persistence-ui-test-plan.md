@@ -37,16 +37,16 @@ bye
 Your command?      ____________________________________________________________
      There. I've added it:
        [T][ ] persisted task
-     That makes 1 task. Try to keep up.
+     That makes 1 active task. Try to keep up.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     There. It's marked complete:
+     Done. It's marked complete:
        [T][X] persisted task
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've archived 1 completed task:
        [T][X] persisted task
-     That leaves 0 active tasks. Try to keep up.
+     The active list is down to 0 tasks. Much tidier.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -61,7 +61,7 @@ Your command?      ____________________________________________________________
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Here are the tasks you've archived:
+     The archive, as requested:
      1.[T][X] persisted task
      ____________________________________________________________
 Your command?      ____________________________________________________________

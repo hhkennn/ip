@@ -80,4 +80,47 @@ class EventTest {
         assertEquals("[E][ ] team meeting (from: Dec 03 2019, 10:00 AM to: "
                 + "Dec 03 2019, 11:00 AM)", event.toString());
     }
+
+    @Test
+    void eventConstructor_nullEndpoints_rejectInput() {
+        LocalDateTime start = LocalDateTime.of(2019, 12, 3, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2019, 12, 3, 11, 0);
+
+        assertThrows(NullPointerException.class, () -> new Event("event", null, end));
+        assertThrows(NullPointerException.class, () -> new Event("event", start, null));
+    }
+
+    @Test
+    void occursOn_exactDayBoundaries_excludesNonOverlappingDates() {
+        Event event = new Event("event", LocalDateTime.of(2019, 12, 3, 10, 0),
+                LocalDateTime.of(2019, 12, 3, 11, 0));
+
+        assertTrue(event.occursOn(LocalDate.of(2019, 12, 3)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 2)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 4)));
+        assertThrows(NullPointerException.class, () -> event.occursOn(null));
+    }
+
+    @Test
+    void occursOn_midnightEndBoundary_excludesFollowingDate() {
+        Event event = new Event("event", LocalDateTime.of(2019, 12, 3, 23, 0),
+                LocalDateTime.of(2019, 12, 4, 0, 0));
+
+        assertTrue(event.occursOn(LocalDate.of(2019, 12, 3)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 4)));
+    }
+
+    @Test
+    void fromStorage_malformedEndpointsAndCompletionState_areHandled() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Event.fromStorage("event", "not-a-date", "2019-12-03T11:00:00"));
+        assertThrows(IllegalArgumentException.class, () ->
+                Event.fromStorage("event", "2019-12-03T10:00:00", "not-a-date"));
+        Event event = Event.fromStorage("event", "2019-12-03", "2019-12-04T00:00:00");
+
+        event.markAsDone();
+
+        assertEquals("E | 1 | event | 2019-12-03T00:00:00 | 2019-12-04T00:00:00",
+                event.toStorageString());
+    }
 }

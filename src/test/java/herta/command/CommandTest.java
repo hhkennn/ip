@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import herta.exception.HertaException;
 import herta.storage.Storage;
+import herta.storage.TaskRepository;
 import herta.task.Deadline;
 import herta.task.Event;
 import herta.task.TaskList;
@@ -29,6 +31,10 @@ import herta.ui.Ui;
  * Tests command execution, persistence coordination, task queries, and command errors.
  */
 class CommandTest {
+    private static final int BROAD_UPCOMING_WINDOW_DAYS = 100_000_000;
+    private static final LocalDateTime FAR_FUTURE_DATE_TIME =
+            LocalDateTime.of(9999, 12, 31, 23, 59);
+
     @TempDir
     Path temporaryDirectory;
 
@@ -220,16 +226,16 @@ class CommandTest {
 
     @Test
     void upcomingCommand_executeShowsOnlyIncompleteFutureTasks() throws Exception {
-        LocalDateTime now = LocalDateTime.now();
-        Deadline upcoming = new Deadline("upcoming report", now.plusDays(1));
-        Deadline completed = new Deadline("completed report", now.plusDays(1));
+        Deadline upcoming = new Deadline("upcoming report", FAR_FUTURE_DATE_TIME);
+        Deadline completed = new Deadline("completed report", FAR_FUTURE_DATE_TIME);
         completed.markAsDone();
         TaskList tasks = new TaskList(List.of(new Todo("buy milk"), upcoming, completed));
 
         String output = captureOutput(() ->
-                new UpcomingCommand(2).execute(tasks, new Ui(), null));
+                new UpcomingCommand(BROAD_UPCOMING_WINDOW_DAYS).execute(tasks, new Ui(), null));
 
-        assertTrue(output.contains("The next 2 days, arranged for you:"));
+        assertTrue(output.contains("The next " + BROAD_UPCOMING_WINDOW_DAYS
+                + " days, arranged for you:"));
         assertTrue(output.contains("2.[D][ ] upcoming report"));
         assertFalse(output.contains("buy milk"));
         assertFalse(output.contains("completed report"));
@@ -257,13 +263,117 @@ class CommandTest {
                 "That command isn't in my vocabulary."));
     }
 
+    @Test
+    void constructors_invalidArguments_rejectCommands() {
+        assertThrows(NullPointerException.class, () -> new TodoCommand(null));
+        assertThrows(NullPointerException.class, () -> new DeadlineCommand(null));
+        assertThrows(NullPointerException.class, () -> new EventCommand(null));
+        assertThrows(IllegalArgumentException.class, () -> new FindCommand(null));
+        assertThrows(IllegalArgumentException.class, () -> new FindCommand("   "));
+        assertThrows(IllegalArgumentException.class, () -> new UpcomingCommand(0));
+        assertThrows(IllegalArgumentException.class, () -> new MarkCommand(-1));
+        assertThrows(IllegalArgumentException.class, () -> new UnmarkCommand(-1));
+        assertThrows(IllegalArgumentException.class, () -> new DeleteCommand(-1));
+        assertThrows(NullPointerException.class, () -> new ArchiveCommand(null));
+        assertThrows(IllegalArgumentException.class, () -> new RestoreCommand(-1));
+    }
+
+    @Test
+    void queries_emptyLists_reportExpectedMessages() throws Exception {
+        TaskList emptyTasks = new TaskList();
+
+        String listOutput = captureOutput(() -> new ListCommand().execute(emptyTasks, new Ui(), null));
+        String findOutput = captureOutput(() -> new FindCommand("missing")
+                .execute(emptyTasks, new Ui(), null));
+        String filterOutput = captureOutput(() -> new FilterCommand(LocalDate.of(2019, 10, 15))
+                .execute(emptyTasks, new Ui(), null));
+        String sortOutput = captureOutput(() -> new SortCommand().execute(emptyTasks, new Ui(), null));
+        String upcomingOutput = captureOutput(() -> new UpcomingCommand(2)
+                .execute(emptyTasks, new Ui(), null));
+
+        assertTrue(listOutput.contains("Let's see what you've managed to pile up:"));
+        assertTrue(findOutput.contains("Nothing matched."));
+        assertTrue(filterOutput.contains("No tasks on Oct 15 2019."));
+        assertTrue(sortOutput.contains("There. Your tasks are in date order."));
+        assertTrue(upcomingOutput.contains("Nothing upcoming."));
+    }
+
+    @Test
+    void queries_unicodeDuplicatesAndTies_preserveExpectedOrder() throws Exception {
+        Todo firstDuplicate = new Todo("Überraschung");
+        Todo secondDuplicate = new Todo("Überraschung");
+        Deadline firstDeadline = new Deadline("first due", LocalDateTime.of(2019, 10, 15, 18, 0));
+        Deadline secondDeadline = new Deadline("second due", LocalDateTime.of(2019, 10, 15, 18, 0));
+        TaskList tasks = new TaskList(List.of(firstDuplicate, secondDuplicate,
+                firstDeadline, secondDeadline));
+
+        String findOutput = captureOutput(() -> new FindCommand("ÜBER")
+                .execute(tasks, new Ui(), null));
+        String sortOutput = captureOutput(() -> new SortCommand().execute(tasks, new Ui(), null));
+
+        assertTrue(findOutput.contains("1.[T][ ] Überraschung"));
+        assertTrue(findOutput.contains("2.[T][ ] Überraschung"));
+        assertTrue(sortOutput.indexOf("3.[D][ ] first due")
+                < sortOutput.indexOf("4.[D][ ] second due"));
+        assertSame(firstDuplicate, tasks.get(0));
+        assertSame(firstDeadline, tasks.get(2));
+    }
+
+    @Test
+    void taskStatusCommands_repeatedExecution_isIdempotent() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("status.txt");
+        Todo todo = new Todo("repeat status");
+        TaskList tasks = new TaskList(List.of(todo));
+        Storage storage = new Storage(dataFile.toString());
+
+        new MarkCommand(0).execute(tasks, new Ui(), storage);
+        new MarkCommand(0).execute(tasks, new Ui(), storage);
+        new UnmarkCommand(0).execute(tasks, new Ui(), storage);
+        new UnmarkCommand(0).execute(tasks, new Ui(), storage);
+
+        assertFalse(todo.isCompleted());
+        assertEquals(List.of("T | 0 | repeat status"), Files.readAllLines(dataFile));
+    }
+
+    @Test
+    void taskIndexCommands_invalidIndex_rejectEverySelectedTaskCommand() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("invalid-index.txt");
+        TaskList tasks = new TaskList(List.of(new Todo("one task")));
+        Storage storage = new Storage(dataFile.toString());
+        storage.save(tasks);
+
+        for (Command command : List.of(new MarkCommand(1), new UnmarkCommand(1),
+                new DeleteCommand(1))) {
+            assertThrows(HertaException.class, () -> command.execute(tasks, new Ui(), storage));
+        }
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    void repositoryAdapter_addChangesActiveFileOnly() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        TaskList activeTasks = new TaskList();
+        Todo archivedTask = new Todo("archived task");
+        archiveStorage.save(new TaskList(List.of(archivedTask)));
+        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
+                activeTasks, new TaskList(List.of(archivedTask)));
+
+        new TodoCommand(new Todo("active task")).execute(repository, new Ui());
+
+        assertEquals(List.of("T | 0 | active task"), Files.readAllLines(activeFile));
+        assertEquals(List.of("T | 0 | archived task"), Files.readAllLines(archiveFile));
+    }
+
     private String captureOutput(OutputAction action) throws Exception {
         PrintStream originalOutput = System.out;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
-            System.setOut(new PrintStream(output));
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
             action.run();
-            return output.toString();
+            return output.toString(StandardCharsets.UTF_8);
         } finally {
             System.setOut(originalOutput);
         }

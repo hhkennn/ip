@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,6 +20,9 @@ import org.junit.jupiter.api.io.TempDir;
  * Tests the application loop and startup handling for storage failures.
  */
 class HertaTest {
+    private static final String EXPECTED_SEPARATOR =
+            "____________________________________________________________";
+
     @TempDir
     Path temporaryDirectory;
 
@@ -212,6 +216,47 @@ class HertaTest {
         assertEquals(ResponseCategory.ERROR, herta.getResponse("archived").getResponseCategory());
     }
 
+    @Test
+    void run_eofDisplaysGoodbyeAndStopsProcessing() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("eof.txt");
+
+        String output = runWithInput(dataFile, "todo before eof\n");
+
+        assertTrue(output.contains("There. I've added it:"));
+        assertTrue(output.contains("Leaving already? Goodbye."));
+        assertTrue(output.contains("     " + EXPECTED_SEPARATOR));
+        assertFalse(output.contains("There. I've added it:\n     [T][ ] after eof"));
+    }
+
+    @Test
+    void getResponse_commandLengthBoundaryAcceptsMaximumAndRejectsOverLimit() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("command-length.txt");
+        Herta herta = new Herta(dataFile.toString());
+        int maximumCommandLength = 4_096;
+        String maximumCommand = "list" + " ".repeat(maximumCommandLength - "list".length());
+        String overlongCommand = maximumCommand + " ";
+
+        HertaResponse acceptedResponse = herta.getResponse(maximumCommand);
+        HertaResponse rejectedResponse = herta.getResponse(overlongCommand);
+
+        assertEquals(ResponseCategory.QUERY, acceptedResponse.getResponseCategory());
+        assertEquals(ResponseCategory.USAGE_GUIDANCE, rejectedResponse.getResponseCategory());
+        assertTrue(Files.notExists(dataFile));
+    }
+
+    @Test
+    void startup_malformedActiveData_disablesInteraction() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("malformed-active.txt");
+        Files.write(dataFile, List.of("X | 0 | invalid type"), StandardCharsets.UTF_8);
+
+        Herta herta = new Herta(dataFile.toString());
+
+        assertFalse(herta.isReady());
+        assertTrue(herta.getLoadingError().startsWith("Failed to load tasks at line "));
+        assertEquals(ResponseCategory.ERROR, herta.getResponse("todo no save")
+                .getResponseCategory());
+    }
+
     private String runWithInput(Path dataPath, String input) {
         java.io.InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;
@@ -220,9 +265,9 @@ class HertaTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
             System.setIn(testInput);
-            System.setOut(new PrintStream(output));
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
             new Herta(dataPath.toString()).run();
-            return output.toString();
+            return output.toString(StandardCharsets.UTF_8);
         } finally {
             System.setIn(originalInput);
             System.setOut(originalOutput);

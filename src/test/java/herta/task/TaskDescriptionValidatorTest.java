@@ -24,4 +24,40 @@ class TaskDescriptionValidatorTest {
                 TaskDescriptionValidator.validate("bad\uD800"));
     }
 
+    @Test
+    void validate_nullAndOrdinaryWhitespace_rejectsInput() {
+        assertThrows(NullPointerException.class, () -> TaskDescriptionValidator.validate(null));
+        assertThrows(IllegalArgumentException.class, () -> TaskDescriptionValidator.validate(" "));
+        assertThrows(IllegalArgumentException.class, () -> TaskDescriptionValidator.validate(" \t "));
+    }
+
+    @Test
+    void validate_descriptionLength_usesUtf16CodeUnitLimit() {
+        String maximumDescription = "a".repeat(TaskDescriptionValidator.MAX_DESCRIPTION_LENGTH);
+        String overlongDescription = maximumDescription + "a";
+
+        TaskDescriptionValidator.validate(maximumDescription);
+        assertThrows(IllegalArgumentException.class, () ->
+                TaskDescriptionValidator.validate(overlongDescription));
+    }
+
+    @Test
+    void validate_unsupportedSpacesAndControls_rejectThem() {
+        String[] invalidDescriptions = {
+            "bad\rtext", "bad\ntext", "bad\u0009text", "bad\u0000text",
+            "bad\u202Etext", "bad\u00A0text", "bad\u2003text", "bad\uDC00"
+        };
+
+        for (String description : invalidDescriptions) {
+            assertThrows(IllegalArgumentException.class, () ->
+                    TaskDescriptionValidator.validate(description));
+        }
+    }
+
+    @Test
+    void validate_supplementaryUnicodeAndMatchedSurrogates_acceptThem() {
+        TaskDescriptionValidator.validate("review ☕ and 🚀");
+        TaskDescriptionValidator.validate("matched \uD83D\uDE80");
+    }
+
 }

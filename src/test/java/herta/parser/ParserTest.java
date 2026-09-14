@@ -279,6 +279,8 @@ class ParserTest {
         assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
                 assertArchiveError("archive -1").getMessage());
         assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
+                assertArchiveError("archive 0").getMessage());
+        assertEquals("That selection won't do. Use task numbers or ranges, such as archive 1 3-5.",
                 assertArchiveError("archive 1 - 3").getMessage());
         assertEquals("The range runs the wrong way. Try: archive 2-5.",
                 assertArchiveError("archive 5-2").getMessage());
@@ -292,7 +294,7 @@ class ParserTest {
     void parseRestoreTaskNumber_validAndInvalidInputs_areDistinguished() throws HertaException {
         assertEquals(0, parser.parseRestoreTaskNumber("restore 001"));
         assertEquals(0, parser.parseRestoreTaskNumber("restore 0000000000000000000001"));
-        for (String input : List.of("restore", "restore 1 2", "restore 1-2", "restore -1",
+        for (String input : List.of("restore", "restore 1 2", "restore 1-2", "restore 0", "restore -1",
                 "restore +1", "restore 999999999999999999")) {
             HertaException exception = assertRestoreError(input);
             String expected = input.equals("restore")
@@ -309,6 +311,145 @@ class ParserTest {
         HertaException exception = assertThrows(HertaException.class, () ->
                 parser.validateSortCommand("sort time"));
         assertEquals("That sorting option is not supported. Try: sort date.", exception.getMessage());
+    }
+
+    @Test
+    void parseTaskCreation_missingMarkersAndValues_returnsSpecificGuidance() {
+        HertaException deadlineMarker = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline report"));
+        HertaException deadlineValue = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline report /by"));
+        HertaException eventMarker = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting"));
+        HertaException eventStart = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /from /to 2019-10-16"));
+        HertaException eventEnd = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /from 2019-10-15 /to"));
+
+        assertEquals("That deadline format won't work. Use: deadline <description> /by <date/time>.",
+                deadlineMarker.getMessage());
+        assertEquals("A deadline needs a time. Use: deadline <description> /by <date/time>.",
+                deadlineValue.getMessage());
+        assertEquals("An event needs a start marker: /from <start>.", eventMarker.getMessage());
+        assertEquals("An event cannot start from nowhere. Add: /from <start>.",
+                eventStart.getMessage());
+        assertEquals("An event cannot end nowhere. Add: /to <end>.", eventEnd.getMessage());
+    }
+
+    @Test
+    void parseTaskCreation_markerLikeTextAndWrongOrder_areHandled() throws HertaException {
+        Deadline deadline = parser.parseDeadline(
+                "deadline use /by-like text /by 2019-10-15");
+        Event event = parser.parseEvent(
+                "event /to-not-marker /from 2019-10-15 /to 2019-10-16");
+        HertaException wrongOrder = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /to 2019-10-16 /from 2019-10-15"));
+
+        assertEquals("use /by-like text", deadline.getDescription());
+        assertEquals("/to-not-marker", event.getDescription());
+        assertEquals("That event format won't work. Try: event <description> /from <start> "
+                + "/to <end>.", wrongOrder.getMessage());
+    }
+
+    @Test
+    void parseTaskCreation_missingDescriptionsAndMarkers_reportsGuidance() {
+        HertaException deadlineDescription = assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline /by 2019-10-15"));
+        HertaException eventDescription = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event /from 2019-10-15 /to 2019-10-16"));
+        HertaException duplicateEnd = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /from 2019-10-15 /to 2019-10-16 /to 2019-10-17"));
+        HertaException missingEnd = assertThrows(HertaException.class, () ->
+                parser.parseEvent("event meeting /from 2019-10-15"));
+
+        assertEquals("Tell me what the deadline is for. Try: deadline <description> /by <date/time>.",
+                deadlineDescription.getMessage());
+        assertEquals("Tell me what the event is. Try: event <description> /from <start> /to <end>.",
+                eventDescription.getMessage());
+        assertEquals("One /to is enough. Use: event <description> /from <start> /to <end>.",
+                duplicateEnd.getMessage());
+        assertEquals("An event needs an end marker: /to <end>.", missingEnd.getMessage());
+    }
+
+    @Test
+    void parseTaskCreation_invalidDescriptionCharacters_rejectAllTaskTypes() {
+        assertThrows(HertaException.class, () -> parser.parseTodo("todo bad\u202Etext"));
+        assertThrows(HertaException.class, () ->
+                parser.parseDeadline("deadline bad\u202Etext /by 2019-10-15"));
+        assertThrows(HertaException.class, () ->
+                parser.parseEvent("event bad\u202Etext /from 2019-10-15 /to 2019-10-16"));
+    }
+
+    @Test
+    void parseFilterDate_missingDuplicateAndLookalikeMarkers_returnsGuidance() {
+        HertaException duplicateMarker = assertThrows(HertaException.class, () ->
+                parser.parseFilterDate("filter /on 2019-10-15 /on 2019-10-16"));
+        HertaException missingDate = assertThrows(HertaException.class, () ->
+                parser.parseFilterDate("filter /on"));
+        HertaException markerLikeText = assertThrows(HertaException.class, () ->
+                parser.parseFilterDate("filter /only 2019-10-15"));
+
+        assertEquals("One /on marker is enough. Try: filter /on <date>.",
+                duplicateMarker.getMessage());
+        assertEquals("You gave me /on without a date. Try: filter /on <date>.",
+                missingDate.getMessage());
+        assertEquals("Your filter needs /on. Try: filter /on <date>.", markerLikeText.getMessage());
+    }
+
+    @Test
+    void parseNumericArguments_boundariesAndOverflow_areRejectedPrecisely() throws HertaException {
+        assertEquals(Integer.MAX_VALUE - 1,
+                parser.parseTaskIndex("mark " + Integer.MAX_VALUE, "mark"));
+        assertEquals(2, parser.parseUpcomingDays("upcoming 0002"));
+
+        String[] invalidTaskNumbers = {
+            "mark 0", "mark -1", "mark +1", "mark 1.0", "mark 1 trailing",
+            "mark 2147483648", "mark " + "1".repeat(64)
+        };
+        for (String input : invalidTaskNumbers) {
+            assertThrows(HertaException.class, () -> parser.parseTaskIndex(input, "mark"));
+        }
+        assertThrows(HertaException.class, () -> parser.parseUpcomingDays("upcoming 0"));
+        assertThrows(HertaException.class, () -> parser.parseUpcomingDays("upcoming -1"));
+        assertThrows(HertaException.class, () -> parser.parseUpcomingDays("upcoming 1.0"));
+        assertThrows(HertaException.class, () ->
+                parser.parseUpcomingDays("upcoming 2147483648"));
+    }
+
+    @Test
+    void parseTaskNumbers_everyIndexCommand_rejectsIntegerOverflow() {
+        for (String commandKeyword : List.of("mark", "unmark", "delete")) {
+            assertThrows(HertaException.class, () -> parser.parseTaskIndex(
+                    commandKeyword + " 2147483648", commandKeyword));
+        }
+        assertThrows(HertaException.class, () ->
+                parser.parseArchiveSelection("archive 2147483648"));
+        assertThrows(HertaException.class, () ->
+                parser.parseRestoreTaskNumber("restore 2147483648"));
+    }
+
+    @Test
+    void parseNoArgumentCommands_extraArgumentsAndWrongCase_returnPreciseGuidance() {
+        for (String input : List.of("list extra", "bye extra", "archived extra")) {
+            HertaException exception = assertThrows(HertaException.class, () -> parser.parse(input));
+            String commandKeyword = input.split(" ")[0];
+            assertEquals("Just use: " + commandKeyword + ". Nothing else is required.",
+                    exception.getMessage());
+        }
+        HertaException wrongCase = assertThrows(HertaException.class, () -> parser.parse("LIST"));
+
+        assertEquals("Lowercase only. Try: list.", wrongCase.getMessage());
+    }
+
+    @Test
+    void parse_nullInputOrType_reportsParsingError() {
+        HertaException nullInput = assertThrows(HertaException.class, () ->
+                parser.parse(null, CommandType.LIST));
+        HertaException nullType = assertThrows(HertaException.class, () ->
+                parser.parse("list", null));
+
+        assertEquals("Command parsing requires input and a command type.", nullInput.getMessage());
+        assertEquals("Command parsing requires input and a command type.", nullType.getMessage());
     }
 
     private HertaException assertArchiveError(String input) {
