@@ -13,7 +13,7 @@ public interface UiOutput {
     /** Format used for an unnumbered task display. */
     String INDENTED_TASK_FORMAT = "  %s";
     /** Format used for a numbered task display. */
-    String NUMBERED_TASK_FORMAT = "%d.%s";
+    String NUMBERED_TASK_FORMAT = "%d. %s";
 
     /**
      * Displays a message to the user.

@@ -171,35 +171,35 @@ class CommandTest {
 
     private void assertListCommandDisplaysTasks(TaskList tasks) throws Exception {
         String output = captureOutput(() -> new ListCommand().execute(tasks, new Ui(), null));
-        assertTrue(output.contains("1.[T][ ] buy milk"));
-        assertTrue(output.contains("2.[D][ ] submit report"));
-        assertTrue(output.contains("3.[E][ ] project meeting"));
+        assertTrue(output.contains("1. [T][ ] buy milk"));
+        assertTrue(output.contains("2. [D][ ] submit report"));
+        assertTrue(output.contains("3. [E][ ] project meeting"));
     }
 
     private void assertFilterCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
         String output = captureOutput(() -> new FilterCommand(LocalDate.of(2019, 10, 15))
                 .execute(tasks, new Ui(), null));
         assertTrue(output.contains("Here's what's scheduled for Oct 15 2019. Try not to miss it:"));
-        assertTrue(output.contains("2.[D][ ] submit report"));
-        assertTrue(output.contains("3.[E][ ] project meeting"));
-        assertFalse(output.contains("1.[T][ ] buy milk"));
+        assertTrue(output.contains("2. [D][ ] submit report"));
+        assertTrue(output.contains("3. [E][ ] project meeting"));
+        assertFalse(output.contains("1. [T][ ] buy milk"));
     }
 
     private void assertFindCommandDisplaysMatchingTasks(TaskList tasks) throws Exception {
         String output = captureOutput(() -> new FindCommand("REPORT").execute(tasks, new Ui(), null));
         assertTrue(output.contains("Found them. Here are the matches:"));
-        assertTrue(output.contains("2.[D][ ] submit report"));
-        assertFalse(output.contains("1.[T][ ] buy milk"));
-        assertFalse(output.contains("3.[E][ ] project meeting"));
+        assertTrue(output.contains("2. [D][ ] submit report"));
+        assertFalse(output.contains("1. [T][ ] buy milk"));
+        assertFalse(output.contains("3. [E][ ] project meeting"));
     }
 
     private void assertSortCommandDisplaysTasksInDateOrder(TaskList tasks, Todo todo) throws Exception {
         String output = captureOutput(() -> new SortCommand().execute(tasks, new Ui(), null));
         assertTrue(output.contains("There. Your tasks are in date order."));
-        assertTrue(output.indexOf("3.[E][ ] project meeting")
-                < output.indexOf("2.[D][ ] submit report"));
-        assertTrue(output.indexOf("2.[D][ ] submit report")
-                < output.indexOf("1.[T][ ] buy milk"));
+        assertTrue(output.indexOf("3. [E][ ] project meeting")
+                < output.indexOf("2. [D][ ] submit report"));
+        assertTrue(output.indexOf("2. [D][ ] submit report")
+                < output.indexOf("1. [T][ ] buy milk"));
         assertSame(todo, tasks.get(0));
     }
 
@@ -238,7 +238,7 @@ class CommandTest {
 
         assertTrue(output.contains("The next " + BROAD_UPCOMING_WINDOW_DAYS
                 + " days, arranged for you:"));
-        assertTrue(output.contains("2.[D][ ] upcoming report"));
+        assertTrue(output.contains("2. [D][ ] upcoming report"));
         assertFalse(output.contains("buy milk"));
         assertFalse(output.contains("completed report"));
     }
@@ -313,10 +313,10 @@ class CommandTest {
                 .execute(tasks, new Ui(), null));
         String sortOutput = captureOutput(() -> new SortCommand().execute(tasks, new Ui(), null));
 
-        assertTrue(findOutput.contains("1.[T][ ] Überraschung"));
-        assertTrue(findOutput.contains("2.[T][ ] Überraschung"));
-        assertTrue(sortOutput.indexOf("3.[D][ ] first due")
-                < sortOutput.indexOf("4.[D][ ] second due"));
+        assertTrue(findOutput.contains("1. [T][ ] Überraschung"));
+        assertTrue(findOutput.contains("2. [T][ ] Überraschung"));
+        assertTrue(sortOutput.indexOf("3. [D][ ] first due")
+                < sortOutput.indexOf("4. [D][ ] second due"));
         assertSame(firstDuplicate, tasks.get(0));
         assertSame(firstDeadline, tasks.get(2));
     }

@@ -20,7 +20,7 @@ class UiOutputTest {
         output.showTask(todo);
         output.showTask(2, todo);
 
-        assertEquals(List.of("  [T][ ] read book", "2.[T][ ] read book"), output.messages);
+        assertEquals(List.of("  [T][ ] read book", "2. [T][ ] read book"), output.messages);
     }
 
     @Test

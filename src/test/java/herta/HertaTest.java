@@ -137,7 +137,7 @@ class HertaTest {
         HertaResponse goodbyeResponse = herta.getResponse("bye");
 
         assertTrue(addResponse.getMessage().contains("There. I've added it:"));
-        assertTrue(listResponse.getMessage().contains("1.[T][ ] read book"));
+        assertTrue(listResponse.getMessage().contains("1. [T][ ] read book"));
         assertTrue(invalidResponse.getMessage().contains("That command isn't in my vocabulary."));
         assertTrue(goodbyeResponse.getMessage().contains("Leaving already? Goodbye."));
         assertEquals(ResponseCategory.ADD, addResponse.getResponseCategory());
@@ -305,10 +305,10 @@ class HertaTest {
         String activeOutput = restartedSession.getResponse("list").getMessage();
         String archiveOutput = restartedSession.getResponse("archived").getMessage();
 
-        assertTrue(activeOutput.contains("1.[D][ ] due (by: Dec 31 9999)"));
-        assertTrue(activeOutput.contains("2.[E][ ] meeting (from: Dec 30 9999 to: Dec 31 9999)"));
-        assertTrue(activeOutput.indexOf("1.[D]") < activeOutput.indexOf("2.[E]"));
-        assertTrue(archiveOutput.contains("1.[T][X] café 🚀"));
+        assertTrue(activeOutput.contains("1. [D][ ] due (by: Dec 31 9999)"));
+        assertTrue(activeOutput.contains("2. [E][ ] meeting (from: Dec 30 9999 to: Dec 31 9999)"));
+        assertTrue(activeOutput.indexOf("1. [D]") < activeOutput.indexOf("2. [E]"));
+        assertTrue(archiveOutput.contains("1. [T][X] café 🚀"));
     }
 
     private FileState captureFileState(Path file) throws Exception {

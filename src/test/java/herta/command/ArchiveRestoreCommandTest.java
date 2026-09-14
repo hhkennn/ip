@@ -193,8 +193,8 @@ class ArchiveRestoreCommandTest {
 
         assertEquals(ResponseCategory.QUERY, viewResponse.getResponseCategory());
         assertEquals("The archive, as requested:\n"
-                + "1.[T][X] completed\n"
-                + "2.[T][ ] incomplete", viewResponse.getMessage()
+                + "1. [T][X] completed\n"
+                + "2. [T][ ] incomplete", viewResponse.getMessage()
                 .replace(System.lineSeparator(), "\n"));
         assertEquals(ResponseCategory.RESTORE, restoreResponse.getResponseCategory());
         assertEquals("There. I've restored it:\n"
@@ -365,7 +365,7 @@ class ArchiveRestoreCommandTest {
         assertEquals(1, activeTasks.size());
         assertEquals(0, new Storage(activeFile.resolveSibling("archive.txt").toString())
                 .loadArchived().size());
-        assertTrue(output.messages.contains("1.[T][X] legacy task"));
+        assertTrue(output.messages.contains("1. [T][X] legacy task"));
     }
 
     @Test
