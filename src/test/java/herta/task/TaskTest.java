@@ -56,6 +56,22 @@ class TaskTest {
         assertFalse(task.isCompleted());
     }
 
+    @Test
+    void isUpcoming_windowBoundariesAndUnscheduledTask_followDocumentedRules() {
+        LocalDateTime windowStart = LocalDateTime.of(2025, 1, 1, 10, 0);
+        LocalDateTime windowEnd = LocalDateTime.of(2025, 1, 2, 10, 0);
+        Deadline deadline = new Deadline("deadline", windowStart);
+
+        assertTrue(deadline.isUpcoming(windowStart, windowEnd));
+        assertFalse(deadline.isUpcoming(windowEnd, windowEnd));
+        assertFalse(deadline.isUpcoming(windowStart, windowStart));
+        assertFalse(new Todo("unscheduled").isUpcoming(windowStart, windowEnd));
+        assertThrows(NullPointerException.class, () -> deadline.isUpcoming(null, windowEnd));
+        assertThrows(NullPointerException.class, () -> deadline.isUpcoming(windowStart, null));
+        assertThrows(IllegalArgumentException.class, () ->
+                deadline.isUpcoming(windowEnd, windowStart));
+    }
+
     /**
      * Provides a concrete implementation for testing the abstract base class.
      */

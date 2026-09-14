@@ -59,12 +59,34 @@ class UiTest {
         Ui ui = null;
         try {
             System.setIn(input);
-            System.setOut(new PrintStream(output));
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
             ui = new Ui();
 
             assertEquals("todo read book", ui.readCommand());
             assertNull(ui.readCommand());
-            assertEquals("Your command? Your command? ", output.toString());
+            assertEquals("Your command? Your command? ", output.toString(StandardCharsets.UTF_8));
+        } finally {
+            if (ui != null) {
+                ui.close();
+            }
+            System.setIn(originalInput);
+            System.setOut(originalOutput);
+        }
+    }
+
+    @Test
+    void readCommand_blankLine_returnsEmptyCommandAndClosesSafely() throws Exception {
+        java.io.InputStream originalInput = System.in;
+        PrintStream originalOutput = System.out;
+        ByteArrayInputStream input = new ByteArrayInputStream("   \n".getBytes(StandardCharsets.UTF_8));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Ui ui = null;
+        try {
+            System.setIn(input);
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+            ui = new Ui();
+
+            assertEquals("", ui.readCommand());
         } finally {
             if (ui != null) {
                 ui.close();
@@ -78,9 +100,9 @@ class UiTest {
         PrintStream originalOutput = System.out;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
-            System.setOut(new PrintStream(output));
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
             action.run();
-            return output.toString();
+            return output.toString(StandardCharsets.UTF_8);
         } finally {
             System.setOut(originalOutput);
         }

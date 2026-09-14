@@ -1,17 +1,22 @@
 package herta.storage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,6 +24,7 @@ import org.junit.jupiter.api.io.TempDir;
 import herta.exception.HertaException;
 import herta.task.Deadline;
 import herta.task.Event;
+import herta.task.Task;
 import herta.task.TaskList;
 import herta.task.Todo;
 
@@ -75,6 +81,26 @@ class StorageTest {
         TaskList loadedTasks = new Storage(dataFile.toString()).load();
 
         assertEquals(0, loadedTasks.size());
+    }
+
+    @Test
+    void storagePaths_nullAndMalformedInput_rejectConfiguration() {
+        IllegalArgumentException storageException = assertThrows(IllegalArgumentException.class, () ->
+                new Storage(null));
+        IllegalArgumentException archiveException = assertThrows(IllegalArgumentException.class, () ->
+                Storage.resolveArchivePath("\u0000"));
+
+        assertEquals("Configured data path is invalid.", storageException.getMessage());
+        assertEquals("Configured data path is invalid.", archiveException.getMessage());
+    }
+
+    @Test
+    void resolveArchivePath_relativeAndNestedFiles_useSiblingArchive() {
+        Path relativeArchive = Storage.resolveArchivePath("tasks.txt");
+        Path nestedArchive = Storage.resolveArchivePath("data" + java.io.File.separator + "tasks.txt");
+
+        assertEquals(Path.of(".").resolve("archive.txt"), relativeArchive);
+        assertEquals(Path.of("data").resolve("archive.txt"), nestedArchive);
     }
 
     @Test
@@ -151,6 +177,45 @@ class StorageTest {
 
         assertTrue(exception.getMessage().contains("changed outside Herta"));
         assertEquals("T | 0 | edited outside Herta\n", Files.readString(dataFile));
+    }
+
+    @Test
+    void save_afterSaveExternalEdit_abortsWithoutOverwritingEditedFile() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("external-edit-after-save.txt");
+        Storage storage = new Storage(dataFile.toString());
+        storage.save(new TaskList(List.of(new Todo("original"))));
+        Files.writeString(dataFile, "T | 0 | edited outside Herta\n");
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                storage.save(new TaskList(List.of(new Todo("new")))));
+
+        assertTrue(exception.getMessage().contains("changed outside Herta"));
+        assertEquals("T | 0 | edited outside Herta\n", Files.readString(dataFile));
+    }
+
+    @Test
+    void saveActiveAndArchivedTasks_successUpdatesBothFilesAndSnapshots() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("transaction").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        Todo activeTask = new Todo("café");
+        Todo archivedTask = new Todo("归档");
+
+        activeStorage.saveActiveAndArchivedTasks(archiveStorage,
+                new TaskList(List.of(activeTask)), new TaskList(List.of(archivedTask)),
+                "Failed to save transaction: ");
+
+        assertEquals(PersistenceState.COMMITTED, activeStorage.getLastPersistenceState());
+        assertEquals(PersistenceState.COMMITTED, archiveStorage.getLastPersistenceState());
+        assertEquals(List.of("T | 0 | café"), Files.readAllLines(activeFile));
+        assertEquals(List.of("T | 0 | 归档"), Files.readAllLines(archiveFile));
+        assertTrue(Files.notExists(activeFile.resolveSibling(".herta-transaction")));
+        assertNoTransactionFiles(activeFile.getParent());
+
+        activeStorage.save(new TaskList(List.of(new Todo("later"))));
+
+        assertEquals(List.of("T | 0 | later"), Files.readAllLines(activeFile));
     }
 
     @Test
@@ -299,6 +364,108 @@ class StorageTest {
         assertTrue(exception.getMessage().startsWith("Failed to load archived tasks: "));
     }
 
+    @Test
+    void save_lockHeldBySameJvm_preservesFileAndReportsUnattempted() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("locked.txt");
+        Storage storage = new Storage(dataFile.toString());
+        storage.save(new TaskList(List.of(new Todo("original"))));
+        byte[] originalBytes = Files.readAllBytes(dataFile);
+
+        try (StorageFileLock storageLock = StorageFileLock.acquire(dataFile)) {
+            HertaException exception = assertThrows(HertaException.class, () ->
+                    storage.save(new TaskList(List.of(new Todo("replacement")))));
+
+            assertEquals("Failed to save tasks: data file is locked.", exception.getMessage());
+            assertEquals(PersistenceState.NOT_ATTEMPTED, storage.getLastPersistenceState());
+            assertArrayEquals(originalBytes, Files.readAllBytes(dataFile));
+        }
+
+        storage.save(new TaskList(List.of(new Todo("replacement"))));
+        assertEquals(PersistenceState.COMMITTED, storage.getLastPersistenceState());
+    }
+
+    @Test
+    void saveActiveAndArchivedTasks_lockHeldBySameJvm_preservesBothFilesAndStates() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("locked-active.txt");
+        Path archiveFile = temporaryDirectory.resolve("archive.txt");
+        Files.writeString(activeFile, "T | 0 | active\n", StandardCharsets.UTF_8);
+        Files.writeString(archiveFile, "T | 1 | archived\n", StandardCharsets.UTF_8);
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        byte[] originalActiveBytes = Files.readAllBytes(activeFile);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+
+        try (StorageFileLock sharedLock = StorageFileLock.acquire(activeFile, archiveFile)) {
+            HertaException exception = assertThrows(HertaException.class, () ->
+                    activeStorage.saveActiveAndArchivedTasks(archiveStorage,
+                            new TaskList(List.of(new Todo("new active"))),
+                            new TaskList(List.of(new Todo("new archive"))),
+                            "Failed to save transaction: "));
+
+            assertEquals("Failed to save transaction: data file is locked.", exception.getMessage());
+            assertEquals(PersistenceState.NOT_ATTEMPTED, activeStorage.getLastPersistenceState());
+            assertEquals(PersistenceState.NOT_ATTEMPTED, archiveStorage.getLastPersistenceState());
+            assertArrayEquals(originalActiveBytes, Files.readAllBytes(activeFile));
+            assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+        }
+    }
+
+    @Test
+    void saveAndLoad_exactMaximumSerializedSize_acceptsBoundaryAndRejectsOverLimit()
+            throws Exception {
+        Path dataFile = temporaryDirectory.resolve("size-limit.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList maximumTasks = createTasksWithSerializedSize(StorageFileManager.MAX_STORAGE_FILE_BYTES);
+
+        storage.save(maximumTasks);
+
+        assertEquals(PersistenceState.COMMITTED, storage.getLastPersistenceState());
+        assertEquals(StorageFileManager.MAX_STORAGE_FILE_BYTES, Files.size(dataFile));
+        assertEquals(maximumTasks.size(), storage.load().size());
+        byte[] maximumBytes = Files.readAllBytes(dataFile);
+        HertaException exception = assertThrows(HertaException.class, () ->
+                storage.save(createTasksWithSerializedSize(StorageFileManager.MAX_STORAGE_FILE_BYTES + 1)));
+
+        assertEquals("Failed to save tasks: data file is too large.", exception.getMessage());
+        assertArrayEquals(maximumBytes, Files.readAllBytes(dataFile));
+        assertNoTransactionFiles(temporaryDirectory);
+    }
+
+    @Test
+    void validateDistinctPaths_hardLinkedFiles_rejectConflictWhenSupported() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("active.txt");
+        Path archiveFile = temporaryDirectory.resolve("archive.txt");
+        Files.writeString(activeFile, "T | 0 | shared\n", StandardCharsets.UTF_8);
+        try {
+            Files.createLink(archiveFile, activeFile);
+        } catch (UnsupportedOperationException | IOException | SecurityException exception) {
+            Assumptions.assumeTrue(false, "Hard links are unavailable on this host.");
+            return;
+        }
+
+        HertaException exception = assertThrows(HertaException.class, () ->
+                Storage.validateDistinctPaths(activeFile, archiveFile));
+
+        assertTrue(exception.getMessage().contains("different files"));
+    }
+
+    private TaskList createTasksWithSerializedSize(long expectedSerializedBytes) {
+        long recordOverheadBytes = "T | 0 | ".getBytes(StandardCharsets.UTF_8).length
+                + System.lineSeparator().getBytes(StandardCharsets.UTF_8).length;
+        long descriptionBytes = expectedSerializedBytes
+                - (long) TaskList.MAXIMUM_TASK_COUNT * recordOverheadBytes;
+        int commonDescriptionLength = Math.toIntExact(descriptionBytes / TaskList.MAXIMUM_TASK_COUNT);
+        int finalDescriptionLength = commonDescriptionLength
+                + Math.toIntExact(descriptionBytes % TaskList.MAXIMUM_TASK_COUNT);
+        Todo commonTask = new Todo("a".repeat(commonDescriptionLength));
+        List<Task> tasks = new ArrayList<>(TaskList.MAXIMUM_TASK_COUNT);
+        for (int i = 0; i < TaskList.MAXIMUM_TASK_COUNT - 1; i++) {
+            tasks.add(commonTask);
+        }
+        tasks.add(new Todo("a".repeat(finalDescriptionLength)));
+        return new TaskList(tasks);
+    }
+
     private void saveActiveAndArchivedTasksForTest(Storage activeStorage, Storage archiveStorage)
             throws HertaException {
         activeStorage.saveActiveAndArchivedTasks(archiveStorage, new TaskList(), new TaskList(),
@@ -307,6 +474,17 @@ class StorageTest {
 
     private void validatePathsForTest(Path activeFile, Path archiveFile) throws HertaException {
         Storage.validateDistinctPaths(activeFile, archiveFile);
+    }
+
+    private void assertNoTransactionFiles(Path directory) throws Exception {
+        try (var paths = Files.list(directory)) {
+            assertEquals(List.of(), paths.filter(path -> {
+                String fileName = path.getFileName().toString();
+                return fileName.startsWith(".herta-active-")
+                        || fileName.startsWith(".herta-archive-")
+                        || fileName.startsWith(".herta-transaction");
+            }).toList());
+        }
     }
 
     /** Supplies an invalid serialized record without bypassing task construction validation. */

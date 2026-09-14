@@ -31,4 +31,32 @@ class CommandTypeTest {
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput(""));
         assertEquals(CommandType.UNKNOWN, CommandType.fromInput("ARCHIVE 1"));
     }
+
+    @Test
+    void fromInput_everySupportedKeyword_returnsItsCommandType() {
+        for (CommandType commandType : CommandType.values()) {
+            if (commandType != CommandType.UNKNOWN) {
+                assertEquals(commandType, CommandType.fromInput(commandType.getKeyword()));
+            }
+        }
+    }
+
+    @Test
+    void fromInput_nullOrWrongCase_returnsUnknown() {
+        assertEquals(CommandType.UNKNOWN, CommandType.fromInput(null));
+        assertEquals(CommandType.UNKNOWN, CommandType.fromInput("ToDo task"));
+        assertEquals(CommandType.UNKNOWN, CommandType.fromInput("Bye"));
+    }
+
+    @Test
+    void fromInput_tabSeparatedArgument_recognizesCommandType() {
+        assertEquals(CommandType.TODO, CommandType.fromInput("todo\tread book"));
+    }
+
+    @Test
+    void extractArguments_commandWithInnerSpaces_preservesMeaningfulText() {
+        assertEquals("read   book", CommandType.TODO.extractArguments("todo read   book"));
+        assertEquals("", CommandType.LIST.extractArguments("list \t"));
+        assertEquals("", CommandType.UNKNOWN.getKeyword());
+    }
 }

@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
@@ -130,5 +131,81 @@ class TaskListTest {
         assertEquals(first, iterator.next());
         assertEquals(second, iterator.next());
         assertThrows(UnsupportedOperationException.class, iterator::remove);
+    }
+
+    @Test
+    void taskList_nullArguments_rejectThem() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(NullPointerException.class, () -> new TaskList(null));
+        assertThrows(NullPointerException.class, () -> tasks.add(null));
+        assertThrows(NullPointerException.class, () -> tasks.replaceWith(null));
+        assertThrows(NullPointerException.class, () -> tasks.matchingIndices(null));
+        assertThrows(NullPointerException.class, () -> tasks.sortedIndices(null));
+    }
+
+    @Test
+    void taskList_invalidIndices_rejectAccessAndStatusUpdates() {
+        TaskList tasks = new TaskList(List.of(new Todo("task")));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.get(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.get(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.remove(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.markTask(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.unmarkTask(1));
+    }
+
+    @Test
+    void replaceWith_selfReplacement_preservesTheTasks() {
+        TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second")));
+
+        tasks.replaceWith(tasks);
+
+        assertEquals(List.of("first", "second"), List.of(
+                tasks.get(0).getDescription(), tasks.get(1).getDescription()));
+    }
+
+    @Test
+    void matchingAndSorting_emptyList_returnEmptyResults() {
+        TaskList tasks = new TaskList();
+
+        assertEquals(List.of(), tasks.matchingIndices(task -> true));
+        assertEquals(List.of(), tasks.sortedIndices(Comparator.comparing(Task::getDescription)));
+    }
+
+    @Test
+    void sortedIndices_equalKeys_preservesStoredOrder() {
+        LocalDateTime scheduledTime = LocalDateTime.of(2019, 10, 15, 18, 0);
+        Deadline first = new Deadline("first", scheduledTime);
+        Deadline second = new Deadline("second", scheduledTime);
+        Deadline third = new Deadline("third", scheduledTime);
+        TaskList tasks = new TaskList(List.of(first, second, third));
+
+        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing(
+                task -> task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
+
+        assertEquals(List.of(0, 1, 2), sortedIndices);
+    }
+
+    @Test
+    void iterator_afterLastTask_throwsNoSuchElementException() {
+        Iterator<Task> iterator = new TaskList(List.of(new Todo("task"))).iterator();
+
+        iterator.next();
+
+        assertThrows(NoSuchElementException.class, iterator::next);
+    }
+
+    @Test
+    void add_atMaximumTaskCount_rejectsNextTaskWithoutChangingOrder() {
+        Todo sharedTask = new Todo("shared task");
+        TaskList tasks = new TaskList(Collections.nCopies(TaskList.MAXIMUM_TASK_COUNT, sharedTask));
+
+        assertEquals(TaskList.MAXIMUM_TASK_COUNT, tasks.size());
+        assertEquals(sharedTask, tasks.get(0));
+        assertEquals(sharedTask, tasks.get(TaskList.MAXIMUM_TASK_COUNT - 1));
+        assertThrows(IllegalArgumentException.class, () -> tasks.add(sharedTask));
+        assertEquals(TaskList.MAXIMUM_TASK_COUNT, tasks.size());
+        assertEquals(sharedTask, tasks.get(TaskList.MAXIMUM_TASK_COUNT - 1));
     }
 }

@@ -80,4 +80,68 @@ class EventTest {
         assertEquals("[E][ ] team meeting (from: Dec 03 2019, 10:00 AM to: "
                 + "Dec 03 2019, 11:00 AM)", event.toString());
     }
+
+    @Test
+    void eventConstructor_nullEndpoints_rejectInput() {
+        LocalDateTime start = LocalDateTime.of(2019, 12, 3, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2019, 12, 3, 11, 0);
+
+        assertThrows(NullPointerException.class, () -> new Event("event", null, end));
+        assertThrows(NullPointerException.class, () -> new Event("event", start, null));
+    }
+
+    @Test
+    void occursOn_exactDayBoundaries_excludesNonOverlappingDates() {
+        Event event = new Event("event", LocalDateTime.of(2019, 12, 3, 10, 0),
+                LocalDateTime.of(2019, 12, 3, 11, 0));
+
+        assertTrue(event.occursOn(LocalDate.of(2019, 12, 3)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 2)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 4)));
+        assertThrows(NullPointerException.class, () -> event.occursOn(null));
+    }
+
+    @Test
+    void occursOn_midnightEndBoundary_excludesFollowingDate() {
+        Event event = new Event("event", LocalDateTime.of(2019, 12, 3, 23, 0),
+                LocalDateTime.of(2019, 12, 4, 0, 0));
+
+        assertTrue(event.occursOn(LocalDate.of(2019, 12, 3)));
+        assertFalse(event.occursOn(LocalDate.of(2019, 12, 4)));
+    }
+
+    @Test
+    void fromStorage_malformedEndpointsAndCompletionState_areHandled() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Event.fromStorage("event", "not-a-date", "2019-12-03T11:00:00"));
+        assertThrows(IllegalArgumentException.class, () ->
+                Event.fromStorage("event", "2019-12-03T10:00:00", "not-a-date"));
+        Event event = Event.fromStorage("event", "2019-12-03", "2019-12-04T00:00:00");
+
+        event.markAsDone();
+
+        assertEquals("E | 1 | event | 2019-12-03T00:00:00 | 2019-12-04T00:00:00",
+                event.toStorageString());
+    }
+
+    @Test
+    void event_supportedBoundaryYears_preserveStorageSerialization() {
+        Event minimumEvent = new Event("minimum", LocalDateTime.of(1, 1, 1, 0, 0),
+                LocalDateTime.of(1, 1, 1, 0, 1));
+        Event maximumEvent = new Event("maximum", LocalDateTime.of(9999, 12, 31, 23, 58),
+                LocalDateTime.of(9999, 12, 31, 23, 59));
+
+        assertEquals("E | 0 | minimum | 0001-01-01T00:00:00 | 0001-01-01T00:01:00",
+                minimumEvent.toStorageString());
+        assertEquals("E | 0 | maximum | 9999-12-31T23:58:00 | 9999-12-31T23:59:00",
+                maximumEvent.toStorageString());
+    }
+
+    @Test
+    void occursOn_maximumDateWithEarlierEvent_returnsFalseWithoutOverflow() {
+        Event event = new Event("earlier event", LocalDateTime.of(9999, 12, 30, 10, 0),
+                LocalDateTime.of(9999, 12, 30, 11, 0));
+
+        assertFalse(event.occursOn(LocalDate.MAX));
+    }
 }

@@ -1,5 +1,6 @@
 package herta.command;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +29,7 @@ import herta.task.Event;
 import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
+import herta.ui.UiOutput;
 
 /**
  * Tests archive and restore command execution, persistence, and error handling.
@@ -59,6 +63,28 @@ class ArchiveRestoreCommandTest {
         assertEquals(List.of(), Files.readAllLines(activeFile));
         assertEquals(List.of("T | 1 | first", "T | 1 | second", "T | 1 | third"),
                 Files.readAllLines(activeFile.resolveSibling("archive.txt")));
+    }
+
+    @Test
+    void archiveCommand_overlappingSelectors_archiveEachTaskOnceInOrder() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("overlapping").resolve("tasks.txt");
+        Herta herta = new Herta(activeFile.toString());
+        herta.getResponse("todo first");
+        herta.getResponse("todo second");
+        herta.getResponse("todo third");
+        herta.getResponse("todo fourth");
+        herta.getResponse("mark 1");
+        herta.getResponse("mark 2");
+        herta.getResponse("mark 3");
+        herta.getResponse("mark 4");
+
+        HertaResponse response = herta.getResponse("archive 1-3 2 3-4");
+
+        assertEquals(ResponseCategory.ARCHIVE, response.getResponseCategory());
+        assertTrue(response.getMessage().contains("archived 4 completed tasks"));
+        assertEquals(List.of("T | 1 | first", "T | 1 | second", "T | 1 | third", "T | 1 | fourth"),
+                Files.readAllLines(activeFile.resolveSibling("archive.txt")));
+        assertEquals(List.of(), Files.readAllLines(activeFile));
     }
 
     @Test
@@ -120,6 +146,34 @@ class ArchiveRestoreCommandTest {
         assertEquals("Nothing is ready for archiving. Complete a task first.",
                 noOpResponse.getMessage());
         assertEquals(List.of("T | 1 | complete"),
+                Files.readAllLines(activeFile.resolveSibling("archive.txt")));
+    }
+
+    @Test
+    void archiveAll_emptyActiveList_reportsNoTasks() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("empty-archive").resolve("tasks.txt");
+        HertaResponse response = new Herta(activeFile.toString()).getResponse("archive all");
+
+        assertEquals(ResponseCategory.ARCHIVE, response.getResponseCategory());
+        assertEquals("No active tasks. There is nothing here to archive.", response.getMessage());
+        assertTrue(Files.notExists(activeFile));
+    }
+
+    @Test
+    void archiveAll_onlyCompletedTasks_movesAllTasksAndReportsPluralCount() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("all-completed").resolve("tasks.txt");
+        Herta herta = new Herta(activeFile.toString());
+        herta.getResponse("todo first");
+        herta.getResponse("todo second");
+        herta.getResponse("mark 1");
+        herta.getResponse("mark 2");
+
+        HertaResponse response = herta.getResponse("archive all");
+
+        assertEquals(ResponseCategory.ARCHIVE, response.getResponseCategory());
+        assertTrue(response.getMessage().contains("archived 2 completed tasks"));
+        assertEquals(List.of(), Files.readAllLines(activeFile));
+        assertEquals(List.of("T | 1 | first", "T | 1 | second"),
                 Files.readAllLines(activeFile.resolveSibling("archive.txt")));
     }
 
@@ -208,6 +262,113 @@ class ArchiveRestoreCommandTest {
     }
 
     @Test
+    void restoreCommand_firstMiddleLast_preservesAppendOrderAndCounts() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("restore-order").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        new Storage(archiveFile.toString()).save(new TaskList(List.of(
+                new Todo("first"), new Todo("middle"), new Todo("last"))));
+        Herta herta = new Herta(activeFile.toString());
+
+        HertaResponse middleResponse = herta.getResponse("restore 2");
+        HertaResponse firstResponse = herta.getResponse("restore 1");
+        HertaResponse lastResponse = herta.getResponse("restore 1");
+
+        assertTrue(middleResponse.getMessage().contains("That makes 1 active task."));
+        assertTrue(firstResponse.getMessage().contains("That makes 2 active tasks."));
+        assertTrue(lastResponse.getMessage().contains("That makes 3 active tasks."));
+        assertEquals(List.of("T | 0 | middle", "T | 0 | first", "T | 0 | last"),
+                Files.readAllLines(activeFile));
+        assertEquals(List.of(), Files.readAllLines(archiveFile));
+    }
+
+    @Test
+    void restoreCommand_invalidIndex_leavesArchiveUnchanged() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("restore-invalid").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        new Storage(archiveFile.toString()).save(new TaskList(List.of(new Todo("archived"))));
+        Herta herta = new Herta(activeFile.toString());
+
+        HertaResponse response = herta.getResponse("restore 2");
+
+        assertEquals(ResponseCategory.ERROR, response.getResponseCategory());
+        assertEquals("That number points to nothing in the archive. Check again.", response.getMessage());
+        assertEquals(List.of("T | 0 | archived"), Files.readAllLines(archiveFile));
+    }
+
+    @Test
+    void restoreCommand_atCapacity_leavesBothCollectionsAndFilesUnchanged() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("restore-capacity").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active");
+        Todo archivedTask = new Todo("archived");
+        TaskList activeTasks = new TaskList(Collections.nCopies(TaskList.MAXIMUM_TASK_COUNT, activeTask));
+        TaskList archivedTasks = new TaskList(List.of(archivedTask));
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        archiveStorage.save(archivedTasks);
+        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
+                activeTasks, archivedTasks);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new RestoreCommand(0).execute(repository, new Ui()));
+
+        assertEquals(TaskList.MAXIMUM_TASK_COUNT, activeTasks.size());
+        assertEquals(1, archivedTasks.size());
+        assertTrue(Files.notExists(activeFile));
+        assertEquals(List.of("T | 0 | archived"), Files.readAllLines(archiveFile));
+    }
+
+    @Test
+    void archiveCommand_atArchiveCapacity_preservesCollectionsAndFiles() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("archive-capacity").resolve("tasks.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo activeTask = new Todo("active");
+        activeTask.markAsDone();
+        Todo archivedTask = new Todo("archived");
+        TaskList activeTasks = new TaskList(List.of(activeTask));
+        TaskList archivedTasks = new TaskList(Collections.nCopies(
+                TaskList.MAXIMUM_TASK_COUNT, archivedTask));
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        activeStorage.save(activeTasks);
+        archiveStorage.save(archivedTasks);
+        byte[] originalActiveBytes = Files.readAllBytes(activeFile);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
+                activeTasks, archivedTasks);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new ArchiveCommand(new ArchiveSelection(List.of(new ArchiveRange(1, 1)), false))
+                        .execute(repository, new Ui()));
+
+        assertEquals(1, activeTasks.size());
+        assertEquals(TaskList.MAXIMUM_TASK_COUNT, archivedTasks.size());
+        assertArrayEquals(originalActiveBytes, Files.readAllBytes(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+    }
+
+    @Test
+    void legacyCommands_useSiblingArchiveForArchiveViewAndRestore() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("legacy").resolve("tasks.txt");
+        Storage activeStorage = new Storage(activeFile.toString());
+        Todo task = new Todo("legacy task");
+        task.markAsDone();
+        TaskList activeTasks = new TaskList(List.of(task));
+        activeStorage.save(activeTasks);
+        RecordingOutput output = new RecordingOutput();
+
+        new ArchiveCommand(new ArchiveSelection(List.of(new ArchiveRange(1, 1)), false))
+                .execute(activeTasks, output, activeStorage);
+        new ArchivedCommand().execute(activeTasks, output, activeStorage);
+        new RestoreCommand(0).execute(activeTasks, output, activeStorage);
+
+        assertEquals(1, activeTasks.size());
+        assertEquals(0, new Storage(activeFile.resolveSibling("archive.txt").toString())
+                .loadArchived().size());
+        assertTrue(output.messages.contains("1.[T][X] legacy task"));
+    }
+
+    @Test
     void restoreCommand_persistenceFailureLeavesBothCollectionsUnchanged() throws Exception {
         Path activeDirectory = temporaryDirectory.resolve("active-directory");
         Path archiveFile = temporaryDirectory.resolve("archive.txt");
@@ -261,5 +422,19 @@ class ArchiveRestoreCommandTest {
     private void executeRestoreCommand(RestoreCommand restoreCommand,
                                        TaskRepository repository) throws HertaException {
         restoreCommand.execute(repository, new Ui());
+    }
+
+    private static final class RecordingOutput implements UiOutput {
+        private final List<String> messages = new ArrayList<>();
+
+        @Override
+        public void showMessage(String message) {
+            messages.add(message);
+        }
+
+        @Override
+        public void showGoodbye() {
+            messages.add(UiOutput.GOODBYE_MESSAGE);
+        }
     }
 }
