@@ -177,5 +177,4 @@ class TaskMutationCommandTest {
         assertEquals("No active task has that number. Check the list and try again.",
                 invalidIndexException.getMessage());
     }
-
 }

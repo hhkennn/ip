@@ -37,8 +37,8 @@ final class StorageTransactionCoordinator {
     /** Saves both collections while preserving the original state on a failed commit. */
     void save(TaskList activeTasks, TaskList archivedTasks) throws HertaException {
         StorageTransactionPlan transactionPlan = null;
-        try (StorageFileLock ignored = StorageFileLock.acquire(activeStorage.dataFile(),
-                archiveStorage.dataFile())) {
+        try (StorageFileLock ignored = StorageFileLock.acquire(activeStorage.getDataFile(),
+                archiveStorage.getDataFile())) {
             setInProgress();
             transactionPlan = prepareTransaction(activeTasks, archivedTasks);
             commitTransaction(transactionPlan);
@@ -81,16 +81,16 @@ final class StorageTransactionCoordinator {
         archiveStorage.ensureConsistent();
         List<String> activeLines = activeStorage.serializeTasks(activeTasks);
         List<String> archiveLines = archiveStorage.serializeTasks(archivedTasks);
-        StorageFileManager.FileSnapshot originalActiveFile = activeStorage.fileManager()
+        StorageFileManager.FileSnapshot originalActiveFile = activeStorage.getFileManager()
                 .captureSnapshot();
-        StorageFileManager.FileSnapshot originalArchiveFile = archiveStorage.fileManager()
+        StorageFileManager.FileSnapshot originalArchiveFile = archiveStorage.getFileManager()
                 .captureSnapshot();
         activeStorage.initializeExpectedSnapshot(originalActiveFile);
         archiveStorage.initializeExpectedSnapshot(originalArchiveFile);
         activeStorage.ensureHasNotChanged();
         archiveStorage.ensureHasNotChanged();
         StorageTransactionJournal transactionJournal = StorageTransactionJournal.prepare(
-                activeStorage.dataFile(), archiveStorage.dataFile(), originalActiveFile,
+                activeStorage.getDataFile(), archiveStorage.getDataFile(), originalActiveFile,
                 originalArchiveFile);
         return new StorageTransactionPlan(activeLines, archiveLines, originalActiveFile,
                 originalArchiveFile, transactionJournal);
@@ -99,8 +99,8 @@ final class StorageTransactionCoordinator {
     /** Commits both replacements and updates snapshots used by future saves. */
     private void commitTransaction(StorageTransactionPlan transactionPlan) throws IOException {
         writeAndReplaceBothFiles(transactionPlan);
-        activeStorage.updateKnownSnapshot(activeStorage.fileManager().captureSnapshot());
-        archiveStorage.updateKnownSnapshot(archiveStorage.fileManager().captureSnapshot());
+        activeStorage.updateKnownSnapshot(activeStorage.getFileManager().captureSnapshot());
+        archiveStorage.updateKnownSnapshot(archiveStorage.getFileManager().captureSnapshot());
         activeStorage.setPersistenceState(PersistenceState.COMMITTED);
         archiveStorage.setPersistenceState(PersistenceState.COMMITTED);
         transactionPlan.transactionJournal().cleanUp();
@@ -112,26 +112,26 @@ final class StorageTransactionCoordinator {
         Path temporaryActiveFile = null;
         Path temporaryArchiveFile = null;
         try {
-            temporaryActiveFile = activeStorage.fileManager().writeTemporaryFile(
+            temporaryActiveFile = activeStorage.getFileManager().writeTemporaryFile(
                     transactionPlan.activeLines());
-            temporaryArchiveFile = archiveStorage.fileManager().writeTemporaryFile(
+            temporaryArchiveFile = archiveStorage.getFileManager().writeTemporaryFile(
                     transactionPlan.archiveLines());
             activeStorage.ensureHasNotChanged();
             archiveStorage.ensureHasNotChanged();
-            activeStorage.fileManager().replaceDataFile(temporaryActiveFile);
+            activeStorage.getFileManager().replaceDataFile(temporaryActiveFile);
             temporaryActiveFile = null;
-            transactionPlan.transactionJournal().markActiveCommitted(activeStorage.dataFile(),
-                    archiveStorage.dataFile(), transactionPlan.originalActiveFile(),
+            transactionPlan.transactionJournal().markActiveCommitted(activeStorage.getDataFile(),
+                    archiveStorage.getDataFile(), transactionPlan.originalActiveFile(),
                     transactionPlan.originalArchiveFile());
             archiveStorage.ensureHasNotChanged();
-            archiveStorage.fileManager().replaceDataFile(temporaryArchiveFile);
+            archiveStorage.getFileManager().replaceDataFile(temporaryArchiveFile);
             temporaryArchiveFile = null;
-            transactionPlan.transactionJournal().markCommitted(activeStorage.dataFile(),
-                    archiveStorage.dataFile(), transactionPlan.originalActiveFile(),
+            transactionPlan.transactionJournal().markCommitted(activeStorage.getDataFile(),
+                    archiveStorage.getDataFile(), transactionPlan.originalActiveFile(),
                     transactionPlan.originalArchiveFile());
         } finally {
-            activeStorage.fileManager().deleteTemporaryFile(temporaryActiveFile);
-            archiveStorage.fileManager().deleteTemporaryFile(temporaryArchiveFile);
+            activeStorage.getFileManager().deleteTemporaryFile(temporaryActiveFile);
+            archiveStorage.getFileManager().deleteTemporaryFile(temporaryArchiveFile);
         }
     }
 
@@ -143,8 +143,8 @@ final class StorageTransactionCoordinator {
             return new RollbackResult(failureReason, true);
         }
         try {
-            activeStorage.fileManager().restoreSnapshot(transactionPlan.originalActiveFile());
-            archiveStorage.fileManager().restoreSnapshot(transactionPlan.originalArchiveFile());
+            activeStorage.getFileManager().restoreSnapshot(transactionPlan.originalActiveFile());
+            archiveStorage.getFileManager().restoreSnapshot(transactionPlan.originalArchiveFile());
             setNotAttempted();
             return new RollbackResult(failureReason, true);
         } catch (IOException | RuntimeException rollbackError) {

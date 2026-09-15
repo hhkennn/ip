@@ -35,14 +35,14 @@ final class StoragePathPolicy {
         Path normalizedActivePath = activeFile.toAbsolutePath().normalize();
         Path normalizedArchivePath = archiveFile.toAbsolutePath().normalize();
         if (normalizedActivePath.equals(normalizedArchivePath)) {
-            throw conflictingPathsException();
+            throw createConflictingPathsException();
         }
         try {
             boolean areBothPathsPresent = Files.exists(normalizedActivePath)
                     && Files.exists(normalizedArchivePath);
             if (areBothPathsPresent
                     && Files.isSameFile(normalizedActivePath, normalizedArchivePath)) {
-                throw conflictingPathsException();
+                throw createConflictingPathsException();
             }
         } catch (IOException | SecurityException e) {
             throw new HertaException(ARCHIVE_LOAD_PREFIX
@@ -60,7 +60,7 @@ final class StoragePathPolicy {
     }
 
     /** Creates the stable exception used for active/archive path conflicts. */
-    private static HertaException conflictingPathsException() {
+    private static HertaException createConflictingPathsException() {
         return new HertaException(ARCHIVE_LOAD_PREFIX
                 + "active and archive paths must be different files.");
     }

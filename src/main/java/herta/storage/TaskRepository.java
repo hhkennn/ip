@@ -63,8 +63,8 @@ public final class TaskRepository {
      * @return a repository containing the supplied active tasks and loaded archive.
      * @throws HertaException if the archive cannot be loaded.
      */
-    public static TaskRepository withActiveTasks(TaskList activeTasks,
-                                                 Storage activeStorage) throws HertaException {
+    public static TaskRepository createWithActiveTasks(TaskList activeTasks,
+                                                       Storage activeStorage) throws HertaException {
         Path archivePath = Storage.resolveArchivePath(activeStorage.getDataFile().toString());
         Storage archiveStorage = new Storage(archivePath.toString());
         Storage.validateDistinctPaths(activeStorage.getDataFile(), archiveStorage.getDataFile());

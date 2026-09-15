@@ -33,5 +33,4 @@ public abstract class Command {
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
         execute(repository.getActiveTasks(), ui, repository.getActiveStorage());
     }
-
 }

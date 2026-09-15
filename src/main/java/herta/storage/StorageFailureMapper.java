@@ -10,7 +10,7 @@ import java.util.logging.Logger;
  * Converts platform-specific storage failures into stable user-facing wording.
  */
 final class StorageFailureMapper {
-    private static final String EXTERNAL_CHANGE_ERROR = "the data file changed outside Herta; "
+    static final String EXTERNAL_CHANGE_ERROR = "the data file changed outside Herta; "
             + "reload before saving.";
     private static final Logger LOGGER = Logger.getLogger(StorageFailureMapper.class.getName());
 

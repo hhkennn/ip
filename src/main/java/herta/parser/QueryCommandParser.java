@@ -26,9 +26,6 @@ final class QueryCommandParser {
     private static final String DATE_SORT_COMMAND = "sort date";
     private static final String UNSUPPORTED_SORT_OPTION_ERROR =
             "That sorting option is not supported. Try: %s.";
-    private static final int MAX_NUMBER_LENGTH = 64;
-    private static final int MAX_UPCOMING_DAYS = 4_000_000;
-
     /** Parses the keyword from a find command. */
     String parseFindKeyword(String input) throws HertaException {
         String keyword = CommandType.FIND.extractArguments(input);
@@ -71,17 +68,17 @@ final class QueryCommandParser {
     /** Parses the number of days from an upcoming command. */
     int parseUpcomingDays(String input) throws HertaException {
         String daysInput = CommandType.UPCOMING.extractArguments(input);
-        if (!isBoundedDecimal(daysInput)) {
-            throw invalidUpcomingDays();
+        if (!ParserLimits.isBoundedDecimal(daysInput)) {
+            throw createInvalidUpcomingDaysException();
         }
         try {
             int days = Integer.parseInt(daysInput);
-            if (days <= 0 || days > MAX_UPCOMING_DAYS) {
-                throw invalidUpcomingDays();
+            if (days <= 0 || days > ParserLimits.MAX_UPCOMING_DAYS) {
+                throw createInvalidUpcomingDaysException();
             }
             return days;
         } catch (NumberFormatException e) {
-            throw invalidUpcomingDays();
+            throw createInvalidUpcomingDaysException();
         }
     }
 
@@ -92,13 +89,8 @@ final class QueryCommandParser {
         }
     }
 
-    /** Checks the bounded decimal grammar shared by numeric query arguments. */
-    private boolean isBoundedDecimal(String input) {
-        return input.matches("[0-9]+") && input.length() <= MAX_NUMBER_LENGTH;
-    }
-
     /** Creates the stable error used for invalid upcoming-day arguments. */
-    private HertaException invalidUpcomingDays() {
+    private HertaException createInvalidUpcomingDaysException() {
         return new HertaException(UpcomingCommand.INVALID_UPCOMING_DAYS_ERROR);
     }
 }

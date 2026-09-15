@@ -124,10 +124,10 @@ public class MainWindow extends AnchorPane {
         }
 
         if (event.getCode() == KeyCode.UP) {
-            commandHistory.previous(userInput.getText()).ifPresent(this::showCommand);
+            commandHistory.moveToPreviousCommand(userInput.getText()).ifPresent(this::showCommand);
             event.consume();
         } else if (event.getCode() == KeyCode.DOWN) {
-            commandHistory.next().ifPresent(this::showCommand);
+            commandHistory.moveToNextCommand().ifPresent(this::showCommand);
             event.consume();
         }
     }

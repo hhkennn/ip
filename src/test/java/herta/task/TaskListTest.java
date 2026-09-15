@@ -85,7 +85,7 @@ class TaskListTest {
     }
 
     @Test
-    void matchingIndices_returnsOnlyMatchingTasksInStoredOrder() {
+    void findMatchingIndices_returnsOnlyMatchingTasksInStoredOrder() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("buy milk"),
                 new Deadline("submit report", LocalDateTime.of(2019, 10, 15, 18, 0)),
@@ -94,17 +94,17 @@ class TaskListTest {
                         LocalDateTime.of(2019, 10, 16, 1, 0))));
 
         assertEquals(List.of(1, 2),
-                tasks.matchingIndices(task -> task.occursOn(LocalDate.of(2019, 10, 15))));
+                tasks.findMatchingIndices(task -> task.occursOn(LocalDate.of(2019, 10, 15))));
     }
 
     @Test
-    void sortedIndices_returnsSortedIndicesWithoutChangingStoredOrder() {
+    void getSortedIndices_returnsSortedIndicesWithoutChangingStoredOrder() {
         Todo todo = new Todo("buy milk");
         Deadline later = new Deadline("later", LocalDateTime.of(2019, 10, 16, 18, 0));
         Deadline earlier = new Deadline("earlier", LocalDateTime.of(2019, 10, 15, 18, 0));
         TaskList tasks = new TaskList(List.of(todo, later, earlier));
 
-        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing(
+        List<Integer> sortedIndices = tasks.getSortedIndices(Comparator.comparing(
                 task -> task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 
         assertEquals(List.of(2, 1, 0), sortedIndices);
@@ -140,8 +140,8 @@ class TaskListTest {
         assertThrows(NullPointerException.class, () -> new TaskList(null));
         assertThrows(NullPointerException.class, () -> tasks.add(null));
         assertThrows(NullPointerException.class, () -> tasks.replaceWith(null));
-        assertThrows(NullPointerException.class, () -> tasks.matchingIndices(null));
-        assertThrows(NullPointerException.class, () -> tasks.sortedIndices(null));
+        assertThrows(NullPointerException.class, () -> tasks.findMatchingIndices(null));
+        assertThrows(NullPointerException.class, () -> tasks.getSortedIndices(null));
     }
 
     @Test
@@ -169,19 +169,19 @@ class TaskListTest {
     void matchingAndSorting_emptyList_returnEmptyResults() {
         TaskList tasks = new TaskList();
 
-        assertEquals(List.of(), tasks.matchingIndices(task -> true));
-        assertEquals(List.of(), tasks.sortedIndices(Comparator.comparing(Task::getDescription)));
+        assertEquals(List.of(), tasks.findMatchingIndices(task -> true));
+        assertEquals(List.of(), tasks.getSortedIndices(Comparator.comparing(Task::getDescription)));
     }
 
     @Test
-    void sortedIndices_equalKeys_preservesStoredOrder() {
+    void getSortedIndices_equalKeys_preservesStoredOrder() {
         LocalDateTime scheduledTime = LocalDateTime.of(2019, 10, 15, 18, 0);
         Deadline first = new Deadline("first", scheduledTime);
         Deadline second = new Deadline("second", scheduledTime);
         Deadline third = new Deadline("third", scheduledTime);
         TaskList tasks = new TaskList(List.of(first, second, third));
 
-        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing(
+        List<Integer> sortedIndices = tasks.getSortedIndices(Comparator.comparing(
                 task -> task.getScheduledDateTime().orElse(LocalDateTime.MAX)));
 
         assertEquals(List.of(0, 1, 2), sortedIndices);

@@ -39,7 +39,7 @@ public abstract class QueryCommand extends Command {
     private void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
                                    String heading, String emptyMessage,
                                    boolean shouldShowHeadingWhenEmpty, UiOutput ui) {
-        List<Integer> matchingIndices = tasks.matchingIndices(matcher);
+        List<Integer> matchingIndices = tasks.findMatchingIndices(matcher);
         if (shouldShowHeadingWhenEmpty || !matchingIndices.isEmpty()) {
             ui.showMessage(heading);
         }

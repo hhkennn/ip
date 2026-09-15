@@ -83,7 +83,7 @@ final class TaskCreationParser {
             throw new HertaException(DEADLINE_FORMAT_ERROR);
         }
         if (markerCount > 1) {
-            throw duplicateParameterError(DEADLINE_MARKER);
+            throw createDuplicateParameterError(DEADLINE_MARKER);
         }
 
         int markerIndex = CommandTokenizer.findMarker(deadlineArguments, DEADLINE_MARKER);
@@ -130,10 +130,10 @@ final class TaskCreationParser {
         int fromCount = CommandTokenizer.countMarker(eventArguments, EVENT_FROM_MARKER);
         int toCount = CommandTokenizer.countMarker(eventArguments, EVENT_TO_MARKER);
         if (fromCount > 1) {
-            throw duplicateParameterError(EVENT_FROM_MARKER);
+            throw createDuplicateParameterError(EVENT_FROM_MARKER);
         }
         if (toCount > 1) {
-            throw duplicateParameterError(EVENT_TO_MARKER);
+            throw createDuplicateParameterError(EVENT_TO_MARKER);
         }
         if (fromCount == 0) {
             throw new HertaException(EVENT_FROM_MARKER_ERROR.formatted(EVENT_FROM_USAGE));
@@ -239,9 +239,8 @@ final class TaskCreationParser {
     }
 
     /** Returns the stable message used for repeated command parameters. */
-    private HertaException duplicateParameterError(String marker) {
+    private HertaException createDuplicateParameterError(String marker) {
         String usage = marker.equals(DEADLINE_MARKER) ? DEADLINE_USAGE : EVENT_USAGE;
         return new HertaException(DUPLICATE_PARAMETER_ERROR.formatted(marker, usage));
     }
-
 }

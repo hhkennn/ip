@@ -20,5 +20,4 @@ public class ExitCommand extends Command {
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
         ui.showGoodbye();
     }
-
 }

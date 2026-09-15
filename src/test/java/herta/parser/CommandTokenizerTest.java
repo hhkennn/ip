@@ -31,7 +31,7 @@ class CommandTokenizerTest {
 
     @Test
     void normalize_lengthBoundary_acceptsMaximumAndRejectsOverlongCommand() throws Exception {
-        String maximumCommand = "a".repeat(CommandTokenizer.MAX_COMMAND_LENGTH);
+        String maximumCommand = "a".repeat(ParserLimits.MAX_COMMAND_LENGTH);
         String overlongCommand = maximumCommand + "a";
 
         assertEquals(maximumCommand, CommandTokenizer.normalize(maximumCommand));

@@ -83,7 +83,7 @@ public class ArchiveCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        execute(TaskRepository.withActiveTasks(tasks, storage), ui);
+        execute(TaskRepository.createWithActiveTasks(tasks, storage), ui);
     }
 
     /**
@@ -166,13 +166,13 @@ public class ArchiveCommand extends Command {
      */
     private void showArchiveResult(ArchiveResult result, int archivedCount, UiOutput ui) {
         ui.showMessage(ARCHIVE_SUCCESS_MESSAGE.formatted(
-                archivedCount, getTaskNoun(archivedCount)));
+                archivedCount, UiOutput.getTaskNoun(archivedCount)));
         for (Task task : result.archivedTasksForDisplay()) {
             ui.showTask(task);
         }
         int activeTaskCount = result.activeTasks().size();
         ui.showMessage(ACTIVE_TASK_COUNT_MESSAGE.formatted(
-                activeTaskCount, getTaskNoun(activeTaskCount)));
+                activeTaskCount, UiOutput.getTaskNoun(activeTaskCount)));
     }
 
     /**
@@ -185,7 +185,7 @@ public class ArchiveCommand extends Command {
     private Set<Integer> getSelectedIndices(TaskList activeTasks) throws HertaException {
         Set<Integer> selectedIndices = new TreeSet<>();
         if (selection.isAllSelected()) {
-            selectedIndices.addAll(activeTasks.matchingIndices(Task::isCompleted));
+            selectedIndices.addAll(activeTasks.findMatchingIndices(Task::isCompleted));
             return selectedIndices;
         }
 
@@ -203,15 +203,5 @@ public class ArchiveCommand extends Command {
             }
         }
         return selectedIndices;
-    }
-
-    /**
-     * Returns the singular or plural noun for a task count.
-     *
-     * @param count the task count.
-     * @return {@code task} only for one, otherwise {@code tasks}.
-     */
-    private String getTaskNoun(int count) {
-        return count == 1 ? "task" : "tasks";
     }
 }

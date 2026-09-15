@@ -138,6 +138,5 @@ public class Event extends Task {
         if (!from.isBefore(to)) {
             throw new IllegalArgumentException("Event end must be after its start.");
         }
-
     }
 }

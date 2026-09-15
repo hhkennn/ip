@@ -37,7 +37,7 @@ final class StorageTransactionRecovery {
             throw e;
         } catch (IOException | RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Unable to inspect the Herta transaction journal.", e);
-            throw recoveryFailure();
+            throw createRecoveryFailureException();
         }
     }
 
@@ -67,7 +67,7 @@ final class StorageTransactionRecovery {
             cleanStaleTemporaryFiles(activeFile);
         } catch (IOException | RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Unable to validate the Herta transaction journal.", e);
-            throw recoveryFailure();
+            throw createRecoveryFailureException();
         }
     }
 
@@ -236,18 +236,18 @@ final class StorageTransactionRecovery {
             BasicFileAttributes attributes = Files.readAttributes(journalPath,
                     BasicFileAttributes.class);
             if (!attributes.isRegularFile()) {
-                throw recoveryFailure();
+                throw createRecoveryFailureException();
             }
             return false;
         } catch (NoSuchFileException e) {
             return true;
         } catch (IOException | SecurityException e) {
-            throw recoveryFailure();
+            throw createRecoveryFailureException();
         }
     }
 
     /** Creates the stable message used when recovery cannot prove ownership or state. */
-    private static HertaException recoveryFailure() {
+    private static HertaException createRecoveryFailureException() {
         return new HertaException("Failed to recover interrupted storage transaction safely.");
     }
 }

@@ -33,8 +33,8 @@ final class CommandHistory {
         resetNavigation();
     }
 
-    /** Returns the previous command and captures the current draft at the newest position. */
-    Optional<String> previous(String currentDraft) {
+    /** Moves to the previous command and captures the current draft at the newest position. */
+    Optional<String> moveToPreviousCommand(String currentDraft) {
         if (commands.isEmpty()) {
             return Optional.empty();
         }
@@ -45,8 +45,8 @@ final class CommandHistory {
         return Optional.of(commands.get(navigationIndex));
     }
 
-    /** Returns the next command or the draft after the newest command. */
-    Optional<String> next() {
+    /** Moves to the next command or the draft after the newest command. */
+    Optional<String> moveToNextCommand() {
         if (navigationIndex >= commands.size()) {
             return Optional.empty();
         }

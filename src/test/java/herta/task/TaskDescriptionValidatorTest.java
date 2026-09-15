@@ -82,5 +82,4 @@ class TaskDescriptionValidatorTest {
         assertThrows(IllegalArgumentException.class, () ->
                 TaskDescriptionValidator.validate("bad\uD800text"));
     }
-
 }

@@ -27,7 +27,7 @@ public class SortCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
-        List<Integer> sortedIndices = tasks.sortedIndices(Comparator.comparing((Task task) ->
+        List<Integer> sortedIndices = tasks.getSortedIndices(Comparator.comparing((Task task) ->
                 task.getScheduledDateTime().orElse(UNSCHEDULED_TASK_SORT_TIME)));
         if (sortedIndices.size() != tasks.size()) {
             throw new IllegalStateException("Sorting produced an incomplete task view.");

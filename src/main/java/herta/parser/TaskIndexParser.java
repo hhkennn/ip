@@ -10,25 +10,24 @@ import herta.exception.HertaException;
 final class TaskIndexParser {
     private static final String INVALID_TASK_NUMBER_ERROR =
             "That's not a task number. Try: %s 1.";
-    private static final int MAX_NUMBER_LENGTH = 64;
 
     /** Converts a one-based task number in a command to a zero-based index. */
     int parseTaskIndex(String input, String commandKeyword) throws HertaException {
         if (input == null || commandKeyword == null) {
-            throw invalidTaskNumber(commandKeyword);
+            throw createInvalidTaskNumberException(commandKeyword);
         }
         String normalizedInput = input.trim();
         if (!hasTaskNumberPrefix(normalizedInput, commandKeyword)) {
-            throw invalidTaskNumber(commandKeyword);
+            throw createInvalidTaskNumberException(commandKeyword);
         }
         String taskNumber = normalizedInput.substring(commandKeyword.length()).trim();
         if (!isPositiveDecimal(taskNumber)) {
-            throw invalidTaskNumber(commandKeyword);
+            throw createInvalidTaskNumberException(commandKeyword);
         }
         try {
             return new BigInteger(taskNumber).intValueExact() - 1;
         } catch (ArithmeticException e) {
-            throw invalidTaskNumber(commandKeyword);
+            throw createInvalidTaskNumberException(commandKeyword);
         }
     }
 
@@ -41,7 +40,7 @@ final class TaskIndexParser {
 
     /** Checks a bounded, positive decimal number before constructing a BigInteger. */
     private boolean isPositiveDecimal(String input) {
-        if (!input.matches("[0-9]+") || input.length() > MAX_NUMBER_LENGTH) {
+        if (!ParserLimits.isBoundedDecimal(input)) {
             return false;
         }
         try {
@@ -52,7 +51,7 @@ final class TaskIndexParser {
     }
 
     /** Creates the stable guidance used for an invalid task number. */
-    private HertaException invalidTaskNumber(String commandKeyword) {
+    private HertaException createInvalidTaskNumberException(String commandKeyword) {
         return new HertaException(INVALID_TASK_NUMBER_ERROR.formatted(commandKeyword));
     }
 }

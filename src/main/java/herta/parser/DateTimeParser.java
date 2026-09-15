@@ -24,13 +24,13 @@ public final class DateTimeParser {
     private static final LocalDate MAXIMUM_SUPPORTED_DATE = LocalDate.of(9_999, 12, 31);
 
     private static final List<DateTimeFormatter> USER_DATE_TIME_FORMATS = List.of(
-            strictFormatter("d/M/uuuu HHmm"),
-            strictFormatter("uuuu-MM-dd HHmm"),
-            strictFormatter("uuuu-MM-dd HH:mm"));
+            createStrictFormatter("d/M/uuuu HHmm"),
+            createStrictFormatter("uuuu-MM-dd HHmm"),
+            createStrictFormatter("uuuu-MM-dd HH:mm"));
 
     private static final DateTimeFormatter ISO_DATE_FORMAT =
-            strictFormatter("uuuu-MM-dd");
-    private static final DateTimeFormatter SLASH_DATE_FORMAT = strictFormatter("d/M/uuuu");
+            createStrictFormatter("uuuu-MM-dd");
+    private static final DateTimeFormatter SLASH_DATE_FORMAT = createStrictFormatter("d/M/uuuu");
     private static final DateTimeFormatter STORAGE_FORMAT =
             DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private static final DateTimeFormatter DATE_OUTPUT_FORMAT =
@@ -176,7 +176,7 @@ public final class DateTimeParser {
      * @param pattern the date/time pattern.
      * @return a strict formatter.
      */
-    private static DateTimeFormatter strictFormatter(String pattern) {
+    private static DateTimeFormatter createStrictFormatter(String pattern) {
         return DateTimeFormatter.ofPattern(pattern)
                 .withResolverStyle(ResolverStyle.STRICT);
     }

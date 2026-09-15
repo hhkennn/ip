@@ -22,7 +22,6 @@ final class ArchiveCommandParser {
             + "Try: restore 1.";
     private static final String RESTORE_NUMBER_ERROR = "That archived task number won't do. "
             + "Try: restore 1.";
-    private static final int MAX_NUMBER_LENGTH = 64;
 
     /**
      * Parses the selectors from an archive command.
@@ -97,7 +96,7 @@ final class ArchiveCommandParser {
         List<String[]> rawRanges = new ArrayList<>();
         for (String selectorInput : selectorInputs) {
             if (!selectorInput.matches("[0-9]+(?:-[0-9]+)?")
-                    || selectorInput.length() > MAX_NUMBER_LENGTH) {
+                    || selectorInput.length() > ParserLimits.MAX_NUMBER_LENGTH) {
                 throw new HertaException(ARCHIVE_SELECTION_ERROR);
             }
             String[] endpoints = selectorInput.split("-", -1);
@@ -168,7 +167,8 @@ final class ArchiveCommandParser {
         if (arguments.isEmpty()) {
             throw new HertaException(RESTORE_USAGE);
         }
-        if (!arguments.matches("[0-9]+") || arguments.length() > MAX_NUMBER_LENGTH) {
+        if (!arguments.matches("[0-9]+")
+                || arguments.length() > ParserLimits.MAX_NUMBER_LENGTH) {
             throw new HertaException(RESTORE_NUMBER_ERROR);
         }
 
@@ -182,5 +182,4 @@ final class ArchiveCommandParser {
             throw new HertaException(RESTORE_NUMBER_ERROR);
         }
     }
-
 }

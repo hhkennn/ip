@@ -18,9 +18,6 @@ public class Storage {
     private static final String ARCHIVE_LOAD_PREFIX = "Failed to load archived tasks: ";
     private static final String RECORD_LOAD_PREFIX = "Failed to load tasks ";
     private static final String ARCHIVE_RECORD_LOAD_PREFIX = "Failed to load archived tasks ";
-    private static final String EXTERNAL_CHANGE_ERROR = "the data file changed outside Herta; "
-            + "reload before saving.";
-
     private final Path dataFile;
     private final TaskStorageConverter converter;
     private final StorageFileManager fileManager;
@@ -192,7 +189,7 @@ public class Storage {
     /** Aborts a save when the file no longer matches the state Herta loaded. */
     void ensureHasNotChanged() throws IOException {
         if (!fileManager.hasSameContents(lastKnownSnapshot)) {
-            throw new IOException(EXTERNAL_CHANGE_ERROR);
+            throw new IOException(StorageFailureMapper.EXTERNAL_CHANGE_ERROR);
         }
     }
 
@@ -219,13 +216,8 @@ public class Storage {
     }
 
     /** Returns this storage's file manager to transaction coordination. */
-    StorageFileManager fileManager() {
+    StorageFileManager getFileManager() {
         return fileManager;
-    }
-
-    /** Returns this storage's managed path to transaction coordination. */
-    Path dataFile() {
-        return dataFile;
     }
 
     /** Serializes tasks using this storage's converter. */

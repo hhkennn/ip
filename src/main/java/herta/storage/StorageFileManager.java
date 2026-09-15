@@ -16,10 +16,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 /**
  * Manages strict file reads and replace-style writes for one storage file.
@@ -32,7 +30,6 @@ final class StorageFileManager {
     private static final int LINE_SEPARATOR_BYTE_COUNT = System.lineSeparator()
             .getBytes(StandardCharsets.UTF_8).length;
     private static final Logger LOGGER = Logger.getLogger(StorageFileManager.class.getName());
-    private static final AtomicLong TEMPORARY_FILE_COUNTER = new AtomicLong();
 
     /** Describes the safely observable state of the configured path. */
     enum PathStatus {
@@ -251,13 +248,12 @@ final class StorageFileManager {
         }
     }
 
-    /** Creates an owned temporary file without invoking the blocking secure-random provider. */
+    /** Creates an owned temporary file without shared mutable state. */
     static Path createOwnedTemporaryFile(Path directory, String prefix, String suffix)
             throws IOException {
         for (int attempt = 0; attempt < MAX_TEMPORARY_FILE_ATTEMPTS; attempt++) {
-            long counter = TEMPORARY_FILE_COUNTER.incrementAndGet();
             String fileName = prefix + Long.toUnsignedString(System.nanoTime())
-                    + "-" + counter + suffix;
+                    + "-" + attempt + suffix;
             Path candidate = directory.resolve(fileName);
             try {
                 return Files.createFile(candidate);

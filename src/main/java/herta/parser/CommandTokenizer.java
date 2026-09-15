@@ -7,7 +7,6 @@ import herta.exception.HertaException;
  */
 public final class CommandTokenizer {
     /** Maximum command length accepted from either the console or GUI. */
-    static final int MAX_COMMAND_LENGTH = 4_096;
     private static final String NULL_COMMAND_ERROR =
             "Nothing usable came through. Enter a command, such as list or todo <description>.";
     private static final String LONG_COMMAND_ERROR =
@@ -92,8 +91,8 @@ public final class CommandTokenizer {
         if (input == null) {
             throw new HertaException(NULL_COMMAND_ERROR);
         }
-        if (input.length() > MAX_COMMAND_LENGTH) {
-            throw new HertaException(LONG_COMMAND_ERROR.formatted(MAX_COMMAND_LENGTH));
+        if (input.length() > ParserLimits.MAX_COMMAND_LENGTH) {
+            throw new HertaException(LONG_COMMAND_ERROR.formatted(ParserLimits.MAX_COMMAND_LENGTH));
         }
         for (int i = 0; i < input.length(); i++) {
             char character = input.charAt(i);

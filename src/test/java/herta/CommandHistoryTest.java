@@ -19,10 +19,10 @@ class CommandHistoryTest {
         history.record("first");
         history.record("second");
 
-        assertEquals(Optional.of("second"), history.previous("draft"));
-        assertEquals(Optional.of("first"), history.previous("ignored"));
-        assertEquals(Optional.of("second"), history.next());
-        assertEquals(Optional.of("draft"), history.next());
+        assertEquals(Optional.of("second"), history.moveToPreviousCommand("draft"));
+        assertEquals(Optional.of("first"), history.moveToPreviousCommand("ignored"));
+        assertEquals(Optional.of("second"), history.moveToNextCommand());
+        assertEquals(Optional.of("draft"), history.moveToNextCommand());
     }
 
     @Test
@@ -32,11 +32,11 @@ class CommandHistoryTest {
         history.record("second");
         history.record("third");
 
-        assertEquals(Optional.of("third"), history.previous("draft"));
-        assertEquals(Optional.of("second"), history.previous("draft"));
-        assertEquals(Optional.of("third"), history.next());
-        assertEquals(Optional.of("draft"), history.next());
-        assertEquals(Optional.empty(), history.next());
+        assertEquals(Optional.of("third"), history.moveToPreviousCommand("draft"));
+        assertEquals(Optional.of("second"), history.moveToPreviousCommand("draft"));
+        assertEquals(Optional.of("third"), history.moveToNextCommand());
+        assertEquals(Optional.of("draft"), history.moveToNextCommand());
+        assertEquals(Optional.empty(), history.moveToNextCommand());
     }
 
     @Test
@@ -44,10 +44,10 @@ class CommandHistoryTest {
         CommandHistory history = new CommandHistory(2);
         history.record("only");
 
-        assertEquals(Optional.empty(), history.next());
-        assertEquals(Optional.of("only"), history.previous("draft"));
-        assertEquals(Optional.of("only"), history.previous("draft"));
-        assertEquals(Optional.of("draft"), history.next());
+        assertEquals(Optional.empty(), history.moveToNextCommand());
+        assertEquals(Optional.of("only"), history.moveToPreviousCommand("draft"));
+        assertEquals(Optional.of("only"), history.moveToPreviousCommand("draft"));
+        assertEquals(Optional.of("draft"), history.moveToNextCommand());
     }
 
     @Test
@@ -56,21 +56,21 @@ class CommandHistoryTest {
         history.record("first");
         history.record("second");
 
-        assertEquals(Optional.of("second"), history.previous("unfinished command"));
-        assertEquals(Optional.of("first"), history.previous("ignored"));
-        assertEquals(Optional.of("second"), history.next());
-        assertEquals(Optional.of("unfinished command"), history.next());
+        assertEquals(Optional.of("second"), history.moveToPreviousCommand("unfinished command"));
+        assertEquals(Optional.of("first"), history.moveToPreviousCommand("ignored"));
+        assertEquals(Optional.of("second"), history.moveToNextCommand());
+        assertEquals(Optional.of("unfinished command"), history.moveToNextCommand());
     }
 
     @Test
     void record_afterNavigation_resetsNavigationToNewestCommand() {
         CommandHistory history = new CommandHistory(2);
         history.record("first");
-        history.previous("draft");
+        history.moveToPreviousCommand("draft");
         history.record("newest");
 
-        assertEquals(Optional.empty(), history.next());
-        assertEquals(Optional.of("newest"), history.previous("another draft"));
+        assertEquals(Optional.empty(), history.moveToNextCommand());
+        assertEquals(Optional.of("newest"), history.moveToPreviousCommand("another draft"));
     }
 
     @Test

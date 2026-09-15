@@ -143,7 +143,7 @@ public class TaskList implements Iterable<Task> {
      * @param matcher the condition a task must satisfy.
      * @return matching zero-based task indices in their current list order.
      */
-    public List<Integer> matchingIndices(Predicate<Task> matcher) {
+    public List<Integer> findMatchingIndices(Predicate<Task> matcher) {
         Objects.requireNonNull(matcher, "A task matcher cannot be null.");
         return IntStream.range(0, tasks.size())
                 .filter(index -> matcher.test(tasks.get(index)))
@@ -158,7 +158,7 @@ public class TaskList implements Iterable<Task> {
      * @param comparator the comparator used to compare tasks.
      * @return zero-based task indices in sorted order.
      */
-    public List<Integer> sortedIndices(Comparator<Task> comparator) {
+    public List<Integer> getSortedIndices(Comparator<Task> comparator) {
         Objects.requireNonNull(comparator, "A task comparator cannot be null.");
         List<Integer> sortedIndices = IntStream.range(0, tasks.size())
                 .boxed()

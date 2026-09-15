@@ -75,14 +75,14 @@ class TaskRepositoryTest {
     }
 
     @Test
-    void withActiveTasks_suppliedCollectionIsRetainedAndArchiveIsLoaded() throws Exception {
+    void createWithActiveTasks_suppliedCollectionIsRetainedAndArchiveIsLoaded() throws Exception {
         Path activeFile = temporaryDirectory.resolve("nested").resolve("tasks.txt");
         Path archiveFile = activeFile.resolveSibling("archive.txt");
         TaskList activeTasks = new TaskList(List.of(new Todo("active")));
         Files.createDirectories(archiveFile.getParent());
         Files.write(archiveFile, List.of("T | 0 | archived"), StandardCharsets.UTF_8);
 
-        TaskRepository repository = TaskRepository.withActiveTasks(activeTasks,
+        TaskRepository repository = TaskRepository.createWithActiveTasks(activeTasks,
                 new Storage(activeFile.toString()));
 
         assertSame(activeTasks, repository.getActiveTasks());

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 /**
  * Tests strict file-manager reads, writes, snapshots, and path handling.
  */
@@ -173,5 +172,4 @@ class StorageFileManagerTest {
             return paths.filter(path -> path.getFileName().toString().endsWith(".tmp")).toList();
         }
     }
-
 }

@@ -47,8 +47,18 @@ public interface UiOutput {
      * @param taskCount the number of tasks.
      */
     default void showTaskCount(int taskCount) {
-        String taskNoun = taskCount == 1 ? "task" : "tasks";
+        String taskNoun = getTaskNoun(taskCount);
         showMessage(TASK_COUNT_MESSAGE.formatted(taskCount, taskNoun));
+    }
+
+    /**
+     * Returns the singular or plural noun for a task count.
+     *
+     * @param taskCount the task count.
+     * @return {@code task} only for one, otherwise {@code tasks}.
+     */
+    static String getTaskNoun(int taskCount) {
+        return taskCount == 1 ? "task" : "tasks";
     }
 
     /**

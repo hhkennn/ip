@@ -42,6 +42,6 @@ public class ArchivedCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        execute(TaskRepository.withActiveTasks(tasks, storage), ui);
+        execute(TaskRepository.createWithActiveTasks(tasks, storage), ui);
     }
 }

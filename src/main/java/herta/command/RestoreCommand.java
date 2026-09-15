@@ -58,7 +58,7 @@ public class RestoreCommand extends Command {
         ui.showTask(task);
         int activeTaskCount = updatedActiveTasks.size();
         ui.showMessage(ACTIVE_TASK_COUNT_MESSAGE.formatted(
-                activeTaskCount, getTaskNoun(activeTaskCount)));
+                activeTaskCount, UiOutput.getTaskNoun(activeTaskCount)));
     }
 
     /**
@@ -71,16 +71,6 @@ public class RestoreCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        execute(TaskRepository.withActiveTasks(tasks, storage), ui);
-    }
-
-    /**
-     * Returns the singular or plural noun for a task count.
-     *
-     * @param count the task count.
-     * @return {@code task} only for one, otherwise {@code tasks}.
-     */
-    private String getTaskNoun(int count) {
-        return count == 1 ? "task" : "tasks";
+        execute(TaskRepository.createWithActiveTasks(tasks, storage), ui);
     }
 }

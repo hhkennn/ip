@@ -35,20 +35,20 @@ public final class TaskDescriptionValidator {
             if (Character.isHighSurrogate(description.charAt(i))) {
                 if (i + 1 >= description.length()
                         || !Character.isLowSurrogate(description.charAt(i + 1))) {
-                    throw invalidDescriptionCharacter();
+                    throw createInvalidDescriptionCharacterException();
                 }
                 i++;
             } else if (Character.isLowSurrogate(description.charAt(i))) {
-                throw invalidDescriptionCharacter();
+                throw createInvalidDescriptionCharacterException();
             }
             if (isInvalidCharacter(codePoint)) {
-                throw invalidDescriptionCharacter();
+                throw createInvalidDescriptionCharacterException();
             }
         }
     }
 
     /** Returns the stable error used for every unsupported description character. */
-    private static IllegalArgumentException invalidDescriptionCharacter() {
+    private static IllegalArgumentException createInvalidDescriptionCharacterException() {
         return new IllegalArgumentException(
                 "Task descriptions cannot contain `|`, line breaks, or control characters.");
     }
@@ -63,5 +63,4 @@ public final class TaskDescriptionValidator {
         return isStorageDelimiter || isLineBreak || isControlCharacter
                 || isFormatCharacter || isUnsupportedSpace;
     }
-
 }
