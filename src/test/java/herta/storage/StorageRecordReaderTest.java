@@ -15,7 +15,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 import herta.task.TaskList;
 
-/** Tests strict decoding and bounded record reading. */
+/**
+ * Tests strict decoding and bounded record reading.
+ */
 class StorageRecordReaderTest {
     @TempDir
     Path temporaryDirectory;

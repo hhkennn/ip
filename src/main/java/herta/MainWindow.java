@@ -77,7 +77,7 @@ public class MainWindow extends AnchorPane {
     /**
      * Supplies the Herta instance used to process GUI commands.
      *
-     * @param herta the Herta instance to use
+     * @param herta the Herta instance to use.
      */
     public void setHerta(Herta herta) {
         this.herta = Objects.requireNonNull(herta, "The main window needs a Herta instance.");

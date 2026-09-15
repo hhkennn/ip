@@ -13,8 +13,8 @@ public final class ArchiveSelection {
     /**
      * Creates an archive selection.
      *
-     * @param ranges the inclusive, one-based ranges selected by the user
-     * @param isAllSelected whether the selection targets every completed active task
+     * @param ranges the inclusive, one-based ranges selected by the user.
+     * @param isAllSelected whether the selection targets every completed active task.
      */
     public ArchiveSelection(List<ArchiveRange> ranges, boolean isAllSelected) {
         this.ranges = List.copyOf(Objects.requireNonNull(ranges,
@@ -25,7 +25,7 @@ public final class ArchiveSelection {
     /**
      * Indicates whether this selection represents {@code archive all}.
      *
-     * @return {@code true} when every completed active task is selected
+     * @return {@code true} when every completed active task is selected.
      */
     public boolean isAllSelected() {
         return isAllSelected;
@@ -34,7 +34,7 @@ public final class ArchiveSelection {
     /**
      * Returns the selected task-number ranges.
      *
-     * @return an immutable list of selected ranges
+     * @return an immutable list of selected ranges.
      */
     public List<ArchiveRange> getRanges() {
         return ranges;

@@ -38,7 +38,7 @@ public abstract class Task {
     /**
      * Returns the icon used to display this task's completion status.
      *
-     * @return {@code X} if the task is done, or a blank space otherwise
+     * @return {@code X} if the task is done, or a blank space otherwise.
      */
     public String getStatusIcon() {
         return isCompleted ? COMPLETED_STATUS_ICON : INCOMPLETE_STATUS_ICON;
@@ -61,7 +61,7 @@ public abstract class Task {
     /**
      * Returns whether this task is currently complete.
      *
-     * @return {@code true} if the task is complete
+     * @return {@code true} if the task is complete.
      */
     public boolean isCompleted() {
         return isCompleted;
@@ -71,8 +71,8 @@ public abstract class Task {
      * Determines whether this task occurs on a particular calendar date.
      * Tasks without date/time information do not occur on any date.
      *
-     * @param date the date to check
-     * @return {@code true} if this task occurs on the date
+     * @param date the date to check.
+     * @return {@code true} if this task occurs on the date.
      */
     public boolean occursOn(LocalDate date) {
         return false;
@@ -83,7 +83,7 @@ public abstract class Task {
      * finding upcoming tasks. Tasks without date/time information return an
      * empty value.
      *
-     * @return the task's relevant date/time, if it has one
+     * @return the task's relevant date/time, if it has one.
      */
     public Optional<LocalDateTime> getScheduledDateTime() {
         return Optional.empty();
@@ -93,9 +93,9 @@ public abstract class Task {
      * Determines whether the task's scheduled date/time falls in a future
      * time window. The start is inclusive and the end is exclusive.
      *
-     * @param now the beginning of the time window
-     * @param until the exclusive end of the time window
-     * @return {@code true} if the task is scheduled within the window
+     * @param now the beginning of the time window.
+     * @param until the exclusive end of the time window.
+     * @return {@code true} if the task is scheduled within the window.
      */
     public boolean isUpcoming(LocalDateTime now, LocalDateTime until) {
         Objects.requireNonNull(now, "An upcoming window needs a start.");
@@ -119,7 +119,7 @@ public abstract class Task {
     /**
      * Returns the numeric completion status used in the data file.
      *
-     * @return {@code 1} when done, or {@code 0} otherwise
+     * @return {@code 1} when done, or {@code 0} otherwise.
      */
     protected int getCompletionStatusCode() {
         return isCompleted ? COMPLETED_STATUS_CODE : INCOMPLETE_STATUS_CODE;
@@ -128,7 +128,7 @@ public abstract class Task {
     /**
      * Returns the task description.
      *
-     * @return the task description
+     * @return the task description.
      */
     public String getDescription() {
         return description;

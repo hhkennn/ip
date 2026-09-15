@@ -13,11 +13,14 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Tests GUI-style command processing and persistence classifications. */
+/**
+ * Tests GUI-style command processing and persistence classifications.
+ */
 class HertaCommandProcessingTest {
     @TempDir
     Path temporaryDirectory;
 
+    /** Stores a file's presence and bytes for persistence assertions. */
     private record FileState(boolean wasPresent, byte[] contents) {
     }
 

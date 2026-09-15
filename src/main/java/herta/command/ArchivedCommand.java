@@ -17,8 +17,8 @@ public class ArchivedCommand extends Command {
     /**
      * Displays archived tasks in archive-file order with independent numbering.
      *
-     * @param repository the repository containing the archive
-     * @param ui the output interface used to display responses
+     * @param repository the repository containing the archive.
+     * @param ui the output interface used to display responses.
      */
     @Override
     public void execute(TaskRepository repository, UiOutput ui) {
@@ -36,9 +36,9 @@ public class ArchivedCommand extends Command {
     /**
      * Displays archived tasks for legacy direct command execution.
      *
-     * @param tasks unused because this command reads the archive
-     * @param ui the output interface used to display responses
-     * @param storage storage for active tasks, used to locate the archive
+     * @param tasks unused because this command reads the archive.
+     * @param ui the output interface used to display responses.
+     * @param storage storage for active tasks, used to locate the archive.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

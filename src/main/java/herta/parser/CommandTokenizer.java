@@ -2,7 +2,9 @@ package herta.parser;
 
 import herta.exception.HertaException;
 
-/** Normalizes the command boundary while preserving spaces inside task text. */
+/**
+ * Normalizes the command boundary while preserving spaces inside task text.
+ */
 public final class CommandTokenizer {
     /** Maximum command length accepted from either the console or GUI. */
     static final int MAX_COMMAND_LENGTH = 4_096;
@@ -23,9 +25,9 @@ public final class CommandTokenizer {
      * Only the outer boundary and the separator after the command keyword are changed;
      * meaningful spaces in the remaining argument are preserved.
      *
-     * @param input the raw command
-     * @return the normalized command
-     * @throws HertaException if the input is null, too long, or contains unsupported characters
+     * @param input the raw command.
+     * @return the normalized command.
+     * @throws HertaException if the input is null, too long, or contains unsupported characters.
      */
     public static String normalize(String input) throws HertaException {
         validateInput(input);

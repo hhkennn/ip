@@ -22,7 +22,9 @@ import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
 
-/** Tests task creation, status mutation, deletion, and failed-save rollback. */
+/**
+ * Tests task creation, status mutation, deletion, and failed-save rollback.
+ */
 class TaskMutationCommandTest {
     @TempDir
     Path temporaryDirectory;

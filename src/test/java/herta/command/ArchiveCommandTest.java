@@ -25,7 +25,9 @@ import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
 
-/** Tests archiving completed tasks, selectors, capacity, and persistence failures. */
+/**
+ * Tests archiving completed tasks, selectors, capacity, and persistence failures.
+ */
 class ArchiveCommandTest {
     @TempDir
     Path temporaryDirectory;

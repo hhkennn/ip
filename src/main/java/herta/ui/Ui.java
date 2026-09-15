@@ -38,7 +38,7 @@ public class Ui implements UiOutput {
     /**
      * Displays each supplied message using the standard message formatting.
      *
-     * @param messages the messages to display
+     * @param messages the messages to display.
      */
     private void showMessages(String... messages) {
         for (String message : messages) {
@@ -49,7 +49,7 @@ public class Ui implements UiOutput {
     /**
      * Reads one command from standard input.
      *
-     * @return the trimmed command, or {@code null} when standard input reaches EOF
+     * @return the trimmed command, or {@code null} when standard input reaches EOF.
      */
     public String readCommand() {
         System.out.print("Your command? ");
@@ -69,7 +69,7 @@ public class Ui implements UiOutput {
     /**
      * Displays a message with Herta's standard indentation on every line.
      *
-     * @param message the message to display
+     * @param message the message to display.
      */
     @Override
     public void showMessage(String message) {

@@ -8,7 +8,9 @@ import java.util.Objects;
 
 import herta.exception.HertaException;
 
-/** Applies the path rules shared by active and archived task storage. */
+/**
+ * Applies the path rules shared by active and archived task storage.
+ */
 final class StoragePathPolicy {
     private static final String ARCHIVE_LOAD_PREFIX = "Failed to load archived tasks: ";
 

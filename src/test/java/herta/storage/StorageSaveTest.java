@@ -21,7 +21,9 @@ import herta.task.Event;
 import herta.task.TaskList;
 import herta.task.Todo;
 
-/** Tests single-file saves, validation, external edits, and size limits. */
+/**
+ * Tests single-file saves, validation, external edits, and size limits.
+ */
 class StorageSaveTest {
     @TempDir
     Path temporaryDirectory;

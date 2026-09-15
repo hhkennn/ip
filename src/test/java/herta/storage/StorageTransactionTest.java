@@ -20,7 +20,9 @@ import herta.exception.HertaException;
 import herta.task.TaskList;
 import herta.task.Todo;
 
-/** Tests two-file transaction coordination, recovery, rollback, and path conflicts. */
+/**
+ * Tests two-file transaction coordination, recovery, rollback, and path conflicts.
+ */
 class StorageTransactionTest {
     @TempDir
     Path temporaryDirectory;

@@ -15,7 +15,7 @@ public class DeleteCommand extends TaskIndexCommand {
     /**
      * Creates a command that removes the task at the given index.
      *
-     * @param taskIndex the zero-based index of the task to remove
+     * @param taskIndex the zero-based index of the task to remove.
      */
     public DeleteCommand(int taskIndex) {
         super(taskIndex);
@@ -24,10 +24,10 @@ public class DeleteCommand extends TaskIndexCommand {
     /**
      * Saves the list without the selected task, then removes it from the live list.
      *
-     * @param tasks the task list to update
-     * @param ui the output interface used to display responses
-     * @param storage the storage used to persist the deletion
-     * @throws HertaException if the selected task is invalid or the updated list cannot be saved
+     * @param tasks the task list to update.
+     * @param ui the output interface used to display responses.
+     * @param storage the storage used to persist the deletion.
+     * @throws HertaException if the selected task is invalid or the updated list cannot be saved.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

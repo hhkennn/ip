@@ -20,7 +20,7 @@ public class FilterCommand extends QueryCommand {
     /**
      * Creates a command that filters tasks for a specific date.
      *
-     * @param date the date on which matching tasks must occur
+     * @param date the date on which matching tasks must occur.
      */
     public FilterCommand(LocalDate date) {
         this.date = date;
@@ -29,9 +29,9 @@ public class FilterCommand extends QueryCommand {
     /**
      * Displays tasks occurring on the command's date.
      *
-     * @param tasks the task list to search
-     * @param ui the output interface used to display responses
-     * @param storage unused because filtering does not change stored data
+     * @param tasks the task list to search.
+     * @param ui the output interface used to display responses.
+     * @param storage unused because filtering does not change stored data.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {

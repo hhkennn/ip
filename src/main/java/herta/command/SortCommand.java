@@ -21,9 +21,9 @@ public class SortCommand extends Command {
      * Displays all tasks sorted by their scheduled date without changing the
      * order stored in the task list.
      *
-     * @param tasks the task list to sort for display
-     * @param ui the output interface used to display responses
-     * @param storage unused because sorting does not change stored data
+     * @param tasks the task list to sort for display.
+     * @param ui the output interface used to display responses.
+     * @param storage unused because sorting does not change stored data.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {

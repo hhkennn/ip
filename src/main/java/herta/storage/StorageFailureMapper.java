@@ -6,7 +6,9 @@ import java.nio.file.NoSuchFileException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Converts platform-specific storage failures into stable user-facing wording. */
+/**
+ * Converts platform-specific storage failures into stable user-facing wording.
+ */
 final class StorageFailureMapper {
     private static final String EXTERNAL_CHANGE_ERROR = "the data file changed outside Herta; "
             + "reload before saving.";

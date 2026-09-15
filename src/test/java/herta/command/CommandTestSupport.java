@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-/** Provides output capture for command tests that exercise the console UI. */
+/**
+ * Provides output capture for command tests that exercise the console UI.
+ */
 final class CommandTestSupport {
     private CommandTestSupport() {
         // Utility class; do not instantiate.
@@ -23,6 +25,7 @@ final class CommandTestSupport {
         }
     }
 
+    /** Represents a command test action that may fail during execution. */
     @FunctionalInterface
     interface OutputAction {
         void run() throws Exception;

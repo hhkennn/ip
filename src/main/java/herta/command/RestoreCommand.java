@@ -22,7 +22,7 @@ public class RestoreCommand extends Command {
     /**
      * Creates a restore command for a zero-based archive index.
      *
-     * @param archiveIndex the zero-based index of the archived task
+     * @param archiveIndex the zero-based index of the archived task.
      */
     public RestoreCommand(int archiveIndex) {
         if (archiveIndex < 0) {
@@ -34,9 +34,9 @@ public class RestoreCommand extends Command {
     /**
      * Restores the selected task and appends it to the active collection.
      *
-     * @param repository the repository containing both task collections
-     * @param ui the output interface used to display responses
-     * @throws HertaException if the archive index is invalid or persistence fails
+     * @param repository the repository containing both task collections.
+     * @param ui the output interface used to display responses.
+     * @throws HertaException if the archive index is invalid or persistence fails.
      */
     @Override
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
@@ -64,10 +64,10 @@ public class RestoreCommand extends Command {
     /**
      * Adapts legacy direct command execution to the two-collection repository.
      *
-     * @param tasks the active tasks
-     * @param ui the output interface used to display responses
-     * @param storage storage for active tasks
-     * @throws HertaException if the archive cannot be loaded or saved
+     * @param tasks the active tasks.
+     * @param ui the output interface used to display responses.
+     * @param storage storage for active tasks.
+     * @throws HertaException if the archive cannot be loaded or saved.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
@@ -77,8 +77,8 @@ public class RestoreCommand extends Command {
     /**
      * Returns the singular or plural noun for a task count.
      *
-     * @param count the task count
-     * @return {@code task} only for one, otherwise {@code tasks}
+     * @param count the task count.
+     * @return {@code task} only for one, otherwise {@code tasks}.
      */
     private String getTaskNoun(int count) {
         return count == 1 ? "task" : "tasks";

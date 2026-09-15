@@ -1,6 +1,8 @@
 package herta.storage;
 
-/** Describes how certain storage is about the result of the latest save attempt. */
+/**
+ * Describes how certain storage is about the result of the latest save attempt.
+ */
 public enum PersistenceState {
     /** No persistence operation was attempted for the current command. */
     NOT_ATTEMPTED,

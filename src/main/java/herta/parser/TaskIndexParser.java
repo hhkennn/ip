@@ -4,7 +4,9 @@ import java.math.BigInteger;
 
 import herta.exception.HertaException;
 
-/** Parses one-based task numbers used by task-selection commands. */
+/**
+ * Parses one-based task numbers used by task-selection commands.
+ */
 final class TaskIndexParser {
     private static final String INVALID_TASK_NUMBER_ERROR =
             "That's not a task number. Try: %s 1.";

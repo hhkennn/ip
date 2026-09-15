@@ -108,6 +108,7 @@ class UiTest {
         }
     }
 
+    /** Represents a UI test action that may fail during execution. */
     @FunctionalInterface
     private interface OutputAction {
         void run() throws Exception;

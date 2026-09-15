@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests that a response preserves each result property independently. */
+/**
+ * Tests that a response preserves each result property independently.
+ */
 class HertaResponseTest {
 
     @Test

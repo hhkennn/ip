@@ -14,7 +14,7 @@ public abstract class TaskIndexCommand extends Command {
     /**
      * Creates a command for a zero-based task index.
      *
-     * @param taskIndex the zero-based index of the selected task
+     * @param taskIndex the zero-based index of the selected task.
      */
     protected TaskIndexCommand(int taskIndex) {
         if (taskIndex < 0) {
@@ -26,9 +26,9 @@ public abstract class TaskIndexCommand extends Command {
     /**
      * Validates the selected index against the current task list.
      *
-     * @param tasks the task list containing the selected task
-     * @return the validated zero-based task index
-     * @throws HertaException if the selected task does not exist
+     * @param tasks the task list containing the selected task.
+     * @return the validated zero-based task index.
+     * @throws HertaException if the selected task does not exist.
      */
     protected int getTaskIndex(TaskList tasks) throws HertaException {
         if (taskIndex < 0 || taskIndex >= tasks.size()) {

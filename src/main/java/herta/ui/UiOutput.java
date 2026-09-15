@@ -18,14 +18,14 @@ public interface UiOutput {
     /**
      * Displays a message to the user.
      *
-     * @param message the message to display
+     * @param message the message to display.
      */
     void showMessage(String message);
 
     /**
      * Displays a task to the user.
      *
-     * @param task the task to display
+     * @param task the task to display.
      */
     default void showTask(Task task) {
         showMessage(INDENTED_TASK_FORMAT.formatted(task));
@@ -34,8 +34,8 @@ public interface UiOutput {
     /**
      * Displays a task with its one-based list number.
      *
-     * @param taskNumber the one-based number shown to the user
-     * @param task the task to display
+     * @param taskNumber the one-based number shown to the user.
+     * @param task the task to display.
      */
     default void showTask(int taskNumber, Task task) {
         showMessage(NUMBERED_TASK_FORMAT.formatted(taskNumber, task));
@@ -44,7 +44,7 @@ public interface UiOutput {
     /**
      * Displays the number of tasks to the user.
      *
-     * @param taskCount the number of tasks
+     * @param taskCount the number of tasks.
      */
     default void showTaskCount(int taskCount) {
         String taskNoun = taskCount == 1 ? "task" : "tasks";

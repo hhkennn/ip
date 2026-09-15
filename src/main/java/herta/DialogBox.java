@@ -92,8 +92,8 @@ public class DialogBox extends HBox {
     /**
      * Creates a dialog box for a user message without an avatar.
      *
-     * @param text the user's message
-     * @return a dialog box displaying the user's message
+     * @param text the user's message.
+     * @return a dialog box displaying the user's message.
      */
     public static DialogBox getUserDialog(String text) {
         return new DialogBox(text, null);
@@ -102,9 +102,9 @@ public class DialogBox extends HBox {
     /**
      * Creates a dialog box for a Herta response with an avatar.
      *
-     * @param text Herta's response
-     * @param image Herta's avatar image
-     * @return a dialog box displaying Herta's response
+     * @param text Herta's response.
+     * @param image Herta's avatar image.
+     * @return a dialog box displaying Herta's response.
      */
     public static DialogBox getHertaDialog(String text, Image image) {
         return getHertaDialog(text, image, null);
@@ -113,10 +113,10 @@ public class DialogBox extends HBox {
     /**
      * Creates a dialog box for a Herta response with its semantic response style.
      *
-     * @param text Herta's response
-     * @param image Herta's avatar image
-     * @param responseCategory the semantic category of the response
-     * @return a dialog box displaying Herta's response
+     * @param text Herta's response.
+     * @param image Herta's avatar image.
+     * @param responseCategory the semantic category of the response.
+     * @return a dialog box displaying Herta's response.
      */
     public static DialogBox getHertaDialog(String text, Image image, ResponseCategory responseCategory) {
         var dialogBox = new DialogBox(text, image);
@@ -151,7 +151,7 @@ public class DialogBox extends HBox {
      * Applies a semantic style to Herta's response label when a category is supplied.
      * A missing category leaves the default styling unchanged.
      *
-     * @param responseCategory the semantic category of the response
+     * @param responseCategory the semantic category of the response.
      */
     private void applyResponseStyle(ResponseCategory responseCategory) {
         if (responseCategory == null) {

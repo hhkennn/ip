@@ -10,7 +10,9 @@ import java.util.Objects;
 import herta.exception.HertaException;
 import herta.task.TaskList;
 
-/** Provides the public storage facade for one active or archived task file. */
+/**
+ * Provides the public storage facade for one active or archived task file.
+ */
 public class Storage {
     private static final String ACTIVE_LOAD_PREFIX = "Failed to load tasks: ";
     private static final String ARCHIVE_LOAD_PREFIX = "Failed to load archived tasks: ";

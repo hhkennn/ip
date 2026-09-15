@@ -19,7 +19,9 @@ import java.util.logging.Logger;
 
 import herta.exception.HertaException;
 
-/** Writes durable preparation and commit phases for a two-file transaction. */
+/**
+ * Writes durable preparation and commit phases for a two-file transaction.
+ */
 final class StorageTransactionJournal {
     static final String JOURNAL_FILE_NAME = ".herta-transaction";
     static final String ACTIVE_PATH_KEY = "activePath";
@@ -41,6 +43,7 @@ final class StorageTransactionJournal {
     private final Path activeBackup;
     private final Path archiveBackup;
 
+    /** Describes the durable phases of a two-file storage transaction. */
     enum Phase {
         PREPARED,
         ACTIVE_COMMITTED,

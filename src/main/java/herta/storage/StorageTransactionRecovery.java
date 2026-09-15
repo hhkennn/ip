@@ -19,7 +19,9 @@ import java.util.logging.Logger;
 
 import herta.exception.HertaException;
 
-/** Validates and recovers interrupted active/archive storage transactions. */
+/**
+ * Validates and recovers interrupted active/archive storage transactions.
+ */
 final class StorageTransactionRecovery {
     private static final Logger LOGGER = Logger.getLogger(StorageTransactionRecovery.class.getName());
 

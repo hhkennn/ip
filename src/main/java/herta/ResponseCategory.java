@@ -22,9 +22,9 @@ public enum ResponseCategory {
     /**
      * Maps a parsed command type to the category used by presentation layers.
      *
-     * @param commandType the parsed command type
+     * @param commandType the parsed command type.
      * @return the corresponding response category, or {@link #ERROR} for an
-     *         unsupported command type
+     *         unsupported command type.
      */
     public static ResponseCategory fromCommandType(CommandType commandType) {
         Objects.requireNonNull(commandType, "A response category requires a command type.");

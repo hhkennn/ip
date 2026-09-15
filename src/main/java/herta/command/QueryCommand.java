@@ -15,11 +15,11 @@ public abstract class QueryCommand extends Command {
     /**
      * Displays the matching tasks and an explanatory message when there are no matches.
      *
-     * @param tasks the task list to search
-     * @param matcher the condition a task must satisfy
-     * @param heading the heading to print before the results
-     * @param emptyMessage the message to print when there are no matches
-     * @param ui the output interface used to display responses
+     * @param tasks the task list to search.
+     * @param matcher the condition a task must satisfy.
+     * @param heading the heading to print before the results.
+     * @param emptyMessage the message to print when there are no matches.
+     * @param ui the output interface used to display responses.
      */
     protected void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
                                       String heading, String emptyMessage, UiOutput ui) {
@@ -29,12 +29,12 @@ public abstract class QueryCommand extends Command {
     /**
      * Displays matching tasks with configurable heading behavior for empty results.
      *
-     * @param tasks the task list to search
-     * @param matcher the condition a task must satisfy
-     * @param heading the heading to print before the results
-     * @param emptyMessage the message to print when there are no matches
-     * @param shouldShowHeadingWhenEmpty whether to print the heading when there are no matches
-     * @param ui the output interface used to display responses
+     * @param tasks the task list to search.
+     * @param matcher the condition a task must satisfy.
+     * @param heading the heading to print before the results.
+     * @param emptyMessage the message to print when there are no matches.
+     * @param shouldShowHeadingWhenEmpty whether to print the heading when there are no matches.
+     * @param ui the output interface used to display responses.
      */
     private void showMatchingTasks(TaskList tasks, Predicate<Task> matcher,
                                    String heading, String emptyMessage,
@@ -57,11 +57,11 @@ public abstract class QueryCommand extends Command {
     /**
      * Displays matching tasks without a heading when there are no matches.
      *
-     * @param tasks the task list to search
-     * @param matcher the condition a task must satisfy
-     * @param heading the heading to print before the results
-     * @param emptyMessage the message to print when there are no matches
-     * @param ui the output interface used to display responses
+     * @param tasks the task list to search.
+     * @param matcher the condition a task must satisfy.
+     * @param heading the heading to print before the results.
+     * @param emptyMessage the message to print when there are no matches.
+     * @param ui the output interface used to display responses.
      */
     protected void showMatchingTasksWithoutEmptyHeading(TaskList tasks, Predicate<Task> matcher,
                                                          String heading, String emptyMessage,

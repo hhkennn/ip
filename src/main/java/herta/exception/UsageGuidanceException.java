@@ -8,7 +8,7 @@ public final class UsageGuidanceException extends HertaException {
     /**
      * Creates an exception with a user-facing usage explanation.
      *
-     * @param message the usage explanation shown to the user
+     * @param message the usage explanation shown to the user.
      */
     public UsageGuidanceException(String message) {
         super(message);

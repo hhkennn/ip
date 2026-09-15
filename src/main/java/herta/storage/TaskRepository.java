@@ -18,10 +18,10 @@ public final class TaskRepository {
     /**
      * Creates a repository from already loaded collections.
      *
-     * @param activeStorage storage for active tasks
-     * @param archiveStorage storage for archived tasks
-     * @param activeTasks the active tasks
-     * @param archivedTasks the archived tasks
+     * @param activeStorage storage for active tasks.
+     * @param archiveStorage storage for archived tasks.
+     * @param activeTasks the active tasks.
+     * @param archivedTasks the archived tasks.
      */
     public TaskRepository(Storage activeStorage, Storage archiveStorage,
                           TaskList activeTasks, TaskList archivedTasks) {
@@ -34,9 +34,9 @@ public final class TaskRepository {
     /**
      * Loads active tasks first and archived tasks second.
      *
-     * @param activeFilePath the configured active-task file
-     * @return a repository containing both loaded collections
-     * @throws HertaException if either collection cannot be loaded
+     * @param activeFilePath the configured active-task file.
+     * @return a repository containing both loaded collections.
+     * @throws HertaException if either collection cannot be loaded.
      */
     public static TaskRepository load(String activeFilePath) throws HertaException {
         Storage activeStorage = new Storage(activeFilePath);
@@ -58,10 +58,10 @@ public final class TaskRepository {
      * Creates a repository using an existing active collection and loads its archive.
      * This adapter keeps direct command execution convenient for existing callers.
      *
-     * @param activeTasks the active tasks to use
-     * @param activeStorage storage for active tasks
-     * @return a repository containing the supplied active tasks and loaded archive
-     * @throws HertaException if the archive cannot be loaded
+     * @param activeTasks the active tasks to use.
+     * @param activeStorage storage for active tasks.
+     * @return a repository containing the supplied active tasks and loaded archive.
+     * @throws HertaException if the archive cannot be loaded.
      */
     public static TaskRepository withActiveTasks(TaskList activeTasks,
                                                  Storage activeStorage) throws HertaException {
@@ -79,7 +79,7 @@ public final class TaskRepository {
     /**
      * Returns the active task collection.
      *
-     * @return the active tasks
+     * @return the active tasks.
      */
     public TaskList getActiveTasks() {
         return activeTasks;
@@ -88,7 +88,7 @@ public final class TaskRepository {
     /**
      * Returns the archived task collection.
      *
-     * @return the archived tasks
+     * @return the archived tasks.
      */
     public TaskList getArchivedTasks() {
         return archivedTasks;
@@ -97,7 +97,7 @@ public final class TaskRepository {
     /**
      * Returns storage for active tasks.
      *
-     * @return active-task storage
+     * @return active-task storage.
      */
     public Storage getActiveStorage() {
         return activeStorage;
@@ -117,10 +117,10 @@ public final class TaskRepository {
     /**
      * Saves the resulting active and archived collections as one logical operation.
      *
-     * @param updatedActiveTasks the resulting active collection
-     * @param updatedArchivedTasks the resulting archive collection
-     * @param failurePrefix the required user-facing persistence-error prefix
-     * @throws HertaException if validation, staging, commit, or rollback fails
+     * @param updatedActiveTasks the resulting active collection.
+     * @param updatedArchivedTasks the resulting archive collection.
+     * @param failurePrefix the required user-facing persistence-error prefix.
+     * @throws HertaException if validation, staging, commit, or rollback fails.
      */
     public void saveActiveAndArchivedTasks(TaskList updatedActiveTasks,
                                            TaskList updatedArchivedTasks, String failurePrefix)
@@ -132,8 +132,8 @@ public final class TaskRepository {
     /**
      * Replaces both live collections after their corresponding files are saved.
      *
-     * @param updatedActiveTasks the newly saved active collection
-     * @param updatedArchivedTasks the newly saved archive collection
+     * @param updatedActiveTasks the newly saved active collection.
+     * @param updatedArchivedTasks the newly saved archive collection.
      */
     public void replaceActiveAndArchivedTasks(TaskList updatedActiveTasks,
                                               TaskList updatedArchivedTasks) {

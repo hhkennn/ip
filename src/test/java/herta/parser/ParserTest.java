@@ -27,7 +27,9 @@ import herta.command.UnmarkCommand;
 import herta.command.UpcomingCommand;
 import herta.exception.HertaException;
 
-/** Tests command recognition and routing in the public parser facade. */
+/**
+ * Tests command recognition and routing in the public parser facade.
+ */
 class ParserTest {
     private final Parser parser = new Parser();
 

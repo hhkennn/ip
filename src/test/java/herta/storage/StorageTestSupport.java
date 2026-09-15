@@ -12,7 +12,9 @@ import herta.task.Task;
 import herta.task.TaskList;
 import herta.task.Todo;
 
-/** Provides focused fixtures shared by storage save and transaction tests. */
+/**
+ * Provides focused fixtures shared by storage save and transaction tests.
+ */
 final class StorageTestSupport {
     private StorageTestSupport() {
         // Utility class; do not instantiate.

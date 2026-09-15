@@ -11,9 +11,9 @@ public class HertaResponse {
     /**
      * Creates a response with its message, exit status, and semantic category.
      *
-     * @param message the message to display
-     * @param isExitRequested whether the application should exit
-     * @param responseCategory the semantic category of the response
+     * @param message the message to display.
+     * @param isExitRequested whether the application should exit.
+     * @param responseCategory the semantic category of the response.
      */
     public HertaResponse(String message, boolean isExitRequested, ResponseCategory responseCategory) {
         this.message = message;
@@ -24,7 +24,7 @@ public class HertaResponse {
     /**
      * Returns the message generated while processing the command.
      *
-     * @return the response message
+     * @return the response message.
      */
     public String getMessage() {
         return message;
@@ -33,7 +33,7 @@ public class HertaResponse {
     /**
      * Indicates whether the command requested application exit.
      *
-     * @return {@code true} if the application should exit
+     * @return {@code true} if the application should exit.
      */
     public boolean isExitRequested() {
         return isExitRequested;
@@ -42,7 +42,7 @@ public class HertaResponse {
     /**
      * Returns the semantic category of the response.
      *
-     * @return the response category
+     * @return the response category.
      */
     public ResponseCategory getResponseCategory() {
         return responseCategory;

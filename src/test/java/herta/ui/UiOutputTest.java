@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import herta.task.Todo;
 
-/** Tests the default task-display methods supplied by {@link UiOutput}. */
+/**
+ * Tests the default task-display methods supplied by {@link UiOutput}.
+ */
 class UiOutputTest {
 
     @Test
@@ -34,6 +36,7 @@ class UiOutputTest {
                 "That makes 2 active tasks. Try to keep up."), output.messages);
     }
 
+    /** Captures output emitted by UiOutput default-method tests. */
     private static final class RecordingOutput implements UiOutput {
         private final List<String> messages = new ArrayList<>();
 

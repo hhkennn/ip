@@ -16,7 +16,9 @@ import herta.task.Task;
 import herta.task.TaskList;
 import herta.task.Todo;
 
-/** Tests conversion between task objects and the line-based storage format. */
+/**
+ * Tests conversion between task objects and the line-based storage format.
+ */
 class TaskStorageConverterTest {
     private static final String RECORD_PREFIX = "Failed to load tasks ";
     private final TaskStorageConverter converter = new TaskStorageConverter();
@@ -134,6 +136,7 @@ class TaskStorageConverterTest {
         assertTrue(exception.getMessage().contains(expectedMessage));
     }
 
+    /** Produces null serialized data to test converter validation. */
     private static final class NullStorageTask extends Todo {
         NullStorageTask(String description) {
             super(description);
@@ -145,6 +148,7 @@ class TaskStorageConverterTest {
         }
     }
 
+    /** Produces line-breaking serialized data to test converter validation. */
     private static final class LineBreakingStorageTask extends Todo {
         LineBreakingStorageTask(String description) {
             super(description);
@@ -156,6 +160,7 @@ class TaskStorageConverterTest {
         }
     }
 
+    /** Produces malformed serialized data to test converter validation. */
     private static final class MalformedStorageTask extends Todo {
         MalformedStorageTask(String description) {
             super(description);
@@ -167,6 +172,7 @@ class TaskStorageConverterTest {
         }
     }
 
+    /** Throws during serialization to test converter error handling. */
     private static final class ThrowingStorageTask extends Todo {
         ThrowingStorageTask(String description) {
             super(description);

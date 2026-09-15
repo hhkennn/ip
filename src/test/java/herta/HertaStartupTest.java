@@ -12,7 +12,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Tests startup validation and the disabled state after storage failures. */
+/**
+ * Tests startup validation and the disabled state after storage failures.
+ */
 class HertaStartupTest {
     @TempDir
     Path temporaryDirectory;

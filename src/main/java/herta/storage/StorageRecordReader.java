@@ -13,7 +13,9 @@ import java.util.List;
 
 import herta.task.TaskList;
 
-/** Decodes bounded storage records using strict UTF-8 and all supported line endings. */
+/**
+ * Decodes bounded storage records using strict UTF-8 and all supported line endings.
+ */
 final class StorageRecordReader {
     static final int MAX_RECORD_LENGTH = 4_096;
     private static final String TOO_LONG_RECORD_ERROR = "storage record exceeds the size limit";

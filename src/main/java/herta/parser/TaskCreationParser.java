@@ -57,9 +57,9 @@ final class TaskCreationParser {
     /**
      * Parses a todo command into a todo task.
      *
-     * @param input the complete todo command
-     * @return the parsed todo task
-     * @throws HertaException if the todo description is empty
+     * @param input the complete todo command.
+     * @return the parsed todo task.
+     * @throws HertaException if the todo description is empty.
      */
     Todo parseTodo(String input) throws HertaException {
         String description = CommandType.TODO.extractArguments(input);
@@ -72,9 +72,9 @@ final class TaskCreationParser {
     /**
      * Parses a deadline command into a deadline task.
      *
-     * @param input the complete deadline command
-     * @return the parsed deadline task
-     * @throws HertaException if the command format or date/time is invalid
+     * @param input the complete deadline command.
+     * @return the parsed deadline task.
+     * @throws HertaException if the command format or date/time is invalid.
      */
     Deadline parseDeadline(String input) throws HertaException {
         String deadlineArguments = CommandType.DEADLINE.extractArguments(input);
@@ -101,9 +101,9 @@ final class TaskCreationParser {
     /**
      * Parses an event command into an event task.
      *
-     * @param input the complete event command
-     * @return the parsed event task
-     * @throws HertaException if the command format, date/time, or event range is invalid
+     * @param input the complete event command.
+     * @return the parsed event task.
+     * @throws HertaException if the command format, date/time, or event range is invalid.
      */
     Event parseEvent(String input) throws HertaException {
         EventParts eventParts = parseEventParts(input);
@@ -115,9 +115,9 @@ final class TaskCreationParser {
     /**
      * Extracts and validates the description and date/time inputs from an event command.
      *
-     * @param input the complete event command
-     * @return the validated event fields
-     * @throws HertaException if the command format or any field is invalid
+     * @param input the complete event command.
+     * @return the validated event fields.
+     * @throws HertaException if the command format or any field is invalid.
      */
     private EventParts parseEventParts(String input) throws HertaException {
         String eventArguments = CommandType.EVENT.extractArguments(input);
@@ -170,11 +170,11 @@ final class TaskCreationParser {
     /**
      * Creates an event and translates invalid time ranges into a user-facing error.
      *
-     * @param description the event description
-     * @param from the event start
-     * @param to the event end
-     * @return the event with the supplied details
-     * @throws HertaException if the end does not occur after the start
+     * @param description the event description.
+     * @param from the event start.
+     * @param to the event end.
+     * @return the event with the supplied details.
+     * @throws HertaException if the end does not occur after the start.
      */
     private Event createEvent(String description, LocalDateTime from, LocalDateTime to)
             throws HertaException {
@@ -224,10 +224,10 @@ final class TaskCreationParser {
     /**
      * Parses a user-provided date/time and converts parsing failures into an explanation.
      *
-     * @param input the date/time text
-     * @param errorMessage the explanation to use when parsing fails
-     * @return the parsed date/time
-     * @throws HertaException if the date/time is invalid
+     * @param input the date/time text.
+     * @param errorMessage the explanation to use when parsing fails.
+     * @return the parsed date/time.
+     * @throws HertaException if the date/time is invalid.
      */
     private LocalDateTime parseUserDateTime(String input, String errorMessage)
             throws HertaException {

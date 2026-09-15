@@ -48,7 +48,7 @@ final class StorageFileManager {
     /**
      * Creates a manager for a storage file.
      *
-     * @param dataFile the file to manage
+     * @param dataFile the file to manage.
      */
     StorageFileManager(Path dataFile) {
         this.dataFile = dataFile;
@@ -76,8 +76,8 @@ final class StorageFileManager {
     /**
      * Reads the data file as strict UTF-8 instead of silently replacing malformed bytes.
      *
-     * @return the lines from the data file
-     * @throws IOException if the file cannot be read or is not valid UTF-8
+     * @return the lines from the data file.
+     * @throws IOException if the file cannot be read or is not valid UTF-8.
      */
     List<String> readLines() throws IOException {
         ensureReadableRegularFile();
@@ -87,9 +87,9 @@ final class StorageFileManager {
     /**
      * Writes validated lines to a temporary file beside the target.
      *
-     * @param lines the records to stage
-     * @return the temporary file path
-     * @throws IOException if the directory or temporary file cannot be created
+     * @param lines the records to stage.
+     * @return the temporary file path.
+     * @throws IOException if the directory or temporary file cannot be created.
      */
     Path writeTemporaryFile(List<String> lines) throws IOException {
         Path dataDirectory = prepareDataDirectory();
@@ -125,8 +125,8 @@ final class StorageFileManager {
     /**
      * Creates the data directory and verifies that the target can be replaced.
      *
-     * @return the directory containing the data file
-     * @throws IOException if the target is not a regular file or the directory cannot be created
+     * @return the directory containing the data file.
+     * @throws IOException if the target is not a regular file or the directory cannot be created.
      */
     private Path prepareDataDirectory() throws IOException {
         Path dataDirectory = dataFile.getParent();
@@ -147,8 +147,8 @@ final class StorageFileManager {
     /**
      * Replaces the target with a temporary file, falling back when atomic replacement is unsupported.
      *
-     * @param temporaryFile the temporary file containing the new records
-     * @throws IOException if the replacement fails
+     * @param temporaryFile the temporary file containing the new records.
+     * @throws IOException if the replacement fails.
      */
     void replaceDataFile(Path temporaryFile) throws IOException {
         try {
@@ -163,7 +163,7 @@ final class StorageFileManager {
     /**
      * Removes a temporary file after a save attempt.
      *
-     * @param temporaryFile the temporary file to remove, if one was created
+     * @param temporaryFile the temporary file to remove, if one was created.
      */
     void deleteTemporaryFile(Path temporaryFile) {
         if (temporaryFile != null) {
@@ -179,8 +179,8 @@ final class StorageFileManager {
     /**
      * Captures the exact bytes and existence state of the target file.
      *
-     * @return the captured file state
-     * @throws IOException if the existing file cannot be read
+     * @return the captured file state.
+     * @throws IOException if the existing file cannot be read.
      */
     FileSnapshot captureSnapshot() throws IOException {
         PathStatus pathStatus = getPathStatus();
@@ -205,8 +205,8 @@ final class StorageFileManager {
     /**
      * Restores a target file to its captured contents or captured absence.
      *
-     * @param snapshot the target's original state
-     * @throws IOException if restoration fails
+     * @param snapshot the target's original state.
+     * @throws IOException if restoration fails.
      */
     void restoreSnapshot(FileSnapshot snapshot) throws IOException {
         if (snapshot == null) {

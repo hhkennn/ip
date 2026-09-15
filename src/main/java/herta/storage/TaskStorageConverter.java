@@ -34,9 +34,9 @@ final class TaskStorageConverter {
     /**
      * Converts every task to a validated storage record.
      *
-     * @param tasks the task list to serialize
-     * @return validated storage records in task-list order
-     * @throws HertaException if the task list or one of its records is invalid
+     * @param tasks the task list to serialize.
+     * @return validated storage records in task-list order.
+     * @throws HertaException if the task list or one of its records is invalid.
      */
     List<String> serializeTasks(TaskList tasks) throws HertaException {
         if (tasks == null) {
@@ -56,10 +56,10 @@ final class TaskStorageConverter {
     /**
      * Reconstructs all tasks from the lines in the data file.
      *
-     * @param lines the lines read from the data file
-     * @param recordPrefix the prefix for malformed-record failures
-     * @return the reconstructed task list
-     * @throws HertaException if a line contains an invalid task record
+     * @param lines the lines read from the data file.
+     * @param recordPrefix the prefix for malformed-record failures.
+     * @return the reconstructed task list.
+     * @throws HertaException if a line contains an invalid task record.
      */
     TaskList parseStorageLines(List<String> lines, String recordPrefix) throws HertaException {
         TaskList tasks = new TaskList();
@@ -83,9 +83,9 @@ final class TaskStorageConverter {
     /**
      * Converts and validates one task as a storage record.
      *
-     * @param task the task to serialize
-     * @return the validated storage record
-     * @throws HertaException if the task or its record is invalid
+     * @param task the task to serialize.
+     * @return the validated storage record.
+     * @throws HertaException if the task or its record is invalid.
      */
     private String serializeTask(Task task) throws HertaException {
         if (task == null) {
@@ -111,8 +111,8 @@ final class TaskStorageConverter {
     /**
      * Confirms that a serialized task can be reconstructed before it is written.
      *
-     * @param storageString the candidate storage record
-     * @throws HertaException if the record is invalid
+     * @param storageString the candidate storage record.
+     * @throws HertaException if the record is invalid.
      */
     private void validateSerializedTask(String storageString) throws HertaException {
         try {
@@ -128,11 +128,11 @@ final class TaskStorageConverter {
     /**
      * Parses one storage line and adds its source line number to any error.
      *
-     * @param line one line in Herta's storage format
-     * @param lineNumber the one-based source line number
-     * @param recordPrefix the prefix for malformed-record failures
-     * @return the reconstructed task
-     * @throws HertaException if the line does not contain a valid task record
+     * @param line one line in Herta's storage format.
+     * @param lineNumber the one-based source line number.
+     * @param recordPrefix the prefix for malformed-record failures.
+     * @return the reconstructed task.
+     * @throws HertaException if the line does not contain a valid task record.
      */
     private Task parseStorageLine(String line, int lineNumber, String recordPrefix)
             throws HertaException {
@@ -151,9 +151,9 @@ final class TaskStorageConverter {
     /**
      * Reconstructs a task from one serialized data-file line.
      *
-     * @param line one line in Herta's storage format
-     * @return the reconstructed task
-     * @throws HertaException if the line does not contain a supported task type
+     * @param line one line in Herta's storage format.
+     * @return the reconstructed task.
+     * @throws HertaException if the line does not contain a supported task type.
      */
     private Task parseStoredTask(String line) throws HertaException {
         String[] storageFields = splitStorageRecord(line);
@@ -168,8 +168,8 @@ final class TaskStorageConverter {
     /**
      * Splits a serialized task line into its storage fields.
      *
-     * @param line one serialized task line
-     * @return the normalized storage fields
+     * @param line one serialized task line.
+     * @return the normalized storage fields.
      */
     private String[] splitStorageRecord(String line) {
         String normalizedLine = line.trim();
@@ -200,9 +200,9 @@ final class TaskStorageConverter {
     /**
      * Returns the expected number of fields for a serialized task type.
      *
-     * @param type the serialized task type
-     * @return the expected field count
-     * @throws HertaException if the task type is unsupported
+     * @param type the serialized task type.
+     * @return the expected field count.
+     * @throws HertaException if the task type is unsupported.
      */
     private int getExpectedPartCount(String type) throws HertaException {
         return switch (type) {
@@ -217,10 +217,10 @@ final class TaskStorageConverter {
     /**
      * Checks that a serialized task contains the expected number of fields.
      *
-     * @param storageFields the serialized task fields
-     * @param type the serialized task type
-     * @param expectedPartCount the expected field count
-     * @throws HertaException if the field count is invalid
+     * @param storageFields the serialized task fields.
+     * @param type the serialized task type.
+     * @param expectedPartCount the expected field count.
+     * @throws HertaException if the field count is invalid.
      */
     private void validatePartCount(String[] storageFields, String type, int expectedPartCount)
             throws HertaException {
@@ -233,8 +233,8 @@ final class TaskStorageConverter {
     /**
      * Checks that a serialized task has a supported completion status.
      *
-     * @param status the serialized completion status
-     * @throws HertaException if the status is invalid
+     * @param status the serialized completion status.
+     * @throws HertaException if the status is invalid.
      */
     private void validateStatus(String status) throws HertaException {
         if (!INCOMPLETE_STATUS.equals(status) && !COMPLETED_STATUS.equals(status)) {
@@ -246,8 +246,8 @@ final class TaskStorageConverter {
     /**
      * Checks that serialized task fields after the status are non-blank.
      *
-     * @param storageFields the serialized task fields
-     * @throws HertaException if a task field is blank
+     * @param storageFields the serialized task fields.
+     * @throws HertaException if a task field is blank.
      */
     private void validateTaskFields(String[] storageFields) throws HertaException {
         for (int i = DESCRIPTION_INDEX; i < storageFields.length; i++) {
@@ -260,9 +260,9 @@ final class TaskStorageConverter {
     /**
      * Reconstructs a task from validated storage fields.
      *
-     * @param storageFields the validated storage fields
-     * @return the reconstructed task
-     * @throws HertaException if the task type cannot be reconstructed
+     * @param storageFields the validated storage fields.
+     * @return the reconstructed task.
+     * @throws HertaException if the task type cannot be reconstructed.
      */
     private Task createTask(String[] storageFields) throws HertaException {
         final Task task;

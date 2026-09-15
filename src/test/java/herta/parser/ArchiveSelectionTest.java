@@ -10,7 +10,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests archive-selection copying and immutable access behavior. */
+/**
+ * Tests archive-selection copying and immutable access behavior.
+ */
 class ArchiveSelectionTest {
 
     @Test

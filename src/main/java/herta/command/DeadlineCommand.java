@@ -10,7 +10,7 @@ public class DeadlineCommand extends AddCommand {
     /**
      * Creates a command that adds the given deadline task.
      *
-     * @param deadline the deadline task to add
+     * @param deadline the deadline task to add.
      */
     public DeadlineCommand(Deadline deadline) {
         super(deadline);

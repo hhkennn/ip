@@ -7,7 +7,9 @@ import java.util.Objects;
 import herta.command.UpcomingCommand;
 import herta.exception.HertaException;
 
-/** Parses arguments shared by Herta's query commands. */
+/**
+ * Parses arguments shared by Herta's query commands.
+ */
 final class QueryCommandParser {
     private static final String FILTER_DATE_MARKER = "/on";
     private static final String FILTER_USAGE = "filter /on <date>";

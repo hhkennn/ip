@@ -42,7 +42,7 @@ public class ArchiveCommand extends Command {
     /**
      * Creates an archive command for a validated selection.
      *
-     * @param selection the task numbers or ranges to archive
+     * @param selection the task numbers or ranges to archive.
      */
     public ArchiveCommand(ArchiveSelection selection) {
         this.selection = Objects.requireNonNull(selection, "An archive selection is required.");
@@ -51,9 +51,9 @@ public class ArchiveCommand extends Command {
     /**
      * Executes the command using an active and archive repository.
      *
-     * @param repository the repository containing both task collections
-     * @param ui the output interface used to display responses
-     * @throws HertaException if selection validation fails or persistence fails
+     * @param repository the repository containing both task collections.
+     * @param ui the output interface used to display responses.
+     * @throws HertaException if selection validation fails or persistence fails.
      */
     @Override
     public void execute(TaskRepository repository, UiOutput ui) throws HertaException {
@@ -76,10 +76,10 @@ public class ArchiveCommand extends Command {
     /**
      * Adapts legacy direct command execution to the two-collection repository.
      *
-     * @param tasks the active tasks
-     * @param ui the output interface used to display responses
-     * @param storage storage for active tasks
-     * @throws HertaException if the archive cannot be loaded or saved
+     * @param tasks the active tasks.
+     * @param ui the output interface used to display responses.
+     * @param storage storage for active tasks.
+     * @throws HertaException if the archive cannot be loaded or saved.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
@@ -89,9 +89,9 @@ public class ArchiveCommand extends Command {
     /**
      * Checks whether an all-task selection would move no tasks.
      *
-     * @param activeTasks the active task collection
-     * @param selectedIndices the resolved task indices
-     * @return {@code true} when the selection should stop without archiving
+     * @param activeTasks the active task collection.
+     * @param selectedIndices the resolved task indices.
+     * @return {@code true} when the selection should stop without archiving.
      */
     private boolean isNoOpArchiveSelection(TaskList activeTasks, Set<Integer> selectedIndices) {
         boolean hasNoActiveTasks = activeTasks.size() == 0;
@@ -102,8 +102,8 @@ public class ArchiveCommand extends Command {
     /**
      * Displays a no-op explanation for an all-task selection that has nothing to archive.
      *
-     * @param activeTasks the active task collection
-     * @param ui the output interface
+     * @param activeTasks the active task collection.
+     * @param ui the output interface.
      */
     private void showNoTasksMessage(TaskList activeTasks, UiOutput ui) {
         if (activeTasks.size() == 0) {
@@ -116,9 +116,9 @@ public class ArchiveCommand extends Command {
     /**
      * Ensures every explicitly selected task is complete before archiving.
      *
-     * @param activeTasks the active task collection
-     * @param selectedIndices the resolved task indices
-     * @throws HertaException if an explicitly selected task is incomplete
+     * @param activeTasks the active task collection.
+     * @param selectedIndices the resolved task indices.
+     * @throws HertaException if an explicitly selected task is incomplete.
      */
     private void validateCompletedTasks(TaskList activeTasks, Set<Integer> selectedIndices)
             throws HertaException {
@@ -135,10 +135,10 @@ public class ArchiveCommand extends Command {
     /**
      * Moves selected tasks into new active and archived collections.
      *
-     * @param activeTasks the active task collection
-     * @param archivedTasks the existing archived task collection
-     * @param selectedIndices the resolved task indices
-     * @return the collections and tasks to display after archiving
+     * @param activeTasks the active task collection.
+     * @param archivedTasks the existing archived task collection.
+     * @param selectedIndices the resolved task indices.
+     * @return the collections and tasks to display after archiving.
      */
     private ArchiveResult archiveSelectedTasks(TaskList activeTasks, TaskList archivedTasks,
                                                Set<Integer> selectedIndices) {
@@ -160,9 +160,9 @@ public class ArchiveCommand extends Command {
     /**
      * Displays the result of a successful archive operation.
      *
-     * @param result the collections and tasks produced by the operation
-     * @param archivedCount the number of tasks moved
-     * @param ui the output interface
+     * @param result the collections and tasks produced by the operation.
+     * @param archivedCount the number of tasks moved.
+     * @param ui the output interface.
      */
     private void showArchiveResult(ArchiveResult result, int archivedCount, UiOutput ui) {
         ui.showMessage(ARCHIVE_SUCCESS_MESSAGE.formatted(
@@ -178,9 +178,9 @@ public class ArchiveCommand extends Command {
     /**
      * Resolves selectors into unique zero-based active-list indices.
      *
-     * @param activeTasks the active tasks against which bounds are checked
-     * @return selected indices in active-list order
-     * @throws HertaException if any selected task number is out of bounds
+     * @param activeTasks the active tasks against which bounds are checked.
+     * @return selected indices in active-list order.
+     * @throws HertaException if any selected task number is out of bounds.
      */
     private Set<Integer> getSelectedIndices(TaskList activeTasks) throws HertaException {
         Set<Integer> selectedIndices = new TreeSet<>();
@@ -208,8 +208,8 @@ public class ArchiveCommand extends Command {
     /**
      * Returns the singular or plural noun for a task count.
      *
-     * @param count the task count
-     * @return {@code task} only for one, otherwise {@code tasks}
+     * @param count the task count.
+     * @return {@code task} only for one, otherwise {@code tasks}.
      */
     private String getTaskNoun(int count) {
         return count == 1 ? "task" : "tasks";

@@ -10,7 +10,7 @@ public class EventCommand extends AddCommand {
     /**
      * Creates a command that adds the given event task.
      *
-     * @param event the event task to add
+     * @param event the event task to add.
      */
     public EventCommand(Event event) {
         super(event);

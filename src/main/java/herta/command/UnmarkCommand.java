@@ -15,7 +15,7 @@ public class UnmarkCommand extends TaskStatusCommand {
     /**
      * Creates a command that marks the task at the given index as incomplete.
      *
-     * @param taskIndex the zero-based index of the task to unmark
+     * @param taskIndex the zero-based index of the task to unmark.
      */
     public UnmarkCommand(int taskIndex) {
         super(taskIndex);
@@ -25,10 +25,10 @@ public class UnmarkCommand extends TaskStatusCommand {
      * Unmarks the selected task, persists the updated status, and reports it.
      * The in-memory status is restored if saving fails.
      *
-     * @param tasks the task list to update
-     * @param ui the output interface used to display responses
-     * @param storage the storage used to persist the status change
-     * @throws HertaException if the selected task is invalid or cannot be saved
+     * @param tasks the task list to update.
+     * @param ui the output interface used to display responses.
+     * @param storage the storage used to persist the status change.
+     * @throws HertaException if the selected task is invalid or cannot be saved.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

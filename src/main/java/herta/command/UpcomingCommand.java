@@ -24,7 +24,7 @@ public class UpcomingCommand extends QueryCommand {
     /**
      * Creates a command that searches the specified number of future days.
      *
-     * @param days the positive number of days in the search window
+     * @param days the positive number of days in the search window.
      */
     public UpcomingCommand(int days) {
         if (days <= 0) {
@@ -37,10 +37,10 @@ public class UpcomingCommand extends QueryCommand {
     /**
      * Displays incomplete deadlines and events beginning in the future window.
      *
-     * @param tasks the task list to search
-     * @param ui the output interface used to display responses
-     * @param storage unused because querying does not change stored data
-     * @throws HertaException if the requested time range is too large
+     * @param tasks the task list to search.
+     * @param ui the output interface used to display responses.
+     * @param storage unused because querying does not change stored data.
+     * @throws HertaException if the requested time range is too large.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

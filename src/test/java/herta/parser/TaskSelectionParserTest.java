@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import herta.exception.HertaException;
 
-/** Tests task-number, archive-range, and restore-number parsing. */
+/**
+ * Tests task-number, archive-range, and restore-number parsing.
+ */
 class TaskSelectionParserTest {
     private final Parser parser = new Parser();
 

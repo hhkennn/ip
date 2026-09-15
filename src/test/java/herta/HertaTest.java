@@ -14,7 +14,9 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Tests the command-line application loop. */
+/**
+ * Tests the command-line application loop.
+ */
 class HertaTest {
     private static final String EXPECTED_SEPARATOR =
             "____________________________________________________________";

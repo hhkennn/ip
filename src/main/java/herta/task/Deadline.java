@@ -30,10 +30,10 @@ public class Deadline extends Task {
     /**
      * Reconstructs a deadline from its serialized date/time value.
      *
-     * @param description the deadline description
-     * @param byText the serialized deadline date/time
-     * @return the reconstructed deadline
-     * @throws IllegalArgumentException if the stored date/time is invalid
+     * @param description the deadline description.
+     * @param byText the serialized deadline date/time.
+     * @return the reconstructed deadline.
+     * @throws IllegalArgumentException if the stored date/time is invalid.
      */
     public static Deadline fromStorage(String description, String byText) {
         try {
@@ -47,7 +47,7 @@ public class Deadline extends Task {
     /**
      * Returns the deadline date and time.
      *
-     * @return the deadline date and time
+     * @return the deadline date and time.
      */
     public LocalDateTime getBy() {
         return by;
@@ -56,8 +56,8 @@ public class Deadline extends Task {
     /**
      * Checks whether this deadline falls on a particular calendar date.
      *
-     * @param date the date to check
-     * @return {@code true} if the deadline is due on the date
+     * @param date the date to check.
+     * @return {@code true} if the deadline is due on the date.
      */
     @Override
     public boolean occursOn(LocalDate date) {
@@ -68,7 +68,7 @@ public class Deadline extends Task {
     /**
      * Returns the deadline time used for chronological operations.
      *
-     * @return the deadline's due date and time
+     * @return the deadline's due date and time.
      */
     @Override
     public Optional<LocalDateTime> getScheduledDateTime() {

@@ -17,7 +17,9 @@ import herta.exception.HertaException;
 import herta.task.TaskList;
 import herta.task.Todo;
 
-/** Tests loading and adapting Herta's active and archived task collections. */
+/**
+ * Tests loading and adapting Herta's active and archived task collections.
+ */
 class TaskRepositoryTest {
     @TempDir
     Path temporaryDirectory;

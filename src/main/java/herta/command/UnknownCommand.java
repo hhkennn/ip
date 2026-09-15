@@ -20,7 +20,7 @@ public class UnknownCommand extends Command {
     /**
      * Creates a command that reports the appropriate error for the input.
      *
-     * @param input the complete user input
+     * @param input the complete user input.
      */
     public UnknownCommand(String input) {
         isEmptyInput = input.isEmpty();
@@ -29,10 +29,10 @@ public class UnknownCommand extends Command {
     /**
      * Rejects the input with the same explanation used by the original dispatcher.
      *
-     * @param tasks unused because the input is not a supported task command
-     * @param ui unused because errors are propagated to the main loop
-     * @param storage unused because the input does not change stored data
-     * @throws HertaException describing why the input was rejected
+     * @param tasks unused because the input is not a supported task command.
+     * @param ui unused because errors are propagated to the main loop.
+     * @param storage unused because the input does not change stored data.
+     * @throws HertaException describing why the input was rejected.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

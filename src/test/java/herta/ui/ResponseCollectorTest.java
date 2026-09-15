@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests response collection for graphical presentation. */
+/**
+ * Tests response collection for graphical presentation.
+ */
 class ResponseCollectorTest {
 
     @Test

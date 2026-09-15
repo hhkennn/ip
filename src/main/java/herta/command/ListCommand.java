@@ -13,9 +13,9 @@ public class ListCommand extends Command {
     /**
      * Displays the tasks managed by Herta.
      *
-     * @param tasks the task list to display
-     * @param ui the output interface used to display responses
-     * @param storage unused because listing does not change saved data
+     * @param tasks the task list to display.
+     * @param ui the output interface used to display responses.
+     * @param storage unused because listing does not change saved data.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {

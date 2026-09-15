@@ -35,11 +35,11 @@ public class Event extends Task {
     /**
      * Reconstructs an event from its serialized date/time values.
      *
-     * @param description the event description
-     * @param fromText the serialized start date/time
-     * @param toText the serialized end date/time
-     * @return the reconstructed event
-     * @throws IllegalArgumentException if a stored date/time or event range is invalid
+     * @param description the event description.
+     * @param fromText the serialized start date/time.
+     * @param toText the serialized end date/time.
+     * @return the reconstructed event.
+     * @throws IllegalArgumentException if a stored date/time or event range is invalid.
      */
     public static Event fromStorage(String description, String fromText, String toText) {
         try {
@@ -57,7 +57,7 @@ public class Event extends Task {
     /**
      * Returns the event's start date and time.
      *
-     * @return the event's start date and time
+     * @return the event's start date and time.
      */
     public LocalDateTime getFrom() {
         return from;
@@ -66,7 +66,7 @@ public class Event extends Task {
     /**
      * Returns the event's end date and time.
      *
-     * @return the event's end date and time
+     * @return the event's end date and time.
      */
     public LocalDateTime getTo() {
         return to;
@@ -76,8 +76,8 @@ public class Event extends Task {
      * Checks whether any part of this event overlaps a particular calendar
      * date.
      *
-     * @param date the date to check
-     * @return {@code true} if the event occurs during the date
+     * @param date the date to check.
+     * @return {@code true} if the event occurs during the date.
      */
     @Override
     public boolean occursOn(LocalDate date) {
@@ -94,7 +94,7 @@ public class Event extends Task {
      * Returns the event start time used for chronological operations and
      * upcoming-event searches.
      *
-     * @return the event's start date and time
+     * @return the event's start date and time.
      */
     @Override
     public Optional<LocalDateTime> getScheduledDateTime() {
@@ -130,9 +130,9 @@ public class Event extends Task {
     /**
      * Ensures that an event has a positive duration.
      *
-     * @param from the event's start date and time
-     * @param to the event's end date and time
-     * @throws IllegalArgumentException if the end is not after the start
+     * @param from the event's start date and time.
+     * @param to the event's end date and time.
+     * @throws IllegalArgumentException if the end is not after the start.
      */
     private static void validateTimeRange(LocalDateTime from, LocalDateTime to) {
         if (!from.isBefore(to)) {

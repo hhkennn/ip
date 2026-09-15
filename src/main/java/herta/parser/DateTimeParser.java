@@ -45,9 +45,9 @@ public final class DateTimeParser {
     /**
      * Parses a date/time entered by the user for a deadline or event.
      *
-     * @param input the date/time entered after a task date marker
-     * @return the parsed date/time, with date-only input represented at midnight
-     * @throws DateTimeParseException if the input does not match a supported format
+     * @param input the date/time entered after a task date marker.
+     * @return the parsed date/time, with date-only input represented at midnight.
+     * @throws DateTimeParseException if the input does not match a supported format.
      */
     public static LocalDateTime parseUserDateTime(String input) {
         String normalizedInput = normalizeInput(input);
@@ -67,9 +67,9 @@ public final class DateTimeParser {
     /**
      * Parses a date used by a date-filter command.
      *
-     * @param input the date entered by the user
-     * @return the parsed date
-     * @throws DateTimeParseException if the input does not match a supported date format
+     * @param input the date entered by the user.
+     * @return the parsed date.
+     * @throws DateTimeParseException if the input does not match a supported date format.
      */
     public static LocalDate parseUserDate(String input) {
         String normalizedInput = normalizeInput(input);
@@ -86,9 +86,9 @@ public final class DateTimeParser {
     /**
      * Parses a date/time serialized in Herta's data file.
      *
-     * @param input the serialized date/time
-     * @return the parsed date/time
-     * @throws DateTimeParseException if the stored value is invalid
+     * @param input the serialized date/time.
+     * @return the parsed date/time.
+     * @throws DateTimeParseException if the stored value is invalid.
      */
     public static LocalDateTime parseStoredDateTime(String input) {
         String normalizedInput = normalizeInput(input);
@@ -105,8 +105,8 @@ public final class DateTimeParser {
      * Validates a domain date/time against Herta's documented business range.
      * Dates before year 1 or after year 9999 are rejected to keep date arithmetic safe.
      *
-     * @param dateTime the date/time to validate
-     * @throws IllegalArgumentException if the date is outside the supported range
+     * @param dateTime the date/time to validate.
+     * @throws IllegalArgumentException if the date is outside the supported range.
      */
     public static void validateSupportedDateTime(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "A date/time cannot be null.");
@@ -139,8 +139,8 @@ public final class DateTimeParser {
     /**
      * Formats a date/time for storage in Herta's data file.
      *
-     * @param dateTime the date/time to serialize
-     * @return the stable serialized representation
+     * @param dateTime the date/time to serialize.
+     * @return the stable serialized representation.
      */
     public static String formatForStorage(LocalDateTime dateTime) {
         return STORAGE_FORMAT.format(Objects.requireNonNull(dateTime));
@@ -149,8 +149,8 @@ public final class DateTimeParser {
     /**
      * Formats a date/time for display to the user.
      *
-     * @param dateTime the date/time to display
-     * @return a readable date or date/time representation
+     * @param dateTime the date/time to display.
+     * @return a readable date or date/time representation.
      */
     public static String formatForDisplay(LocalDateTime dateTime) {
         Objects.requireNonNull(dateTime, "A date/time cannot be null.");
@@ -163,8 +163,8 @@ public final class DateTimeParser {
     /**
      * Formats a calendar date for display to the user.
      *
-     * @param date the date to display
-     * @return a readable date representation
+     * @param date the date to display.
+     * @return a readable date representation.
      */
     public static String formatDateForDisplay(LocalDate date) {
         return DATE_OUTPUT_FORMAT.format(Objects.requireNonNull(date, "A date cannot be null."));
@@ -173,8 +173,8 @@ public final class DateTimeParser {
     /**
      * Creates a strict formatter using a pattern with a proleptic year.
      *
-     * @param pattern the date/time pattern
-     * @return a strict formatter
+     * @param pattern the date/time pattern.
+     * @return a strict formatter.
      */
     private static DateTimeFormatter strictFormatter(String pattern) {
         return DateTimeFormatter.ofPattern(pattern)

@@ -17,7 +17,9 @@ import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.UiOutput;
 
-/** Tests legacy command adapters that derive the sibling archive from active storage. */
+/**
+ * Tests legacy command adapters that derive the sibling archive from active storage.
+ */
 class ArchiveRestoreAdapterTest {
     @TempDir
     Path temporaryDirectory;
@@ -43,6 +45,7 @@ class ArchiveRestoreAdapterTest {
         assertTrue(output.messages.contains("1. [T][X] legacy task"));
     }
 
+    /** Captures output emitted by archive and restore adapter tests. */
     private static final class RecordingOutput implements UiOutput {
         private final List<String> messages = new ArrayList<>();
 

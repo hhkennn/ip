@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import herta.parser.CommandType;
 
-/** Tests the mapping from parser command types to presentation categories. */
+/**
+ * Tests the mapping from parser command types to presentation categories.
+ */
 class ResponseCategoryTest {
     private static final Map<CommandType, ResponseCategory> EXPECTED_CATEGORIES = createExpectedCategories();
 

@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import herta.exception.HertaException;
 
-/** Tests the command-boundary normalization and character policy. */
+/**
+ * Tests the command-boundary normalization and character policy.
+ */
 class CommandTokenizerTest {
 
     @Test

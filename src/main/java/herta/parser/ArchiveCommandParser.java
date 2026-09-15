@@ -27,9 +27,9 @@ final class ArchiveCommandParser {
     /**
      * Parses the selectors from an archive command.
      *
-     * @param input the complete archive command
-     * @return the validated archive selection
-     * @throws HertaException if the selectors are malformed or out of integer range
+     * @param input the complete archive command.
+     * @return the validated archive selection.
+     * @throws HertaException if the selectors are malformed or out of integer range.
      */
     ArchiveSelection parseArchiveSelection(String input) throws HertaException {
         String arguments = CommandType.ARCHIVE.extractArguments(input);
@@ -47,8 +47,8 @@ final class ArchiveCommandParser {
     /**
      * Checks whether an archive selection contains the special {@code all} selector.
      *
-     * @param selectorInputs the individual archive selectors
-     * @return {@code true} if one selector requests all completed tasks
+     * @param selectorInputs the individual archive selectors.
+     * @return {@code true} if one selector requests all completed tasks.
      */
     private boolean hasAllSelector(String[] selectorInputs) {
         for (String selectorInput : selectorInputs) {
@@ -62,9 +62,9 @@ final class ArchiveCommandParser {
     /**
      * Parses the special selection that archives all completed tasks.
      *
-     * @param selectorInputs the individual archive selectors
-     * @return a selection for all completed tasks
-     * @throws HertaException if {@code all} is combined with another selector
+     * @param selectorInputs the individual archive selectors.
+     * @return a selection for all completed tasks.
+     * @throws HertaException if {@code all} is combined with another selector.
      */
     private ArchiveSelection parseAllSelection(String[] selectorInputs) throws HertaException {
         if (selectorInputs.length != 1) {
@@ -76,9 +76,9 @@ final class ArchiveCommandParser {
     /**
      * Parses and validates numeric archive ranges.
      *
-     * @param selectorInputs the individual numeric selectors
-     * @return validated archive ranges
-     * @throws HertaException if a selector is malformed or out of integer range
+     * @param selectorInputs the individual numeric selectors.
+     * @return validated archive ranges.
+     * @throws HertaException if a selector is malformed or out of integer range.
      */
     private List<ArchiveRange> parseArchiveRanges(String[] selectorInputs) throws HertaException {
         List<String[]> rawRanges = splitArchiveRanges(selectorInputs);
@@ -89,9 +89,9 @@ final class ArchiveCommandParser {
     /**
      * Splits numeric archive selectors into their endpoint strings.
      *
-     * @param selectorInputs the individual numeric selectors
-     * @return the raw range endpoints
-     * @throws HertaException if a selector is malformed
+     * @param selectorInputs the individual numeric selectors.
+     * @return the raw range endpoints.
+     * @throws HertaException if a selector is malformed.
      */
     private List<String[]> splitArchiveRanges(String[] selectorInputs) throws HertaException {
         List<String[]> rawRanges = new ArrayList<>();
@@ -122,8 +122,8 @@ final class ArchiveCommandParser {
     /**
      * Rejects ranges whose end comes before their start.
      *
-     * @param rawRanges the raw archive range endpoints
-     * @throws HertaException if a range is descending
+     * @param rawRanges the raw archive range endpoints.
+     * @throws HertaException if a range is descending.
      */
     private void validateAscendingRanges(List<String[]> rawRanges) throws HertaException {
         for (String[] endpoints : rawRanges) {
@@ -137,9 +137,9 @@ final class ArchiveCommandParser {
     /**
      * Converts raw archive range endpoints into validated integer ranges.
      *
-     * @param rawRanges the raw archive range endpoints
-     * @return converted archive ranges
-     * @throws HertaException if an endpoint does not fit in an integer
+     * @param rawRanges the raw archive range endpoints.
+     * @return converted archive ranges.
+     * @throws HertaException if an endpoint does not fit in an integer.
      */
     private List<ArchiveRange> convertArchiveRanges(List<String[]> rawRanges) throws HertaException {
         List<ArchiveRange> ranges = new ArrayList<>();
@@ -159,9 +159,9 @@ final class ArchiveCommandParser {
     /**
      * Parses the single archive task number from a restore command.
      *
-     * @param input the complete restore command
-     * @return the selected archive task number, converted to a zero-based index
-     * @throws HertaException if the argument is missing or not a non-negative integer
+     * @param input the complete restore command.
+     * @return the selected archive task number, converted to a zero-based index.
+     * @throws HertaException if the argument is missing or not a non-negative integer.
      */
     int parseRestoreTaskNumber(String input) throws HertaException {
         String arguments = CommandType.RESTORE.extractArguments(input);

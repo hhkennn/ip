@@ -2,7 +2,9 @@ package herta.task;
 
 import java.util.Objects;
 
-/** Validates task descriptions shared by command parsing and storage loading. */
+/**
+ * Validates task descriptions shared by command parsing and storage loading.
+ */
 public final class TaskDescriptionValidator {
     /** Maximum number of UTF-16 code units allowed in a task description. */
     public static final int MAX_DESCRIPTION_LENGTH = 1_000;
@@ -14,10 +16,10 @@ public final class TaskDescriptionValidator {
     /**
      * Validates a task description before it enters the domain model.
      *
-     * @param description the description to validate
-     * @throws NullPointerException if the description is null
+     * @param description the description to validate.
+     * @throws NullPointerException if the description is null.
      * @throws IllegalArgumentException if the description is blank, too long,
-     *         or contains a delimiter or unsupported control character
+     *         or contains a delimiter or unsupported control character.
      */
     public static void validate(String description) {
         Objects.requireNonNull(description, "Task description cannot be null.");

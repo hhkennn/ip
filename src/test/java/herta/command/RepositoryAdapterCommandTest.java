@@ -23,7 +23,9 @@ import herta.task.Todo;
 import herta.ui.Ui;
 import herta.ui.UiOutput;
 
-/** Tests command adapters that operate on separate active and archive storage. */
+/**
+ * Tests command adapters that operate on separate active and archive storage.
+ */
 class RepositoryAdapterCommandTest {
     @TempDir
     Path temporaryDirectory;
@@ -135,6 +137,7 @@ class RepositoryAdapterCommandTest {
                 activeTasks, archivedTasks);
     }
 
+    /** Forces save failures when testing command adapter rollback behavior. */
     private static final class SaveFailingStorage extends Storage {
         SaveFailingStorage(Path dataFile) {
             super(dataFile.toString());
@@ -146,6 +149,7 @@ class RepositoryAdapterCommandTest {
         }
     }
 
+    /** Captures UI messages emitted by command adapter tests. */
     private static final class RecordingUiOutput implements UiOutput {
         private final List<String> messages = new ArrayList<>();
 

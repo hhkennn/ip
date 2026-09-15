@@ -21,6 +21,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 import herta.exception.HertaException;
 
+/**
+ * Tests transaction journal creation, recovery, and cleanup.
+ */
 class StorageTransactionJournalTest {
     private static final String ORIGINAL_ACTIVE = "T | 0 | active";
     private static final String ORIGINAL_ARCHIVE = "D | 1 | archive | 2026-01-02";

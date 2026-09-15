@@ -41,7 +41,7 @@ public enum CommandType {
      * Identifies the command represented by the user's input.
      *
      * @param input the complete user input.
-     * @return the corresponding command type, or {@link #UNKNOWN}
+     * @return the corresponding command type, or {@link #UNKNOWN}.
      */
     public static CommandType fromInput(String input) {
         if (input == null) {
@@ -66,7 +66,7 @@ public enum CommandType {
     /**
      * Returns the keyword used to recognize this command.
      *
-     * @return the command keyword
+     * @return the command keyword.
      */
     String getKeyword() {
         return keyword;
@@ -80,8 +80,8 @@ public enum CommandType {
     /**
      * Extracts the arguments after this command type's keyword.
      *
-     * @param input the complete command input
-     * @return the trimmed command arguments
+     * @param input the complete command input.
+     * @return the trimmed command arguments.
      */
     String extractArguments(String input) {
         String trimmedInput = input.trim();

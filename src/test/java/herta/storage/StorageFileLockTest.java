@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/**
+ * Tests acquisition and release of storage file locks.
+ */
 class StorageFileLockTest {
     @TempDir
     private Path temporaryDirectory;

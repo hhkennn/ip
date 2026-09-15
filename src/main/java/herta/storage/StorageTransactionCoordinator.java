@@ -8,7 +8,9 @@ import java.util.Objects;
 import herta.exception.HertaException;
 import herta.task.TaskList;
 
-/** Coordinates durable replacement and rollback of active and archived task files. */
+/**
+ * Coordinates durable replacement and rollback of active and archived task files.
+ */
 final class StorageTransactionCoordinator {
     private final Storage activeStorage;
     private final Storage archiveStorage;

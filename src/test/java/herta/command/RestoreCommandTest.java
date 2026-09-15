@@ -25,7 +25,9 @@ import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
 
-/** Tests viewing and restoring archived tasks, including capacity and failures. */
+/**
+ * Tests viewing and restoring archived tasks, including capacity and failures.
+ */
 class RestoreCommandTest {
     @TempDir
     Path temporaryDirectory;

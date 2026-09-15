@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import herta.exception.HertaException;
 
-/** Tests find, filter, upcoming, and sort argument parsing. */
+/**
+ * Tests find, filter, upcoming, and sort argument parsing.
+ */
 class QueryCommandParserTest {
     private final Parser parser = new Parser();
 

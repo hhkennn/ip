@@ -18,7 +18,7 @@ public abstract class AddCommand extends Command {
     /**
      * Creates an add command for a particular task.
      *
-     * @param task the task to append when the command executes
+     * @param task the task to append when the command executes.
      */
     protected AddCommand(Task task) {
         this.task = Objects.requireNonNull(task, "An add command must contain a task.");
@@ -27,10 +27,10 @@ public abstract class AddCommand extends Command {
     /**
      * Saves the updated list, then updates the live list and confirms the addition.
      *
-     * @param tasks the task list to update
-     * @param ui the output interface used to display responses
-     * @param storage the storage used to persist the updated list
-     * @throws HertaException if the updated list cannot be saved
+     * @param tasks the task list to update.
+     * @param ui the output interface used to display responses.
+     * @param storage the storage used to persist the updated list.
+     * @throws HertaException if the updated list cannot be saved.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {

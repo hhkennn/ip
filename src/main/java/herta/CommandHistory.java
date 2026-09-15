@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Maintains bounded command history independently of JavaFX controls. */
+/**
+ * Maintains bounded command history independently of JavaFX controls.
+ */
 final class CommandHistory {
     private final int maximumEntries;
     private final List<String> commands = new ArrayList<>();

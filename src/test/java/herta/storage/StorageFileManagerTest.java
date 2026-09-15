@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 
-/** Tests strict file-manager reads, writes, snapshots, and path handling. */
+/**
+ * Tests strict file-manager reads, writes, snapshots, and path handling.
+ */
 class StorageFileManagerTest {
     @TempDir
     Path temporaryDirectory;

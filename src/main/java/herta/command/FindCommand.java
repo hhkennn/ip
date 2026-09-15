@@ -17,7 +17,7 @@ public class FindCommand extends QueryCommand {
     /**
      * Creates a command that searches task descriptions for the given keyword.
      *
-     * @param keyword the text to find in task descriptions
+     * @param keyword the text to find in task descriptions.
      */
     public FindCommand(String keyword) {
         if (keyword == null || keyword.isBlank()) {
@@ -30,9 +30,9 @@ public class FindCommand extends QueryCommand {
     /**
      * Displays tasks whose descriptions contain the search keyword.
      *
-     * @param tasks the task list to search
-     * @param ui the output interface used to display responses
-     * @param storage unused because searching does not change stored data
+     * @param tasks the task list to search.
+     * @param ui the output interface used to display responses.
+     * @param storage unused because searching does not change stored data.
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {

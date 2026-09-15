@@ -18,7 +18,9 @@ import herta.task.TaskList;
 import herta.task.Todo;
 import herta.ui.Ui;
 
-/** Tests list, filter, find, upcoming, sort, and unknown command behavior. */
+/**
+ * Tests list, filter, find, upcoming, sort, and unknown command behavior.
+ */
 class QueryCommandTest {
     private static final int BROAD_UPCOMING_WINDOW_DAYS = 100_000_000;
     private static final LocalDateTime FAR_FUTURE_DATE_TIME =

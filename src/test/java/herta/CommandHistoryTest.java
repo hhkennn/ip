@@ -7,7 +7,9 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests bounded command history without requiring JavaFX controls. */
+/**
+ * Tests bounded command history without requiring JavaFX controls.
+ */
 class CommandHistoryTest {
     @Test
     void record_blankAndAdjacentDuplicateCommands_ignoresBoth() {

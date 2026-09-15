@@ -14,7 +14,9 @@ import org.junit.jupiter.api.io.TempDir;
 import herta.exception.HertaException;
 import herta.task.TaskList;
 
-/** Tests storage loading, path policy, and archive-file error wording. */
+/**
+ * Tests storage loading, path policy, and archive-file error wording.
+ */
 class StorageTest {
     @TempDir
     Path temporaryDirectory;

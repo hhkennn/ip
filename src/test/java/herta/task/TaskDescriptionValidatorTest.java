@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests the shared task-description validation policy. */
+/**
+ * Tests the shared task-description validation policy.
+ */
 class TaskDescriptionValidatorTest {
 
     @Test

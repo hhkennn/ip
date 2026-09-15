@@ -13,7 +13,7 @@ public abstract class TaskStatusCommand extends TaskIndexCommand {
     /**
      * Creates a command for a zero-based task index.
      *
-     * @param taskIndex the zero-based index of the selected task
+     * @param taskIndex the zero-based index of the selected task.
      */
     protected TaskStatusCommand(int taskIndex) {
         super(taskIndex);
@@ -22,11 +22,11 @@ public abstract class TaskStatusCommand extends TaskIndexCommand {
     /**
      * Updates and persists the selected task's completion status.
      *
-     * @param tasks the task list to update
-     * @param storage the storage used to persist the status change
-     * @param shouldBeCompleted the completion status to apply
-     * @return the updated task
-     * @throws HertaException if the selected task is invalid or cannot be saved
+     * @param tasks the task list to update.
+     * @param storage the storage used to persist the status change.
+     * @param shouldBeCompleted the completion status to apply.
+     * @return the updated task.
+     * @throws HertaException if the selected task is invalid or cannot be saved.
      */
     protected Task updateTaskStatus(TaskList tasks, Storage storage, boolean shouldBeCompleted)
             throws HertaException {

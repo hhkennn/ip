@@ -13,7 +13,9 @@ import herta.task.Event;
 import herta.task.TaskDescriptionValidator;
 import herta.task.Todo;
 
-/** Tests todo, deadline, and event parsing and validation. */
+/**
+ * Tests todo, deadline, and event parsing and validation.
+ */
 class TaskCreationParserTest {
     private final Parser parser = new Parser();
 

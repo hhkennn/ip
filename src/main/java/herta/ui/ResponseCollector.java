@@ -9,7 +9,7 @@ public class ResponseCollector implements UiOutput {
     /**
      * Adds a message to the collected response.
      *
-     * @param message the message to collect
+     * @param message the message to collect.
      */
     @Override
     public void showMessage(String message) {
@@ -27,7 +27,7 @@ public class ResponseCollector implements UiOutput {
     /**
      * Returns all collected messages separated by line breaks.
      *
-     * @return the collected response
+     * @return the collected response.
      */
     public String getOutput() {
         return output.toString();

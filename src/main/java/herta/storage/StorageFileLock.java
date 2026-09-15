@@ -15,11 +15,14 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Holds adjacent lock files while Herta validates and replaces data files. */
+/**
+ * Holds adjacent lock files while Herta validates and replaces data files.
+ */
 final class StorageFileLock implements AutoCloseable {
     private static final String LOCK_FILE_NAME = ".herta-lock";
     private static final Logger LOGGER = Logger.getLogger(StorageFileLock.class.getName());
 
+    /** Holds an acquired channel and its corresponding file lock. */
     private record LockHandle(FileChannel channel, FileLock lock) {
     }
 

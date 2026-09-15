@@ -39,8 +39,8 @@ public class Parser {
     /**
      * Identifies the command represented by the user's input.
      *
-     * @param input the complete user input
-     * @return the corresponding command type, or {@link CommandType#UNKNOWN}
+     * @param input the complete user input.
+     * @return the corresponding command type, or {@link CommandType#UNKNOWN}.
      */
     public CommandType parseCommandType(String input) {
         return CommandType.fromInput(input);
@@ -49,10 +49,10 @@ public class Parser {
     /**
      * Parses user input into an executable command.
      *
-     * @param input the complete user input
+     * @param input the complete user input.
      * @return a command representing the input, including an
-     *         {@link UnknownCommand} for unsupported input
-     * @throws HertaException if command-specific parsing fails
+     *         {@link UnknownCommand} for unsupported input.
+     * @throws HertaException if command-specific parsing fails.
      */
     public Command parse(String input) throws HertaException {
         return parse(input, parseCommandType(input));
@@ -61,11 +61,11 @@ public class Parser {
     /**
      * Parses user input using a command type that has already been identified.
      *
-     * @param input the complete user input
-     * @param commandType the command type identified for the input
+     * @param input the complete user input.
+     * @param commandType the command type identified for the input.
      * @return a command representing the input, including an
-     *         {@link UnknownCommand} for unsupported input
-     * @throws HertaException if command-specific parsing fails
+     *         {@link UnknownCommand} for unsupported input.
+     * @throws HertaException if command-specific parsing fails.
      */
     public Command parse(String input, CommandType commandType) throws HertaException {
         if (input == null || commandType == null) {
@@ -125,9 +125,9 @@ public class Parser {
     /**
      * Parses a todo command into a todo task.
      *
-     * @param input the complete todo command
-     * @return the parsed todo task
-     * @throws HertaException if the todo description is empty
+     * @param input the complete todo command.
+     * @return the parsed todo task.
+     * @throws HertaException if the todo description is empty.
      */
     public Todo parseTodo(String input) throws HertaException {
         return taskCreationParser.parseTodo(input);
@@ -136,9 +136,9 @@ public class Parser {
     /**
      * Parses the keyword from a find command.
      *
-     * @param input the complete find command
-     * @return the keyword to search for
-     * @throws HertaException if the keyword is empty
+     * @param input the complete find command.
+     * @return the keyword to search for.
+     * @throws HertaException if the keyword is empty.
      */
     public String parseFindKeyword(String input) throws HertaException {
         return queryCommandParser.parseFindKeyword(input);
@@ -147,9 +147,9 @@ public class Parser {
     /**
      * Parses a deadline command into a deadline task.
      *
-     * @param input the complete deadline command
-     * @return the parsed deadline task
-     * @throws HertaException if the command format or date/time is invalid
+     * @param input the complete deadline command.
+     * @return the parsed deadline task.
+     * @throws HertaException if the command format or date/time is invalid.
      */
     public Deadline parseDeadline(String input) throws HertaException {
         return taskCreationParser.parseDeadline(input);
@@ -158,9 +158,9 @@ public class Parser {
     /**
      * Parses an event command into an event task.
      *
-     * @param input the complete event command
-     * @return the parsed event task
-     * @throws HertaException if the command format, date/time, or event range is invalid
+     * @param input the complete event command.
+     * @return the parsed event task.
+     * @throws HertaException if the command format, date/time, or event range is invalid.
      */
     public Event parseEvent(String input) throws HertaException {
         return taskCreationParser.parseEvent(input);
@@ -169,9 +169,9 @@ public class Parser {
     /**
      * Parses the date from a filter command.
      *
-     * @param input the complete filter command
-     * @return the requested filter date
-     * @throws HertaException if the command format or date is invalid
+     * @param input the complete filter command.
+     * @return the requested filter date.
+     * @throws HertaException if the command format or date is invalid.
      */
     public LocalDate parseFilterDate(String input) throws HertaException {
         return queryCommandParser.parseFilterDate(input);
@@ -180,9 +180,9 @@ public class Parser {
     /**
      * Parses the number of days from an upcoming command.
      *
-     * @param input the complete upcoming command
-     * @return a positive number of days
-     * @throws HertaException if the command does not contain a positive number
+     * @param input the complete upcoming command.
+     * @return a positive number of days.
+     * @throws HertaException if the command does not contain a positive number.
      */
     public int parseUpcomingDays(String input) throws HertaException {
         return queryCommandParser.parseUpcomingDays(input);
@@ -191,8 +191,8 @@ public class Parser {
     /**
      * Validates a sort command.
      *
-     * @param input the complete sort command
-     * @throws HertaException if the command does not request date sorting
+     * @param input the complete sort command.
+     * @throws HertaException if the command does not request date sorting.
      */
     public void validateSortCommand(String input) throws HertaException {
         queryCommandParser.validateSortCommand(input);
@@ -201,10 +201,10 @@ public class Parser {
     /**
      * Parses a one-based task number from a task-selection command.
      *
-     * @param input the complete task-selection command
-     * @param commandKeyword the command keyword used in the input
-     * @return the corresponding zero-based task index
-     * @throws HertaException if the task number is not numeric
+     * @param input the complete task-selection command.
+     * @param commandKeyword the command keyword used in the input.
+     * @return the corresponding zero-based task index.
+     * @throws HertaException if the task number is not numeric.
      */
     public int parseTaskIndex(String input, String commandKeyword) throws HertaException {
         return taskIndexParser.parseTaskIndex(input, commandKeyword);
@@ -267,9 +267,9 @@ public class Parser {
     /**
      * Parses the selectors from an archive command.
      *
-     * @param input the complete archive command
-     * @return the validated archive selection
-     * @throws HertaException if the selectors are malformed or out of integer range
+     * @param input the complete archive command.
+     * @return the validated archive selection.
+     * @throws HertaException if the selectors are malformed or out of integer range.
      */
     public ArchiveSelection parseArchiveSelection(String input) throws HertaException {
         return archiveCommandParser.parseArchiveSelection(input);
@@ -278,9 +278,9 @@ public class Parser {
     /**
      * Parses the single archive task number from a restore command.
      *
-     * @param input the complete restore command
-     * @return the selected archive task number as a zero-based index
-     * @throws HertaException if the argument is invalid
+     * @param input the complete restore command.
+     * @return the selected archive task number as a zero-based index.
+     * @throws HertaException if the argument is invalid.
      */
     public int parseRestoreTaskNumber(String input) throws HertaException {
         return archiveCommandParser.parseRestoreTaskNumber(input);
