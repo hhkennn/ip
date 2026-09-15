@@ -1,19 +1,23 @@
-# Herta project template
+# Herta
 
-This is a project template for a greenfield Java project. Given below are instructions on how to use it.
+Herta is a Java desktop task manager for managing todos, deadlines, and events.
+See the [Herta User Guide](docs/README.md) for installation and command usage.
 
-## Setting up in Intellij
+## Setting up in IntelliJ IDEA
 
-Prerequisites: JDK 25, update Intellij to the most recent version.
+Prerequisite: JDK 25. Update IntelliJ IDEA to the most recent version.
 
-1. Open Intellij (if you are not in the welcome screen, click `File` > `Close Project` to close the existing project first)
-1. Open the project into Intellij as follows:
+1. Open IntelliJ IDEA. If you are not on the welcome screen, click `File` > `Close Project` first.
+1. Open the project in IntelliJ IDEA as follows:
    1. Click `Open`.
    1. Select the project directory, and click `OK`.
    1. If there are any further prompts, accept the defaults.
-1. Configure the project to use **JDK 25** (not other versions) as explained in [here](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk).<br>
+1. Configure the project to use **JDK 25** as explained in the [JetBrains JDK setup guide](https://www.jetbrains.com/help/idea/sdk.html#set-up-jdk).<br>
    In the same dialog, set the **Project language level** field to the `SDK default` option.
-1. After that, locate the `src/main/java/herta/Herta.java` file, right-click it, and choose `Run Herta.main()` (if the code editor is showing compile errors, try restarting the IDE). If the setup is correct, you should see something like the below as the output:
+1. To run the command-line version, locate `src/main/java/herta/Herta.java`,
+   right-click it, and choose `Run Herta.main()`. If the code editor shows
+   compile errors, try restarting IntelliJ IDEA. If setup is correct, you
+   should see output similar to this:
    ```
     _   _           _
    | | | | ___ _ __| |_ __ _
@@ -22,23 +26,30 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    |_| |_|\___|_|   \__\__,_|
    ```
 
-**Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+To launch the graphical interface, run `.\gradlew.bat run` from the project
+root on Windows or `./gradlew run` on macOS/Linux.
+
+**Warning:** Keep `src/main/java` as the Java source root. Do not rename these
+folders or move Java files outside this path, as Gradle and other tools expect
+this standard project layout.
+
+## Building and testing
+
+From the project root, run:
+
+```powershell
+.\gradlew.bat test
+.\gradlew.bat shadowJar
+```
+
+Use `./gradlew test` and `./gradlew shadowJar` on macOS/Linux. The packaged
+application is written to `build/libs/Herta.jar`.
 
 ## Task data policy
 
-Herta requires task identities to be globally unique across the active and
-archived lists. A task's identity includes its subtype, its description after
-surrounding and repeated ordinary spaces are normalized, and all of its date or
-time fields. Completion status is not part of the identity, and Unicode text is
-not compatibility-normalized. This prevents an archived task from being
-silently re-added or archived a second time.
-
-Deadline and event dates must fall between `0001-01-01` and `9999-12-31`.
-Past deadlines and events are valid historical task data. Repeated spaces or
-tabs between date and time components are accepted and treated as one space.
-An adjacent lock file protects cooperating Herta instances during a save;
-manual edits made after the final snapshot check cannot be made perfectly
-race-free by a local file-based application.
+Herta stores active tasks in `data/herta.txt` and archived tasks in
+`data/archive.txt`. Duplicate task records are allowed, and task descriptions
+and dates are validated before saving.
 
 ## Git commit checks
 

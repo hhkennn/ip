@@ -11,15 +11,16 @@
 
 ## Introduction
 
-Herta is a desktop task manager combining typed commands with a graphical,
-chat-style interface. It manages todos, deadlines, and events in one place. It
-suits fast keyboard users.
+Herta helps you manage everyday tasks using short commands in a chat-style
+desktop interface. Create todos, deadlines, and events, then find, filter, sort,
+complete, archive, and restore them. It is designed for people who prefer fast
+keyboard-based interaction.
 
 ## Quick start
 
-1. Ensure that Java 25 or later is installed on your computer.
+1. Install JDK 25 or later.
 2. Download `Herta.jar` from the [latest release](https://github.com/hhkennn/ip/releases/latest).
-3. Copy it to Herta's home folder.
+3. Put `Herta.jar` in the folder where you want Herta to store its data.
 4. Open a terminal in that folder and run:
 
    ```text
@@ -27,6 +28,9 @@ suits fast keyboard users.
    ```
 
 5. Wait for the Herta window to appear.
+
+   If Herta does not start, confirm that `Herta.jar` is in the current
+   folder and rerun `java -jar Herta.jar`.
 
 6. Enter a command and press Enter or click **Send**.
 7. Try these commands first:
@@ -38,22 +42,36 @@ suits fast keyboard users.
 
 ## Understanding Herta
 
-The screenshot below shows an example session after tasks have been added.
-Commands are entered at the bottom, and responses appear in the conversation
-area.
+This session shows active tasks. Enter commands at the bottom; responses
+appear in the conversation area.
 
-![Herta's main window showing active tasks and example commands](Ui.png)
+<p align="center">
+  <a href="Ui.png">
+    <img src="Ui.png" alt="Herta's main window showing active tasks and example commands" width="480">
+  </a>
+</p>
 
 ### Command notation
 
-This guide uses `UPPER_CASE` for supplied values. Items in `[square
-brackets]` are optional, and `...` means the preceding item may repeat.
-Enter each command on one line. Command names and markers such as `/by` are
-lowercase. Commands that take no arguments reject extra arguments.
+This guide uses the following notation:
+
+- `UPPER_CASE` represents a value supplied by the user.
+- `[square brackets]` mark optional items.
+- `...` means that the preceding item may be repeated.
+- Enter each command on one line.
+- Command names and markers such as `/by` must be lowercase.
+- Search keywords passed to `find` are matched case-insensitively.
+- Commands that take no arguments reject extra arguments.
 
 For example, in `deadline DESCRIPTION /by DATE_OR_DATE_TIME`, replace
 `DESCRIPTION` and `DATE_OR_DATE_TIME` with your own values, but type `deadline`
 and `/by` exactly as shown.
+
+When creating a task, its description must contain visible text. Ordinary
+spaces and Unicode text are supported, but descriptions cannot contain the
+vertical-bar character, line breaks, control characters, or unsupported
+invisible spacing characters. Keep descriptions to 1,000 characters or fewer.
+Herta permits duplicate tasks in either list and across both lists.
 
 ### Task types and statuses
 
@@ -76,7 +94,9 @@ Newly created tasks are incomplete.
 ### Task numbers
 
 > [!IMPORTANT]
-> Commands such as `mark`, `delete`, and `archive` use numbers from the active task list. Search, filter, upcoming, and sorted views retain the original active-task numbers even when they show tasks in a different order or omit non-matching tasks.
+> `mark`, `delete`, and `archive` use active-list numbers. Results from `find`,
+> `filter`, `upcoming`, and `sort` retain the original active-task numbers even
+> when their displayed order changes.
 
 Task numbers begin at 1. Deleting or archiving can renumber later active tasks.
 Archived tasks use a separate numbering system shown by `archived`;
@@ -84,24 +104,24 @@ Archived tasks use a separate numbering system shown by `archived`;
 
 ### Supported date and time formats
 
-| Input | Format | Example |
-| --- | --- | --- |
-| Date and time | `d/M/yyyy HHmm` | `2/12/2026 1800` |
-| Date and time | `yyyy-MM-dd HHmm` | `2026-12-02 1800` |
-| Date and time | `yyyy-MM-dd HH:mm` | `2026-12-02 18:00` |
-| Date only (`deadline`, `event`, and `filter`) | `d/M/yyyy` or `yyyy-MM-dd` | `2/12/2026` or `2026-12-02` |
+Accepted formats:
 
-A date-only deadline or event endpoint represents midnight at the beginning of
-that date. Events must end after they start. Dates must be valid between
-`0001-01-01` and `9999-12-31`, and past dates are accepted. Displayed dates
-always use English month names. Natural-language dates such as
-`tomorrow` and `next Friday` are not supported.
+| Input | Format | Example | Used by |
+| --- | --- | --- | --- |
+| Date only | `d/M/yyyy` | `2/12/2026` | `deadline`, `event`, `filter` |
+| Date only | `yyyy-MM-dd` | `2026-12-02` | `deadline`, `event`, `filter` |
+| Date and time | `d/M/yyyy HHmm` | `2/12/2026 1800` | `deadline`, `event` |
+| Date and time | `yyyy-MM-dd HHmm` | `2026-12-02 1800` | `deadline`, `event` |
+| Date and time | `yyyy-MM-dd HH:mm` | `2026-12-02 18:00` | `deadline`, `event` |
 
-When creating a task, its description must contain visible text. Ordinary
-spaces and Unicode text are supported, but descriptions cannot contain the
-vertical-bar character, line breaks, control characters, or unsupported
-invisible spacing characters. Keep descriptions under 1,000 characters. Herta
-permits duplicate tasks in either list and across both lists.
+Times use 24-hour notation: `1800` and `18:00` both mean 6:00 PM.
+
+- A date without a time means midnight at the start of that date.
+- An event must end after it starts.
+- Dates must be valid calendar dates between `0001-01-01` and `9999-12-31`.
+- Past dates are accepted.
+- Herta displays dates using English month names.
+- Natural-language dates such as `tomorrow` and `next Friday` are not supported.
 
 ## Features
 
@@ -124,8 +144,8 @@ Format: `deadline DESCRIPTION /by DATE_OR_DATE_TIME`
 
 Example: `deadline submit report /by 2026-10-15 18:00`
 
-The `/by` marker is required and may appear only once. Use the supported
-formats described earlier.
+`/by` is required and may appear only once. A date-only value may use either
+`d/M/yyyy` or `yyyy-MM-dd`.
 
 ### Adding an event: `event`
 
@@ -133,11 +153,11 @@ Adds an incomplete task with a start and end date or time.
 
 Format: `event DESCRIPTION /from START /to END`
 
-Example: `event project meeting /from 2026-10-15 1800 /to 2026-10-15 2000`
+Example: `event project meeting /from 2026-10-15 18:00 /to 2026-10-15 20:00`
 
-`/from` must appear before `/to`; both markers are required and may appear
-only once. The ending date and time must be later than the starting date and
-time.
+`/from` must appear before `/to`, and both markers may appear only once. Each
+start or end value may be a date or a date and time; the end must be later than
+the start.
 
 ### Listing active tasks: `list`
 
@@ -166,7 +186,7 @@ Shows dated active tasks that occur on a specified calendar date.
 
 Format: `filter /on DATE`
 
-Example: `filter /on 2026-10-15`
+Examples: `filter /on 2026-10-15` and `filter /on 15/10/2026`
 
 It includes deadlines due on that date and events overlapping any part of it.
 Both complete and incomplete tasks are included; todos are excluded because
@@ -182,8 +202,8 @@ Example: `upcoming 7`
 
 `DAYS` must be a positive whole number. It includes deadlines due within the
 window and events whose start falls within it, but excludes todos and completed
-tasks. The window begins now and ends `DAYS` days later. Results retain their
-original active-task numbers.
+tasks. The window begins now, includes its starting instant, and ends just
+before `DAYS` days later. Results retain their original active-task numbers.
 
 ### Displaying tasks in date order: `sort`
 
@@ -231,8 +251,10 @@ check the number before deleting.
 Moves completed active tasks to the archive using numbers, inclusive ranges, or
 `archive all`.
 
-Formats: `archive TASK_NUMBER_OR_RANGE [MORE_TASK_NUMBERS_OR_RANGES]...` or
-`archive all`
+Formats:
+
+- `archive TASK_NUMBER_OR_RANGE [MORE_TASK_NUMBERS_OR_RANGES]...`
+- `archive all`
 
 Examples: `archive 2`, `archive 1 3-5 8`, and `archive all`
 
@@ -279,24 +301,37 @@ The GUI briefly displays Herta's goodbye response before closing.
 | Move focus between the command box, **Send** button, and conversation area | Tab |
 | Recall an older submitted command | Up arrow |
 | Move toward newer commands or restore the unfinished draft | Down arrow |
-| Increase message and avatar size | `Ctrl` + `+` or Ctrl+mouse-wheel up |
-| Decrease message and avatar size | `Ctrl` + `-` or Ctrl+mouse-wheel down |
+| Increase message and avatar size | `Ctrl` + `+` or hold `Ctrl` and scroll up |
+| Decrease message and avatar size | `Ctrl` + `-` or hold `Ctrl` and scroll down |
 | Reset zoom | `Ctrl` + `0` |
-| Copy a complete message | Right-click it and select **Copy** |
+| Copy a message's text | Right-click it and select **Copy** |
+
+Up/Down history requires focus in the command box.
 
 ## Saving and transferring data
 
-Successful modifying commands save automatically; no manual save command is
-required. By default, active tasks are in `data/herta.txt`, and archived tasks
-are in `data/archive.txt`. The `data` folder is relative to Herta's launch
-directory.
+Changes save automatically. By default, Herta stores active tasks in
+`data/herta.txt` and archived tasks in `data/archive.txt` inside the folder you
+run Herta from.
 
-Missing task files are treated as empty and created when Herta next saves. To
-transfer data, close Herta and copy both files into the corresponding `data`
-folder on the other computer.
+Herta creates the `data` folder and files after the first successful task
+change, so a fresh installation may have none.
+
+To transfer tasks:
+
+1. Close Herta.
+2. Back up the destination `data` folder, if it exists.
+3. Create `data` if needed.
+4. Copy `herta.txt` and, if present, `archive.txt` from the source `data` to
+   the destination.
+5. Start Herta there.
+
+No source files means nothing to transfer. Without `archive.txt`, remove any
+old destination copy after backing it up to avoid stale archived tasks. Copying
+replaces same-named files.
 
 > [!CAUTION]
-> Close Herta and back up both data files before editing, replacing, or transferring them. Invalid or inaccessible saved data prevents Herta from accepting commands, while preserving the existing files.
+> Always close Herta and back up existing data before editing or replacing task files. Invalid or inaccessible data prevents Herta from accepting commands.
 
 ## Command summary
 
@@ -313,7 +348,8 @@ folder on the other computer.
 | Mark a task complete | `mark INDEX` |
 | Mark a task incomplete | `unmark INDEX` |
 | Delete an active task | `delete INDEX` |
-| Archive completed tasks | `archive TASK_NUMBER_OR_RANGE [MORE_TASK_NUMBERS_OR_RANGES]...` or `archive all` |
+| Archive selected tasks | `archive TASK_NUMBER_OR_RANGE [MORE_TASK_NUMBERS_OR_RANGES]...` |
+| Archive all | `archive all` |
 | View archived tasks | `archived` |
 | Restore an archived task | `restore ARCHIVE_INDEX` |
 | Exit Herta | `bye` |
