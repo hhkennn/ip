@@ -93,10 +93,9 @@ Newly created tasks are incomplete.
 
 ### Task numbers
 
-> [!IMPORTANT]
-> `mark`, `delete`, and `archive` use active-list numbers. Results from `find`,
-> `filter`, `upcoming`, and `sort` retain the original active-task numbers even
-> when their displayed order changes.
+> **Important:** `mark`, `delete`, and `archive` use active-list numbers.
+> Results from `find`, `filter`, `upcoming`, and `sort` retain the original
+> active-task numbers even when their displayed order changes.
 
 Task numbers begin at 1. Deleting or archiving can renumber later active tasks.
 Archived tasks use a separate numbering system shown by `archived`;
@@ -330,8 +329,9 @@ No source files means nothing to transfer. Without `archive.txt`, remove any
 old destination copy after backing it up to avoid stale archived tasks. Copying
 replaces same-named files.
 
-> [!CAUTION]
-> Always close Herta and back up existing data before editing or replacing task files. Invalid or inaccessible data prevents Herta from accepting commands.
+> **Caution:** Always close Herta and back up existing data before editing or
+> replacing task files. Invalid or inaccessible data prevents Herta from
+> accepting commands.
 
 ## Command summary
 
