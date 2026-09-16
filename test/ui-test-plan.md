@@ -33,7 +33,7 @@ that plan supplies a persisted data fixture before startup.
 | List tasks | Populated list | Empty list | State checked after errors |
 | Find tasks | Matching keyword in descriptions | Empty keyword or no matches | Original task numbering and order are preserved |
 | Add tasks | Todo, deadline, and event with valid date/time or date-only input in `d/M/yyyy` or `yyyy-MM-dd` | Empty fields, invalid delimiters, and malformed or impossible date/time | Whitespace normalization, date-only midnight, date formatting, and reuse of archived task descriptions |
-| Update tasks | Mark and unmark | Missing, nonnumeric, and out-of-range numbers | State preserved after errors |
+| Update tasks | Mark, unmark, and repeated status commands | Missing, nonnumeric, and out-of-range numbers | State preserved after errors and repeats |
 | Delete tasks | Valid one-based number | Missing, nonnumeric, and out-of-range numbers | Remaining tasks renumbered |
 | Save tasks | Add, mark, unmark, and delete | File-write errors are outside this happy-path test | Complete list is rewritten to the test's temporary `data/herta.txt` |
 | Archive tasks | Numbers, ranges, mixed and repeated selectors, `archive all` | Invalid, descending, out-of-bounds, and incomplete selections | Archived output follows active-list order and active commands remain isolated |
@@ -870,6 +870,62 @@ Your command?      ____________________________________________________________
 Your command?      ____________________________________________________________
      Let's see what you've managed to pile up:
      1. [T][ ] core
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Leaving already? Goodbye.
+     ____________________________________________________________
+```
+
+## Test case: Handle repeated mark and unmark commands
+
+- Aim: Verify that repeated status commands report their no-op result and preserve task status while normal status changes keep their existing responses.
+
+### Inputs
+
+```text
+todo repeat status
+mark 1
+mark 1
+unmark 1
+unmark 1
+list
+bye
+```
+
+### Expected output
+
+```text
+     ____________________________________________________________
+      _   _           _
+     | | | | ___ _ __| |_ __ _
+     | |_| |/ _ \ '__| __/ _` |
+     |  _  |  __/ |  | || (_| |
+     |_| |_|\___|_|   \__\__,_|
+     Oh, you're here. I'm Herta.
+     Well? What do you want?
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     There. I've added it:
+       [T][ ] repeat status
+     That makes 1 active task. Try to keep up.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Done. It's marked complete:
+       [T][X] repeat status
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Already complete. There is nothing more to do.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Fine. It's incomplete again:
+       [T][ ] repeat status
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Already incomplete. There is nothing to undo.
+     ____________________________________________________________
+Your command?      ____________________________________________________________
+     Let's see what you've managed to pile up:
+     1. [T][ ] repeat status
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

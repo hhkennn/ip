@@ -2,7 +2,6 @@ package herta.command;
 
 import herta.exception.HertaException;
 import herta.storage.Storage;
-import herta.task.Task;
 import herta.task.TaskList;
 import herta.ui.UiOutput;
 
@@ -11,6 +10,7 @@ import herta.ui.UiOutput;
  */
 public class MarkCommand extends TaskStatusCommand {
     private static final String MARK_CONFIRMATION_MESSAGE = "Done. It's marked complete:";
+    private static final String MARK_NO_OP_MESSAGE = "Already complete. There is nothing more to do.";
 
     /**
      * Creates a command that marks the task at the given index.
@@ -22,8 +22,8 @@ public class MarkCommand extends TaskStatusCommand {
     }
 
     /**
-     * Marks the selected task, persists the updated status, and reports it.
-     * The in-memory status is restored if saving fails.
+     * Marks the selected task when needed and reports the result.
+     * The in-memory status is restored if saving a real change fails.
      *
      * @param tasks the task list to update.
      * @param ui the output interface used to display responses.
@@ -32,8 +32,7 @@ public class MarkCommand extends TaskStatusCommand {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) throws HertaException {
-        Task task = updateTaskStatus(tasks, storage, true);
-        ui.showMessage(MARK_CONFIRMATION_MESSAGE);
-        ui.showTask(task);
+        executeStatusChange(tasks, ui, storage, true,
+                MARK_CONFIRMATION_MESSAGE, MARK_NO_OP_MESSAGE);
     }
 }

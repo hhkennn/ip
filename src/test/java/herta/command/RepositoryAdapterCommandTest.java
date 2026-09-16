@@ -86,6 +86,36 @@ class RepositoryAdapterCommandTest {
     }
 
     @Test
+    void repositoryAdapter_repeatedStatusDoesNotWriteOrShowTask() throws Exception {
+        Path activeFile = temporaryDirectory.resolve("repeated-status-repository.txt");
+        Path archiveFile = activeFile.resolveSibling("archive.txt");
+        Todo completedTask = new Todo("completed task");
+        completedTask.markAsDone();
+        Todo incompleteTask = new Todo("incomplete task");
+        TaskList activeTasks = new TaskList(List.of(completedTask, incompleteTask));
+        TaskList archivedTasks = new TaskList(List.of(new Todo("archived task")));
+        Storage activeStorage = new Storage(activeFile.toString());
+        Storage archiveStorage = new Storage(archiveFile.toString());
+        activeStorage.save(activeTasks);
+        archiveStorage.save(archivedTasks);
+        TaskRepository repository = new TaskRepository(activeStorage, archiveStorage,
+                activeTasks, archivedTasks);
+        byte[] originalActiveBytes = Files.readAllBytes(activeFile);
+        byte[] originalArchiveBytes = Files.readAllBytes(archiveFile);
+        RecordingUiOutput output = new RecordingUiOutput();
+
+        new MarkCommand(0).execute(repository, output);
+        new UnmarkCommand(1).execute(repository, output);
+
+        assertEquals(List.of("Already complete. There is nothing more to do.",
+                "Already incomplete. There is nothing to undo."), output.getMessages());
+        assertTrue(completedTask.isCompleted());
+        assertFalse(incompleteTask.isCompleted());
+        assertArrayEquals(originalActiveBytes, Files.readAllBytes(activeFile));
+        assertArrayEquals(originalArchiveBytes, Files.readAllBytes(archiveFile));
+    }
+
+    @Test
     void repositoryAdapter_deleteChangesActiveFileOnlyAndReportsInOrder() throws Exception {
         Path activeFile = temporaryDirectory.resolve("delete-repository.txt");
         Path archiveFile = activeFile.resolveSibling("archive.txt");

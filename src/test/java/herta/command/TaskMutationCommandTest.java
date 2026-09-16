@@ -1,5 +1,6 @@
 package herta.command;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -105,19 +106,61 @@ class TaskMutationCommandTest {
     }
 
     @Test
-    void taskStatusCommands_repeatedExecution_isIdempotent() throws Exception {
+    void taskStatusCommands_repeatedExecution_reportsNoOpAndPreservesStorage() throws Exception {
         Path dataFile = temporaryDirectory.resolve("status.txt");
         Todo todo = new Todo("repeat status");
         TaskList tasks = new TaskList(List.of(todo));
         Storage storage = new Storage(dataFile.toString());
+        storage.save(tasks);
 
-        new MarkCommand(0).execute(tasks, new Ui(), storage);
-        new MarkCommand(0).execute(tasks, new Ui(), storage);
-        new UnmarkCommand(0).execute(tasks, new Ui(), storage);
-        new UnmarkCommand(0).execute(tasks, new Ui(), storage);
+        CommandTestSupport.captureOutput(() ->
+                new MarkCommand(0).execute(tasks, new Ui(), storage));
+        assertStatusNoOpPreservesStorage(new MarkCommand(0), tasks, storage, dataFile,
+                "Already complete. There is nothing more to do.");
+        assertTrue(todo.isCompleted());
+
+        CommandTestSupport.captureOutput(() ->
+                new UnmarkCommand(0).execute(tasks, new Ui(), storage));
+        assertStatusNoOpPreservesStorage(new UnmarkCommand(0), tasks, storage, dataFile,
+                "Already incomplete. There is nothing to undo.");
 
         assertFalse(todo.isCompleted());
         assertEquals(List.of("T | 0 | repeat status"), Files.readAllLines(dataFile));
+    }
+
+    @Test
+    void taskStatusCommands_noOpDoesNotRequireStorageWrite() throws Exception {
+        Path dataDirectory = temporaryDirectory.resolve("not-a-file");
+        Files.createDirectory(dataDirectory);
+        Storage failingStorage = new Storage(dataDirectory.toString());
+
+        Todo completedTask = new Todo("completed task");
+        completedTask.markAsDone();
+        TaskList completedTasks = new TaskList(List.of(completedTask));
+        String markOutput = CommandTestSupport.captureOutput(() ->
+                new MarkCommand(0).execute(completedTasks, new Ui(), failingStorage));
+        assertEquals("     Already complete. There is nothing more to do."
+                + System.lineSeparator(), markOutput);
+        assertTrue(completedTask.isCompleted());
+
+        Todo incompleteTask = new Todo("incomplete task");
+        TaskList incompleteTasks = new TaskList(List.of(incompleteTask));
+        String unmarkOutput = CommandTestSupport.captureOutput(() ->
+                new UnmarkCommand(0).execute(incompleteTasks, new Ui(), failingStorage));
+        assertEquals("     Already incomplete. There is nothing to undo."
+                + System.lineSeparator(), unmarkOutput);
+        assertFalse(incompleteTask.isCompleted());
+    }
+
+    private void assertStatusNoOpPreservesStorage(Command command, TaskList tasks,
+                                                  Storage storage, Path dataFile,
+                                                  String expectedMessage) throws Exception {
+        byte[] originalFileBytes = Files.readAllBytes(dataFile);
+        String output = CommandTestSupport.captureOutput(() ->
+                command.execute(tasks, new Ui(), storage));
+
+        assertEquals("     " + expectedMessage + System.lineSeparator(), output);
+        assertArrayEquals(originalFileBytes, Files.readAllBytes(dataFile));
     }
 
     @Test
