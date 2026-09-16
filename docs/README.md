@@ -164,8 +164,8 @@ Displays all active tasks in their saved order.
 
 Format: `list`
 
-Archived tasks are excluded. With no active tasks, Herta displays the normal
-list heading without task entries.
+Archived tasks are excluded. With no active tasks, Herta displays
+`No tasks to show. Give me something to organize.` and suggests adding a task.
 
 ### Finding tasks by description: `find`
 

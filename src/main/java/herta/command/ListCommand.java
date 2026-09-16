@@ -9,6 +9,7 @@ import herta.ui.UiOutput;
  */
 public class ListCommand extends Command {
     private static final String LIST_HEADING = "Let's see what you've managed to pile up:";
+    private static final String EMPTY_LIST_MESSAGE = "No tasks to show. Give me something to organize.";
 
     /**
      * Displays the tasks managed by Herta.
@@ -19,6 +20,11 @@ public class ListCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, UiOutput ui, Storage storage) {
+        if (tasks.size() == 0) {
+            ui.showMessage(EMPTY_LIST_MESSAGE);
+            return;
+        }
+
         ui.showMessage(LIST_HEADING);
         for (int i = 0; i < tasks.size(); i++) {
             ui.showTask(i + 1, tasks.get(i));

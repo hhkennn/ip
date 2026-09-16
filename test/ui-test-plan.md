@@ -101,7 +101,7 @@ Your command?      ____________________________________________________________
      That is excessive. Keep the command under 4096 characters.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Let's see what you've managed to pile up:
+     No tasks to show. Give me something to organize.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -463,7 +463,7 @@ Your command?      ____________________________________________________________
      1. [T][X] active
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Let's see what you've managed to pile up:
+     No tasks to show. Give me something to organize.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      There. I've restored it:
@@ -700,7 +700,7 @@ Your command?      ____________________________________________________________
 
 ## Test case: List an empty task list
 
-- Aim: Verify that `list` handles a fresh task list without displaying task entries.
+- Aim: Verify that `list` explains when a fresh task list is empty and suggests adding a task.
 
 ### Inputs
 
@@ -722,7 +722,7 @@ bye
      Well? What do you want?
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Let's see what you've managed to pile up:
+     No tasks to show. Give me something to organize.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -1282,7 +1282,7 @@ Your command?      ____________________________________________________________
      That's not a task number. Try: delete 1.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Let's see what you've managed to pile up:
+     No tasks to show. Give me something to organize.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.
@@ -1494,7 +1494,7 @@ Your command?      ____________________________________________________________
      Keep the description on one line and leave out the storage delimiter and control characters.
      ____________________________________________________________
 Your command?      ____________________________________________________________
-     Let's see what you've managed to pile up:
+     No tasks to show. Give me something to organize.
      ____________________________________________________________
 Your command?      ____________________________________________________________
      Leaving already? Goodbye.

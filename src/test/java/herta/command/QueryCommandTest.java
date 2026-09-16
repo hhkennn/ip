@@ -1,17 +1,24 @@
 package herta.command;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import herta.exception.HertaException;
+import herta.storage.PersistenceState;
+import herta.storage.Storage;
 import herta.task.Deadline;
 import herta.task.Event;
 import herta.task.TaskList;
@@ -25,6 +32,9 @@ class QueryCommandTest {
     private static final int BROAD_UPCOMING_WINDOW_DAYS = 100_000_000;
     private static final LocalDateTime FAR_FUTURE_DATE_TIME =
             LocalDateTime.of(9999, 12, 31, 23, 59);
+
+    @TempDir
+    Path temporaryDirectory;
 
     @Test
     void listFilterAndSort_executeDisplayExpectedTaskSelections() throws Exception {
@@ -120,11 +130,30 @@ class QueryCommandTest {
         String upcomingOutput = CommandTestSupport.captureOutput(() -> new UpcomingCommand(2)
                 .execute(emptyTasks, new Ui(), null));
 
-        assertTrue(listOutput.contains("Let's see what you've managed to pile up:"));
+        assertEquals("     No tasks to show. Give me something to organize."
+                + System.lineSeparator(), listOutput);
+        assertEquals(0, emptyTasks.size());
         assertTrue(findOutput.contains("Nothing matched."));
         assertTrue(filterOutput.contains("No tasks on Oct 15 2019."));
         assertTrue(sortOutput.contains("There. Your tasks are in date order."));
         assertTrue(upcomingOutput.contains("Nothing upcoming."));
+    }
+
+    @Test
+    void listCommand_doesNotModifyTaskListOrStorage() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(dataFile, "T | 0 | persisted task\n");
+        byte[] originalStorageContents = Files.readAllBytes(dataFile);
+        Todo task = new Todo("buy milk");
+        TaskList tasks = new TaskList(List.of(task));
+        Storage storage = new Storage(dataFile.toString());
+
+        CommandTestSupport.captureOutput(() -> new ListCommand().execute(tasks, new Ui(), storage));
+
+        assertEquals(1, tasks.size());
+        assertSame(task, tasks.get(0));
+        assertArrayEquals(originalStorageContents, Files.readAllBytes(dataFile));
+        assertEquals(PersistenceState.NOT_ATTEMPTED, storage.getLastPersistenceState());
     }
 
     @Test
@@ -152,6 +181,7 @@ class QueryCommandTest {
     private void assertListCommandDisplaysTasks(TaskList tasks) throws Exception {
         String output = CommandTestSupport.captureOutput(() -> new ListCommand()
                 .execute(tasks, new Ui(), null));
+        assertTrue(output.contains("Let's see what you've managed to pile up:"));
         assertTrue(output.contains("1. [T][ ] buy milk"));
         assertTrue(output.contains("2. [D][ ] submit report"));
         assertTrue(output.contains("3. [E][ ] project meeting"));
